@@ -1,4 +1,10 @@
-module Location exposing (new)
+module Location exposing (Location, Requirement(..), initialList)
+
+import EverySet as Set exposing (EverySet)
+
+
+type alias Set a =
+    EverySet a
 
 
 type Location
@@ -9,23 +15,11 @@ type alias Internals =
     { name : String
     , area : Area
     , checked : Bool
-    , requires : List Requirement
+    , requirements : Set Requirement
     , characters : Int
     , bosses : Int
-    , keyItem : Maybe KeyItem
+    , keyItem : Maybe KeyItemClass
     }
-
-
-type Area
-    = Surface
-    | Underground
-    | Moon
-
-
-type KeyItem
-    = Main
-    | Summon
-    | MoonBoss
 
 
 type Requirement
@@ -37,6 +31,7 @@ type Requirement
     | TowerKey
     | DarknessCrystal
     | EarthCrystal
+    | Crystal
     | Hook
     | TwinHarp
     | Pan
@@ -45,339 +40,333 @@ type Requirement
     | LegendSword
     | Spoon
     | PinkTail
+    | Pass
     | MistDragon
     | UndergroundAccess
 
 
+type Area
+    = Surface
+    | Underground
+    | Moon
 
--- identify free characters by requires = [] and bosses = 0
+
+type KeyItemClass
+    = Main
+    | Summon
+    | MoonBoss
+
+
+
+-- identify free characters by requirements = [] and bosses = 0
 -- nope, ordeals has no requirements
 -- hardcode the free spots: watery pass, damcyan, mysidia, ordeals
 
-viewLocations : List Location -> List Requirement -> Html msg
-viewLocations locations requirements =
-    let
-        locationAccessible location =
+
+isAccessible : Set Requirement -> Location -> Bool
+isAccessible attained location =
+    areaAccessible attained location
+        && requirementsMet attained location
 
 
-        showLocation location =
-            location.checked
-                && location.requirements |> List.all (List.memberOf requirements)
-    locations
-        |> List.map (\location ->
-            if not location.checked && location.requirements |> List.all (List.memberOf requirements) then
+areaAccessible : Set Requirement -> Location -> Bool
+areaAccessible attained (Location location) =
+    case location.area of
+        Surface ->
+            True
 
-            else
-                text "" 
-        )
+        Underground ->
+            -- check for Push B to Jump flag will go here
+            Set.member MagmaKey attained || Set.member Hook attained
+
+        Moon ->
+            Set.member DarknessCrystal attained
 
 
+requirementsMet : Set Requirement -> Location -> Bool
+requirementsMet attained (Location location) =
+    Set.diff location.requirements attained
+        |> Set.isEmpty
 
-new : List Location
-new =
+
+initialList : List Location
+initialList =
     [ { name = "Mist Cave"
       , area = Surface
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 0
       , bosses = 1
       , keyItem = Nothing
       }
     , { name = "Mist Village - Package"
       , area = Surface
-      , checked = False
-      , requires = [ Package ]
+      , requirements = [ Package ]
       , characters = 1
       , bosses = 1
       , keyItem = Nothing
       }
     , { name = "Mist Village - Mom"
       , area = Surface
-      , checked = False
-      , requires = [ MistDragon ]
+      , requirements = [ MistDragon ]
       , characters = 0
       , bosses = 0
       , keyItem = Just Main
       }
     , { name = "Kaipo"
       , area = Surface
-      , checked = False
-      , requires = [ SandRuby ]
+      , requirements = [ SandRuby ]
       , characters = 1
       , bosses = 0
       , keyItem = Nothing
       }
     , { name = "Watery Pass"
       , area = Surface
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 1
       , bosses = 0
       , keyItem = Nothing
       }
     , { name = "Waterfall"
       , area = Surface
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 0
       , bosses = 1
       , keyItem = Nothing
       }
     , { name = "Damcyan"
       , area = Surface
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 1
       , bosses = 0
       , keyItem = Nothing
       }
     , { name = "Antlion Cave"
       , area = Surface
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 0
       , bosses = 1
       , keyItem = Just Main
       }
     , { name = "Mt. Hobbs"
       , area = Surface
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 1
       , bosses = 1
       , keyItem = Nothing
       }
     , { name = "Fabul Defence"
       , area = Surface
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 0
       , bosses = 1
       , keyItem = Just Main
       }
     , { name = "Sheila 1"
       , area = Surface
-      , checked = False
-      , requires = [ UndergroundAccess ]
+      , requirements = [ UndergroundAccess ]
       , characters = 0
       , bosses = 0
       , keyItem = Just Main
       }
     , { name = "Sheila 2"
       , area = Surface
-      , checked = False
-      , requires = [ UndergroundAccess, Pan ]
+      , requirements = [ UndergroundAccess, Pan ]
       , characters = 0
       , bosses = 0
       , keyItem = Just Main
       }
     , { name = "Mysidia"
       , area = Surface
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 2
       , bosses = 0
       , keyItem = Nothing
       }
     , { name = "Mt. Ordeals"
       , area = Surface
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 1
       , bosses = 3
       , keyItem = Just Main
       }
     , { name = "Baron Inn"
       , area = Surface
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 1
       , bosses = 2
       , keyItem = Just Main
       }
     , { name = "Baron Castle"
       , area = Surface
-      , checked = False
-      , requires = [ BaronKey ]
+      , requirements = [ BaronKey ]
       , characters = 1
       , bosses = 2
       , keyItem = Just Main
       }
     , { name = "Baron Castle Basement"
       , area = Surface
-      , checked = False
-      , requires = []
+      , requirements = [ BaronKey ]
       , characters = 0
       , bosses = 1
       , keyItem = Just Summon
       }
     , { name = "Bedward"
       , area = Surface
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 0
       , bosses = 0
       , keyItem = Just Main
       }
     , { name = "Cave Magnes"
       , area = Surface
-      , checked = False
-      , requires = [ TwinHarp ]
+      , requirements = [ TwinHarp ]
       , characters = 0
       , bosses = 1
       , keyItem = Just Main
       }
     , { name = "Tower of Zot 1"
       , area = Surface
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 0
       , bosses = 1
       , keyItem = Nothing
       }
     , { name = "Tower of Zot 2"
       , area = Surface
-      , checked = False
-      , requires = [ EarthCrystal ]
+      , requirements = [ EarthCrystal ]
       , characters = 2
       , bosses = 1
       , keyItem = Just Main
       }
     , { name = "Upper Bab-il"
       , area = Surface
-      , checked = False
-      , requires = [ Hook ]
+      , requirements = [ Hook ]
       , characters = 1
       , bosses = 2
       , keyItem = Nothing
       }
     , { name = "Giant of Bab-il"
       , area = Surface
-      , checked = False
-      , requires = [ DarknessCrystal ]
+      , requirements = [ DarknessCrystal ]
       , characters = 1
       , bosses = 2
       , keyItem = Nothing
       }
     , { name = "Adamant Grotto"
       , area = Surface
-      , checked = False
-      , requires = [ Hook, RatTail ]
+      , requirements = [ Hook, RatTail ]
       , characters = 0
       , bosses = 0
       , keyItem = Just Main
       }
     , { name = "Dwarf Castle"
       , area = Underground
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 1
       , bosses = 2
       , keyItem = Just Main
       }
     , { name = "Lower Bab-il - Top"
       , area = Underground
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 0
       , bosses = 1
       , keyItem = Just Main
       }
     , { name = "Lower Bab-il - Cannon"
       , area = Underground
-      , checked = False
-      , requires = [ TowerKey ]
+      , requirements = [ TowerKey ]
       , characters = 0
       , bosses = 1
       , keyItem = Just Main
       }
     , { name = "Sylph Cave"
       , area = Underground
-      , checked = False
-      , requires = [ Pan ]
+      , requirements = [ Pan ]
       , characters = 0
       , bosses = 0
       , keyItem = Just Summon
       }
     , { name = "Feymarch - King"
       , area = Underground
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 0
       , bosses = 1
       , keyItem = Just Summon
       }
     , { name = "Feymarch - Queen"
       , area = Underground
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 0
       , bosses = 1
       , keyItem = Just Summon
       }
     , { name = "Sealed Cave"
       , area = Underground
-      , checked = False
-      , requires = [ LucaKey ]
+      , requirements = [ LucaKey ]
       , characters = 0
       , bosses = 1
       , keyItem = Just Main
       }
     , { name = "Lunar Dais"
       , area = Moon
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 1
       , bosses = 0
       , keyItem = Nothing
       }
     , { name = "Cave Bahamut"
       , area = Moon
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 0
       , bosses = 1
       , keyItem = Just Summon
       }
     , { name = "Murasame Altar"
       , area = Moon
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 0
       , bosses = 1
       , keyItem = Just MoonBoss
       }
     , { name = "Wyvern Altar"
       , area = Moon
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 0
       , bosses = 1
       , keyItem = Just MoonBoss
       }
     , { name = "White Spear Altar"
       , area = Moon
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 0
       , bosses = 1
       , keyItem = Just MoonBoss
       }
     , { name = "Ribbon Room"
       , area = Moon
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 0
       , bosses = 1
       , keyItem = Just MoonBoss
       }
     , { name = "Masamune Altar"
       , area = Moon
-      , checked = False
-      , requires = []
+      , requirements = []
       , characters = 0
       , bosses = 1
       , keyItem = Just MoonBoss
       }
     ]
-        |> List.map Location
+        |> List.map
+            (\l ->
+                Location
+                    { name = l.name
+                    , area = l.area
+                    , checked = False
+                    , requirements = Set.fromList l.requirements
+                    , characters = l.characters
+                    , bosses = l.bosses
+                    , keyItem = l.keyItem
+                    }
+            )
