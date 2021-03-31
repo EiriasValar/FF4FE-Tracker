@@ -1,5 +1,14 @@
-module Location exposing (Location, Requirement(..), initialList)
+module Location exposing
+    ( Location
+    , Requirement(..)
+    , getName
+    , isChecked
+    , isProspect
+    , locations
+    , toggleChecked
+    )
 
+import Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
 
 
@@ -63,10 +72,35 @@ type KeyItemClass
 -- hardcode the free spots: watery pass, damcyan, mysidia, ordeals
 
 
-isAccessible : Set Requirement -> Location -> Bool
-isAccessible attained location =
-    areaAccessible attained location
-        && requirementsMet attained location
+getName : Location -> String
+getName (Location location) =
+    location.name
+
+
+isChecked : Location -> Bool
+isChecked (Location location) =
+    location.checked
+
+
+toggleChecked : Location -> Location
+toggleChecked (Location location) =
+    Location { location | checked = not location.checked }
+
+
+isProspect : Set Requirement -> Location -> Bool
+isProspect attained ((Location l) as location) =
+    let
+        newAttained =
+            -- check for Push B to Jump flag will go here
+            if Set.member MagmaKey attained || Set.member Hook attained then
+                Set.insert UndergroundAccess attained
+
+            else
+                attained
+    in
+    not l.checked
+        && areaAccessible newAttained location
+        && requirementsMet newAttained location
 
 
 areaAccessible : Set Requirement -> Location -> Bool
@@ -76,8 +110,7 @@ areaAccessible attained (Location location) =
             True
 
         Underground ->
-            -- check for Push B to Jump flag will go here
-            Set.member MagmaKey attained || Set.member Hook attained
+            Set.member UndergroundAccess attained
 
         Moon ->
             Set.member DarknessCrystal attained
@@ -89,8 +122,8 @@ requirementsMet attained (Location location) =
         |> Set.isEmpty
 
 
-initialList : List Location
-initialList =
+locations : Dict Int Location
+locations =
     [ { name = "Mist Cave"
       , area = Surface
       , requirements = []
@@ -175,6 +208,20 @@ initialList =
       , bosses = 0
       , keyItem = Just Main
       }
+    , { name = "Adamant Grotto"
+      , area = Surface
+      , requirements = [ Hook, RatTail ]
+      , characters = 0
+      , bosses = 0
+      , keyItem = Just Main
+      }
+    , { name = "Adamant Grotto - Bonus!"
+      , area = Surface
+      , requirements = [ Hook, PinkTail ]
+      , characters = 0
+      , bosses = 0
+      , keyItem = Nothing
+      }
     , { name = "Mysidia"
       , area = Surface
       , requirements = []
@@ -252,13 +299,6 @@ initialList =
       , bosses = 2
       , keyItem = Nothing
       }
-    , { name = "Adamant Grotto"
-      , area = Surface
-      , requirements = [ Hook, RatTail ]
-      , characters = 0
-      , bosses = 0
-      , keyItem = Just Main
-      }
     , { name = "Dwarf Castle"
       , area = Underground
       , requirements = []
@@ -266,16 +306,16 @@ initialList =
       , bosses = 2
       , keyItem = Just Main
       }
-    , { name = "Lower Bab-il - Top"
+    , { name = "Lower Bab-il - Cannon"
       , area = Underground
-      , requirements = []
+      , requirements = [ TowerKey ]
       , characters = 0
       , bosses = 1
       , keyItem = Just Main
       }
-    , { name = "Lower Bab-il - Cannon"
+    , { name = "Lower Bab-il - Top"
       , area = Underground
-      , requirements = [ TowerKey ]
+      , requirements = []
       , characters = 0
       , bosses = 1
       , keyItem = Just Main
@@ -307,6 +347,13 @@ initialList =
       , characters = 0
       , bosses = 1
       , keyItem = Just Main
+      }
+    , { name = "Kokol's Forge"
+      , area = Underground
+      , requirements = [ UndergroundAccess, Adamant, LegendSword ]
+      , characters = 0
+      , bosses = 0
+      , keyItem = Nothing
       }
     , { name = "Lunar Dais"
       , area = Moon
@@ -358,15 +405,17 @@ initialList =
       , keyItem = Just MoonBoss
       }
     ]
-        |> List.map
-            (\l ->
-                Location
-                    { name = l.name
-                    , area = l.area
-                    , checked = False
-                    , requirements = Set.fromList l.requirements
-                    , characters = l.characters
-                    , bosses = l.bosses
-                    , keyItem = l.keyItem
-                    }
+        |> List.indexedMap
+            (\index l ->
+                Tuple.pair index <|
+                    Location
+                        { name = l.name
+                        , area = l.area
+                        , checked = False
+                        , requirements = Set.fromList l.requirements
+                        , characters = l.characters
+                        , bosses = l.bosses
+                        , keyItem = l.keyItem
+                        }
             )
+        |> Dict.fromList
