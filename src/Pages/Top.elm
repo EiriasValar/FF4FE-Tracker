@@ -2,7 +2,7 @@ module Pages.Top exposing (Model, Msg, Params, page)
 
 import Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
-import Html exposing (Html, button, div, h2, span, table, td, text, textarea, tr)
+import Html exposing (Html, button, div, h2, input, span, table, td, text, textarea, tr)
 import Html.Attributes exposing (class, classList, style, type_)
 import Html.Events exposing (onClick)
 import Location exposing (Location, Requirement(..))
@@ -82,13 +82,11 @@ view model =
         --, viewObjectives
         , h2 []
             [ text "Locations"
-            , span [ onClick ToggleCheckedLocations, style "font-size" "small" ]
-                [ if model.showCheckedLocations then
-                    text "Hide checked"
-
-                  else
-                    text "Show checked"
+            , input
+                [ type_ "checkbox"
+                , onClick ToggleCheckedLocations
                 ]
+                []
             ]
         , viewLocations model.locations model.attained model.showCheckedLocations
         ]
@@ -101,13 +99,15 @@ viewKeyItems attained =
         req : Requirement -> String -> Html Msg
         req requirement class =
             td
-                [ classList
-                    [ ( "requirement " ++ class, True )
-                    , ( "enabled", Set.member requirement attained )
+                [ onClick (ToggleRequirement requirement) ]
+                [ div
+                    [ classList
+                        [ ( "requirement " ++ class, True )
+                        , ( "disabled", not <| Set.member requirement attained )
+                        ]
                     ]
-                , onClick (ToggleRequirement requirement)
+                    []
                 ]
-                [ text class ]
 
         numAttained =
             -- we care about this number for the 10 key items experience bonus, so
@@ -116,7 +116,7 @@ viewKeyItems attained =
                 |> Set.filter (not << memberOf [ MistDragon, Pass ])
                 |> Set.size
     in
-    table []
+    table [ class "requirements" ]
         [ tr []
             [ req Crystal "crystal"
             , req Pass "pass"
@@ -151,7 +151,10 @@ viewKeyItems attained =
                     , ( "key-bonus-reached", numAttained >= 10 )
                     ]
                 ]
-                [ text <| String.fromInt numAttained ++ " / 17" ]
+                [ displayIf (numAttained > 0) <|
+                    text <|
+                        String.fromInt numAttained
+                ]
             ]
         ]
 
@@ -170,7 +173,7 @@ viewLocations locations attained showChecked =
             (\( key, loc ) ->
                 if Location.isProspect attained loc || (showChecked && Location.isChecked loc) then
                     Just <|
-                        div
+                        tr
                             [ onClick <| ToggleLocation key
                             , classList
                                 [ ( "location", True )
@@ -178,15 +181,17 @@ viewLocations locations attained showChecked =
                                 ]
                             ]
                         <|
-                            [ text <| Location.getName loc ]
-                                ++ List.repeat (Location.getCharacters loc) (span [ class "character" ] [])
-                                ++ List.repeat (Location.getBosses loc) (span [ class "boss" ] [])
-                                ++ [ displayIf (Location.getKeyItem loc) (span [ class "key-item" ] []) ]
+                            [ td [ class "name" ] [ text <| Location.getName loc ]
+                            , td [ class "icons" ] <|
+                                List.repeat (Location.getCharacters loc) (span [ class "icon character" ] [])
+                                    ++ List.repeat (Location.getBosses loc) (span [ class "icon boss" ] [])
+                                    ++ [ displayIf (Location.getKeyItem loc) (span [ class "icon key-item" ] []) ]
+                            ]
 
                 else
                     Nothing
             )
-        |> div []
+        |> table [ class "locations" ]
 
 
 memberOf : List a -> a -> Bool
