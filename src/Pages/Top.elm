@@ -169,11 +169,19 @@ viewLocations locations attained showChecked =
         |> List.filterMap
             (\( key, loc ) ->
                 if Location.isProspect attained loc || (showChecked && Location.isChecked loc) then
-                    div
-                        [ onClick <| ToggleLocation key
-                        ]
-                        [ text <| Location.getName loc ]
-                        |> Just
+                    Just <|
+                        div
+                            [ onClick <| ToggleLocation key
+                            , classList
+                                [ ( "location", True )
+                                , ( "checked", Location.isChecked loc )
+                                ]
+                            ]
+                        <|
+                            [ text <| Location.getName loc ]
+                                ++ List.repeat (Location.getCharacters loc) (span [ class "character" ] [])
+                                ++ List.repeat (Location.getBosses loc) (span [ class "boss" ] [])
+                                ++ [ displayIf (Location.getKeyItem loc) (span [ class "key-item" ] []) ]
 
                 else
                     Nothing
@@ -193,3 +201,12 @@ toggle item set =
 
     else
         Set.insert item set
+
+
+displayIf : Bool -> Html msg -> Html msg
+displayIf predicate html =
+    if predicate then
+        html
+
+    else
+        text ""

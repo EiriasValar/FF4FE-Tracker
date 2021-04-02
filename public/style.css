@@ -10,3 +10,29 @@ body {
 .navbar > *:not(:last-child) { margin-right: 20px; }
 
 .page { margin-top: 20px; }
+
+.requirement.enabled {
+  color: green;
+}
+
+.location.checked {
+  color: green;
+}
+
+.key-bonus-reached {
+  color: green;
+}
+
+.location .character {
+  content: url("/img/Edge-Mini-Status.gif");
+  width: 32px;
+  height: 32px;
+}
+
+.location .boss {
+  content: url("/img/Monster3-Front.gif");
+}
+
+.location .key-item {
+  content: url("/img/OrangeChest1.gif");
+}

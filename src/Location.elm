@@ -1,6 +1,9 @@
 module Location exposing
     ( Location
     , Requirement(..)
+    , getBosses
+    , getCharacters
+    , getKeyItem
     , getName
     , isChecked
     , isProspect
@@ -75,6 +78,21 @@ type KeyItemClass
 getName : Location -> String
 getName (Location location) =
     location.name
+
+
+getCharacters : Location -> Int
+getCharacters (Location location) =
+    location.characters
+
+
+getBosses : Location -> Int
+getBosses (Location location) =
+    location.bosses
+
+
+getKeyItem : Location -> Bool
+getKeyItem (Location location) =
+    location.keyItem /= Nothing
 
 
 isChecked : Location -> Bool
@@ -285,10 +303,17 @@ locations =
       , bosses = 1
       , keyItem = Just Main
       }
-    , { name = "Upper Bab-il"
+    , { name = "Cave Eblan"
       , area = Surface
       , requirements = [ Hook ]
       , characters = 1
+      , bosses = 0
+      , keyItem = Nothing
+      }
+    , { name = "Upper Bab-il"
+      , area = Surface
+      , requirements = [ Hook ]
+      , characters = 0
       , bosses = 2
       , keyItem = Nothing
       }
