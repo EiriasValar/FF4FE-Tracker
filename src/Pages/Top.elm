@@ -194,7 +194,7 @@ viewLocations flags locations attained showChecked =
                             , span [ class "icons" ] <|
                                 List.repeat (Location.getCharacters flags loc) (span [ class "icon character" ] [])
                                     ++ List.repeat (Location.getBosses flags loc) (span [ class "icon boss" ] [])
-                                    ++ [ displayIf (Location.hasKeyItem flags loc) (span [ class "icon key-item" ] []) ]
+                                    ++ List.repeat (Location.getKeyItems flags loc) (span [ class "icon key-item" ] [])
                             ]
 
                 else

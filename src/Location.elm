@@ -3,8 +3,8 @@ module Location exposing
     , Requirement(..)
     , getBosses
     , getCharacters
+    , getKeyItems
     , getName
-    , hasKeyItem
     , isChecked
     , isProspect
     , locations
@@ -70,6 +70,20 @@ type CharacterCount
     | Gated Int
 
 
+
+-- Names of locations with one-off rules so we can reference them directly
+
+
+dwarfCastle : String
+dwarfCastle =
+    "Dwarf Castle"
+
+
+sealedCave : String
+sealedCave =
+    "Sealed Cave"
+
+
 getName : Location -> String
 getName (Location location) =
     location.name
@@ -97,14 +111,31 @@ getBosses _ (Location location) =
     location.bosses
 
 
-hasKeyItem : Flags -> Location -> Bool
-hasKeyItem flags (Location location) =
-    case location.keyItem of
-        Just itemClass ->
-            Set.member itemClass flags.keyItems
+getKeyItems : Flags -> Location -> Int
+getKeyItems flags (Location location) =
+    let
+        warpOverride =
+            if flags.warpGlitch && location.name == dwarfCastle then
+                Just 2
+                -- else if flags.warpGlitch && location.name == sealedCave then
+                --     Just 0
 
-        Nothing ->
-            False
+            else
+                Nothing
+    in
+    case ( warpOverride, location.keyItem ) of
+        ( Just override, _ ) ->
+            override
+
+        ( Nothing, Just itemClass ) ->
+            if Set.member itemClass flags.keyItems then
+                1
+
+            else
+                0
+
+        _ ->
+            0
 
 
 isChecked : Location -> Bool
@@ -138,7 +169,7 @@ hasValue flags location =
     -- TODO suppress getBosses if there's no boss objective or item-bearing dmist still to find
     (getCharacters flags location > 0)
         || (getBosses flags location > 0)
-        || hasKeyItem flags location
+        || (getKeyItems flags location > 0)
 
 
 areaAccessible : Set Requirement -> Location -> Bool
@@ -362,7 +393,7 @@ locations =
       , bosses = 2
       , keyItem = Nothing
       }
-    , { name = "Dwarf Castle"
+    , { name = dwarfCastle
       , area = Underground
       , requirements = []
       , jumpable = False
@@ -410,7 +441,7 @@ locations =
       , bosses = 1
       , keyItem = Just Summon
       }
-    , { name = "Sealed Cave"
+    , { name = sealedCave
       , area = Underground
       , requirements = [ LucaKey ]
       , jumpable = False

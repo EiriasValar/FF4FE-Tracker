@@ -15,6 +15,7 @@ type alias Set a =
 type alias Flags =
     { keyItems : Set KeyItemClass
     , noFreeChars : Bool
+    , warpGlitch : Bool
     , pushBToJump : Bool
     }
 
@@ -30,6 +31,7 @@ default : Flags
 default =
     { keyItems = Set.singleton Free
     , noFreeChars = False
+    , warpGlitch = False
     , pushBToJump = False
     }
 
@@ -55,6 +57,11 @@ parseFlag flag flags =
             opts
                 |> String.split "/"
                 |> List.foldl parseN flags
+
+        Just ( 'G', opts ) ->
+            opts
+                |> String.split "/"
+                |> List.foldl parseG flags
 
         Just ( '-', "pushbtojump" ) ->
             { flags | pushBToJump = True }
@@ -91,6 +98,16 @@ parseN switch flags =
 
         "key" ->
             { flags | keyItems = Set.remove Free flags.keyItems }
+
+        _ ->
+            flags
+
+
+parseG : String -> Flags -> Flags
+parseG switch flags =
+    case switch of
+        "warp" ->
+            { flags | warpGlitch = True }
 
         _ ->
             flags
