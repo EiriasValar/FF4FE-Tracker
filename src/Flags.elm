@@ -15,7 +15,6 @@ type alias Set a =
 type alias Flags =
     { keyItems : Set KeyItemClass
     , noFreeChars : Bool
-    , noFreeKeyItem : Bool
     , pushBToJump : Bool
     }
 
@@ -29,9 +28,8 @@ type KeyItemClass
 
 default : Flags
 default =
-    { keyItems = Set.empty
+    { keyItems = Set.singleton Free
     , noFreeChars = False
-    , noFreeKeyItem = False
     , pushBToJump = False
     }
 
@@ -92,7 +90,7 @@ parseN switch flags =
             { flags | noFreeChars = True }
 
         "key" ->
-            { flags | noFreeKeyItem = True }
+            { flags | keyItems = Set.remove Free flags.keyItems }
 
         _ ->
             flags

@@ -100,9 +100,6 @@ getBosses _ (Location location) =
 hasKeyItem : Flags -> Location -> Bool
 hasKeyItem flags (Location location) =
     case location.keyItem of
-        Just Free ->
-            not flags.noFreeKeyItem
-
         Just itemClass ->
             Set.member itemClass flags.keyItems
 

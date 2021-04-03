@@ -147,7 +147,7 @@ viewKeyItems flags attained =
             , req Spoon "spoon"
             ]
         , tr []
-            [ if flags.noFreeKeyItem then
+            [ if not <| Set.member Flags.Free flags.keyItems then
                 req MistDragon "mist-dragon"
 
               else
