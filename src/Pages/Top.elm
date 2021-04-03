@@ -182,7 +182,7 @@ viewLocations flags locations attained showChecked =
             (\( key, loc ) ->
                 if Location.isProspect flags attained loc || (showChecked && Location.isChecked loc) then
                     Just <|
-                        tr
+                        div
                             [ onClick <| ToggleLocation key
                             , classList
                                 [ ( "location", True )
@@ -190,9 +190,8 @@ viewLocations flags locations attained showChecked =
                                 ]
                             ]
                         <|
-                            -- I dunno about this being a table
-                            [ td [ class "name" ] [ text <| Location.getName loc ]
-                            , td [ class "icons" ] <|
+                            [ span [ class "name" ] [ text <| Location.getName loc ]
+                            , span [ class "icons" ] <|
                                 List.repeat (Location.getCharacters flags loc) (span [ class "icon character" ] [])
                                     ++ List.repeat (Location.getBosses flags loc) (span [ class "icon boss" ] [])
                                     ++ [ displayIf (Location.hasKeyItem flags loc) (span [ class "icon key-item" ] []) ]
@@ -201,7 +200,7 @@ viewLocations flags locations attained showChecked =
                 else
                     Nothing
             )
-        |> table [ class "locations" ]
+        |> div [ class "locations" ]
 
 
 memberOf : List a -> a -> Bool

@@ -8,6 +8,7 @@ module Flags exposing
 type alias Flags =
     { noFreeChars : Bool
     , noFreeKeyItem : Bool
+    , pushBToJump : Bool
     }
 
 
@@ -15,6 +16,7 @@ default : Flags
 default =
     { noFreeChars = False
     , noFreeKeyItem = False
+    , pushBToJump = False
     }
 
 
@@ -34,6 +36,9 @@ parseFlag flag flags =
             opts
                 |> String.split "/"
                 |> List.foldl parseN flags
+
+        Just ( '-', "pushbtojump" ) ->
+            { flags | pushBToJump = True }
 
         _ ->
             flags
