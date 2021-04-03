@@ -2,9 +2,10 @@ module Pages.Top exposing (Model, Msg, Params, page)
 
 import Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
+import Flags exposing (Flags)
 import Html exposing (Html, button, div, h2, input, span, table, td, text, textarea, tr)
 import Html.Attributes exposing (class, classList, style, type_)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, onInput)
 import Location exposing (Location, Requirement(..))
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
@@ -21,6 +22,7 @@ type alias Params =
 
 type alias Model =
     { url : Url Params
+    , flags : Flags
     , attained : Set Requirement
     , locations : Dict Int Location
     , showCheckedLocations : Bool
@@ -31,6 +33,7 @@ type Msg
     = ToggleRequirement Requirement
     | ToggleLocation Int
     | ToggleCheckedLocations
+    | UpdateFlags String
     | Reset
 
 
@@ -46,6 +49,7 @@ page =
 init : Url Params -> Model
 init url =
     { url = url
+    , flags = Flags.default
     , attained = Set.empty
     , locations = Location.locations
     , showCheckedLocations = False
@@ -64,6 +68,9 @@ update msg model =
         ToggleCheckedLocations ->
             { model | showCheckedLocations = not model.showCheckedLocations }
 
+        UpdateFlags flagString ->
+            { model | flags = Flags.parse flagString }
+
         Reset ->
             { model | attained = Set.empty, locations = Location.locations }
 
@@ -72,11 +79,9 @@ view : Model -> Document Msg
 view model =
     { title = "FFIV Free Enterprise Tracker"
     , body =
-        [ --h2 [] [ text "Flag String" ]
-          --, textarea [] []
-          button [ type_ "button", onClick Reset ] [ text "Reset" ]
+        [ textarea [ onInput UpdateFlags ] []
         , h2 [] [ text "Key Items" ]
-        , viewKeyItems model.attained
+        , viewKeyItems model.flags model.attained
 
         --, h2 [] [ text "Objectives" ]
         --, viewObjectives
@@ -88,13 +93,13 @@ view model =
                 ]
                 []
             ]
-        , viewLocations model.locations model.attained model.showCheckedLocations
+        , viewLocations model.flags model.locations model.attained model.showCheckedLocations
         ]
     }
 
 
-viewKeyItems : Set Requirement -> Html Msg
-viewKeyItems attained =
+viewKeyItems : Flags -> Set Requirement -> Html Msg
+viewKeyItems flags attained =
     let
         req : Requirement -> String -> Html Msg
         req requirement class =
@@ -142,7 +147,11 @@ viewKeyItems attained =
             , req Spoon "spoon"
             ]
         , tr []
-            [ req MistDragon "mist-dragon"
+            [ if flags.noFreeKeyItem then
+                req MistDragon "mist-dragon"
+
+              else
+                td [] []
             , req RatTail "rat-tail"
             , req PinkTail "pink-tail"
             , td
@@ -164,14 +173,14 @@ viewObjectives =
     text ""
 
 
-viewLocations : Dict Int Location -> Set Requirement -> Bool -> Html Msg
-viewLocations locations attained showChecked =
+viewLocations : Flags -> Dict Int Location -> Set Requirement -> Bool -> Html Msg
+viewLocations flags locations attained showChecked =
     locations
         -- toList sorts by key
         |> Dict.toList
         |> List.filterMap
             (\( key, loc ) ->
-                if Location.isProspect attained loc || (showChecked && Location.isChecked loc) then
+                if Location.isProspect flags attained loc || (showChecked && Location.isChecked loc) then
                     Just <|
                         tr
                             [ onClick <| ToggleLocation key
@@ -181,11 +190,12 @@ viewLocations locations attained showChecked =
                                 ]
                             ]
                         <|
+                            -- I dunno about this being a table
                             [ td [ class "name" ] [ text <| Location.getName loc ]
                             , td [ class "icons" ] <|
-                                List.repeat (Location.getCharacters loc) (span [ class "icon character" ] [])
-                                    ++ List.repeat (Location.getBosses loc) (span [ class "icon boss" ] [])
-                                    ++ [ displayIf (Location.getKeyItem loc) (span [ class "icon key-item" ] []) ]
+                                List.repeat (Location.getCharacters flags loc) (span [ class "icon character" ] [])
+                                    ++ List.repeat (Location.getBosses flags loc) (span [ class "icon boss" ] [])
+                                    ++ [ displayIf (Location.hasKeyItem flags loc) (span [ class "icon key-item" ] []) ]
                             ]
 
                 else

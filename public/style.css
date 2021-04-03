@@ -22,6 +22,7 @@ body {
 .requirement {
   width: 32px;
   height: 32px;
+  cursor: pointer;
 }
 
 .requirement.disabled {
@@ -107,11 +108,16 @@ body {
 .requirement.total {
   color: white;
   text-align: center;
+  cursor: default;
 }
 
 .requirement.total.key-bonus-reached {
   color: chartreuse;
   text-align: center;
+}
+
+.location {
+  cursor: pointer;
 }
 
 .location.checked {

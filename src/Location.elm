@@ -3,8 +3,8 @@ module Location exposing
     , Requirement(..)
     , getBosses
     , getCharacters
-    , getKeyItem
     , getName
+    , hasKeyItem
     , isChecked
     , isProspect
     , locations
@@ -13,6 +13,7 @@ module Location exposing
 
 import Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
+import Flags exposing (Flags)
 
 
 type alias Set a =
@@ -28,7 +29,7 @@ type alias Internals =
     , area : Area
     , checked : Bool
     , requirements : Set Requirement
-    , characters : Int
+    , characters : Maybe CharacterCount
     , bosses : Int
     , keyItem : Maybe KeyItemClass
     }
@@ -67,12 +68,12 @@ type KeyItemClass
     = Main
     | Summon
     | MoonBoss
+    | Free
 
 
-
--- identify free characters by requirements = [] and bosses = 0
--- nope, ordeals has no requirements
--- hardcode the free spots: watery pass, damcyan, mysidia, ordeals
+type CharacterCount
+    = Ungated Int
+    | Gated Int
 
 
 getName : Location -> String
@@ -80,19 +81,39 @@ getName (Location location) =
     location.name
 
 
-getCharacters : Location -> Int
-getCharacters (Location location) =
-    location.characters
+getCharacters : Flags -> Location -> Int
+getCharacters flags (Location location) =
+    case location.characters of
+        Just (Gated n) ->
+            n
+
+        Just (Ungated n) ->
+            if flags.noFreeChars then
+                0
+
+            else
+                n
+
+        Nothing ->
+            0
 
 
-getBosses : Location -> Int
-getBosses (Location location) =
+getBosses : Flags -> Location -> Int
+getBosses _ (Location location) =
     location.bosses
 
 
-getKeyItem : Location -> Bool
-getKeyItem (Location location) =
-    location.keyItem /= Nothing
+hasKeyItem : Flags -> Location -> Bool
+hasKeyItem flags (Location location) =
+    case location.keyItem of
+        Just Free ->
+            not flags.noFreeKeyItem
+
+        Nothing ->
+            False
+
+        _ ->
+            True
 
 
 isChecked : Location -> Bool
@@ -105,8 +126,8 @@ toggleChecked (Location location) =
     Location { location | checked = not location.checked }
 
 
-isProspect : Set Requirement -> Location -> Bool
-isProspect attained ((Location l) as location) =
+isProspect : Flags -> Set Requirement -> Location -> Bool
+isProspect flags attained ((Location l) as location) =
     let
         newAttained =
             -- check for Push B to Jump flag will go here
@@ -117,8 +138,16 @@ isProspect attained ((Location l) as location) =
                 attained
     in
     not l.checked
+        && hasValue flags location
         && areaAccessible newAttained location
         && requirementsMet newAttained location
+
+
+hasValue : Flags -> Location -> Bool
+hasValue flags location =
+    (getCharacters flags location > 0)
+        || (getBosses flags location > 0)
+        || hasKeyItem flags location
 
 
 areaAccessible : Set Requirement -> Location -> Bool
@@ -145,287 +174,273 @@ locations =
     [ { name = "Mist Cave"
       , area = Surface
       , requirements = []
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Nothing
       }
     , { name = "Mist Village - Package"
       , area = Surface
       , requirements = [ Package ]
-      , characters = 1
+      , characters = Just <| Gated 1
       , bosses = 1
       , keyItem = Nothing
       }
     , { name = "Mist Village - Mom"
       , area = Surface
       , requirements = [ MistDragon ]
-      , characters = 0
+      , characters = Nothing
       , bosses = 0
       , keyItem = Just Main
       }
     , { name = "Kaipo"
       , area = Surface
       , requirements = [ SandRuby ]
-      , characters = 1
+      , characters = Just <| Gated 1
       , bosses = 0
       , keyItem = Nothing
       }
     , { name = "Watery Pass"
       , area = Surface
       , requirements = []
-      , characters = 1
+      , characters = Just <| Ungated 1
       , bosses = 0
       , keyItem = Nothing
       }
     , { name = "Waterfall"
       , area = Surface
       , requirements = []
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Nothing
       }
     , { name = "Damcyan"
       , area = Surface
       , requirements = []
-      , characters = 1
+      , characters = Just <| Ungated 1
       , bosses = 0
       , keyItem = Nothing
       }
     , { name = "Antlion Cave"
       , area = Surface
       , requirements = []
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Just Main
       }
     , { name = "Mt. Hobbs"
       , area = Surface
       , requirements = []
-      , characters = 1
+      , characters = Just <| Gated 1
       , bosses = 1
       , keyItem = Nothing
       }
     , { name = "Fabul Defence"
       , area = Surface
       , requirements = []
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Just Main
       }
     , { name = "Sheila 1"
       , area = Surface
       , requirements = [ UndergroundAccess ]
-      , characters = 0
+      , characters = Nothing
       , bosses = 0
       , keyItem = Just Main
       }
     , { name = "Sheila 2"
       , area = Surface
       , requirements = [ UndergroundAccess, Pan ]
-      , characters = 0
+      , characters = Nothing
       , bosses = 0
       , keyItem = Just Main
       }
     , { name = "Adamant Grotto"
       , area = Surface
       , requirements = [ Hook, RatTail ]
-      , characters = 0
+      , characters = Nothing
       , bosses = 0
       , keyItem = Just Main
-      }
-    , { name = "Adamant Grotto - Bonus!"
-      , area = Surface
-      , requirements = [ Hook, PinkTail ]
-      , characters = 0
-      , bosses = 0
-      , keyItem = Nothing
       }
     , { name = "Mysidia"
       , area = Surface
       , requirements = []
-      , characters = 2
+      , characters = Just <| Ungated 2
       , bosses = 0
       , keyItem = Nothing
       }
     , { name = "Mt. Ordeals"
       , area = Surface
       , requirements = []
-      , characters = 1
+      , characters = Just <| Ungated 1
       , bosses = 3
       , keyItem = Just Main
       }
     , { name = "Baron Inn"
       , area = Surface
       , requirements = []
-      , characters = 1
+      , characters = Just <| Gated 1
       , bosses = 2
       , keyItem = Just Main
       }
     , { name = "Baron Castle"
       , area = Surface
       , requirements = [ BaronKey ]
-      , characters = 1
+      , characters = Just <| Gated 1
       , bosses = 2
       , keyItem = Just Main
       }
     , { name = "Baron Castle Basement"
       , area = Surface
       , requirements = [ BaronKey ]
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Just Summon
       }
     , { name = "Bedward"
       , area = Surface
       , requirements = []
-      , characters = 0
+      , characters = Nothing
       , bosses = 0
-      , keyItem = Just Main
+      , keyItem = Just Free
       }
     , { name = "Cave Magnes"
       , area = Surface
       , requirements = [ TwinHarp ]
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Just Main
       }
     , { name = "Tower of Zot 1"
       , area = Surface
       , requirements = []
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Nothing
       }
     , { name = "Tower of Zot 2"
       , area = Surface
       , requirements = [ EarthCrystal ]
-      , characters = 2
+      , characters = Just <| Gated 2
       , bosses = 1
       , keyItem = Just Main
       }
     , { name = "Cave Eblan"
       , area = Surface
       , requirements = [ Hook ]
-      , characters = 1
+      , characters = Just <| Gated 1
       , bosses = 0
       , keyItem = Nothing
       }
     , { name = "Upper Bab-il"
       , area = Surface
       , requirements = [ Hook ]
-      , characters = 0
+      , characters = Nothing
       , bosses = 2
       , keyItem = Nothing
       }
     , { name = "Giant of Bab-il"
       , area = Surface
       , requirements = [ DarknessCrystal ]
-      , characters = 1
+      , characters = Just <| Gated 1
       , bosses = 2
       , keyItem = Nothing
       }
     , { name = "Dwarf Castle"
       , area = Underground
       , requirements = []
-      , characters = 1
+      , characters = Just <| Gated 1
       , bosses = 2
       , keyItem = Just Main
       }
     , { name = "Lower Bab-il - Cannon"
       , area = Underground
       , requirements = [ TowerKey ]
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Just Main
       }
     , { name = "Lower Bab-il - Top"
       , area = Underground
       , requirements = []
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Just Main
       }
     , { name = "Sylph Cave"
       , area = Underground
       , requirements = [ Pan ]
-      , characters = 0
+      , characters = Nothing
       , bosses = 0
       , keyItem = Just Summon
       }
     , { name = "Feymarch - King"
       , area = Underground
       , requirements = []
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Just Summon
       }
     , { name = "Feymarch - Queen"
       , area = Underground
       , requirements = []
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Just Summon
       }
     , { name = "Sealed Cave"
       , area = Underground
       , requirements = [ LucaKey ]
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Just Main
-      }
-    , { name = "Kokol's Forge"
-      , area = Underground
-      , requirements = [ UndergroundAccess, Adamant, LegendSword ]
-      , characters = 0
-      , bosses = 0
-      , keyItem = Nothing
       }
     , { name = "Lunar Dais"
       , area = Moon
       , requirements = []
-      , characters = 1
+      , characters = Just <| Gated 1
       , bosses = 0
       , keyItem = Nothing
       }
     , { name = "Cave Bahamut"
       , area = Moon
       , requirements = []
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Just Summon
       }
     , { name = "Murasame Altar"
       , area = Moon
       , requirements = []
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Just MoonBoss
       }
     , { name = "Wyvern Altar"
       , area = Moon
       , requirements = []
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Just MoonBoss
       }
     , { name = "White Spear Altar"
       , area = Moon
       , requirements = []
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Just MoonBoss
       }
     , { name = "Ribbon Room"
       , area = Moon
       , requirements = []
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Just MoonBoss
       }
     , { name = "Masamune Altar"
       , area = Moon
       , requirements = []
-      , characters = 0
+      , characters = Nothing
       , bosses = 1
       , keyItem = Just MoonBoss
       }
