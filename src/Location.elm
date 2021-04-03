@@ -13,7 +13,7 @@ module Location exposing
 
 import Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
-import Flags exposing (Flags)
+import Flags exposing (Flags, KeyItemClass(..))
 
 
 type alias Set a =
@@ -65,13 +65,6 @@ type Area
     | Moon
 
 
-type KeyItemClass
-    = Main
-    | Summon
-    | MoonBoss
-    | Free
-
-
 type CharacterCount
     = Ungated Int
     | Gated Int
@@ -110,11 +103,11 @@ hasKeyItem flags (Location location) =
         Just Free ->
             not flags.noFreeKeyItem
 
+        Just itemClass ->
+            Set.member itemClass flags.keyItems
+
         Nothing ->
             False
-
-        _ ->
-            True
 
 
 isChecked : Location -> Bool
