@@ -13,7 +13,8 @@ type alias Set a =
 
 
 type alias Flags =
-    { keyItems : Set KeyItemClass
+    { classicGiantObjective : Bool
+    , keyItems : Set KeyItemClass
     , noFreeChars : Bool
     , warpGlitch : Bool
     , keyExpBonus : Bool
@@ -30,7 +31,8 @@ type KeyItemClass
 
 default : Flags
 default =
-    { keyItems = Set.singleton Free
+    { classicGiantObjective = False
+    , keyItems = Set.singleton Free
     , noFreeChars = False
     , warpGlitch = False
     , keyExpBonus = True
@@ -81,10 +83,24 @@ parseFlag flag flags =
 
 
 parseO : String -> Flags -> Flags
-parseO switch flags =
-    case switch of
+parseO subopts incomingFlags =
+    let
+        parseMode mode flags =
+            case mode of
+                "classicgiant" ->
+                    { flags | classicGiantObjective = True }
+
+                _ ->
+                    flags
+    in
+    case String.split ":" subopts of
+        [ "mode", modes ] ->
+            modes
+                |> String.split ","
+                |> List.foldl parseMode incomingFlags
+
         _ ->
-            flags
+            incomingFlags
 
 
 parseK : String -> Flags -> Flags

@@ -92,6 +92,11 @@ sealedCave =
     "Sealed Cave"
 
 
+giantOfBabil : String
+giantOfBabil =
+    "Giant of Bab-il"
+
+
 getName : Location -> String
 getName (Location location) =
     location.name
@@ -101,7 +106,11 @@ getCharacters : Metadata -> Location -> Int
 getCharacters { flags } (Location location) =
     case location.characters of
         Just (Gated n) ->
-            n
+            if flags.classicGiantObjective && location.name == giantOfBabil then
+                0
+
+            else
+                n
 
         Just (Ungated n) ->
             if flags.noFreeChars then
@@ -396,7 +405,7 @@ locations =
       , bosses = 2
       , keyItem = Nothing
       }
-    , { name = "Giant of Bab-il"
+    , { name = giantOfBabil
       , area = Surface
       , requirements = [ DarknessCrystal ]
       , jumpable = False
