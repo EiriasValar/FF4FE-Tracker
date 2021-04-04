@@ -22,6 +22,7 @@ type alias Params =
 
 type alias Model =
     { url : Url Params
+    , flagString : String
     , metadata : Metadata
     , attained : Set Requirement
     , locations : Dict Int Location
@@ -49,9 +50,14 @@ page =
 
 init : Url Params -> Model
 init url =
+    let
+        flagString =
+            "Kmain"
+    in
     { url = url
+    , flagString = flagString
     , metadata =
-        { flags = Flags.default
+        { flags = Flags.parse flagString
         , warpGlitchUsed = False
         }
     , attained = Set.empty
@@ -84,7 +90,12 @@ update msg model =
                 metadata =
                     model.metadata
             in
-            { model | metadata = { metadata | flags = Flags.parse flagString } }
+            -- storing both flagString and the Flags derived from it isn't ideal, but we pretty much
+            -- ignore flagString; it only exists so we can prepopulate the flags textarea
+            { model
+                | flagString = flagString
+                , metadata = { metadata | flags = Flags.parse flagString }
+            }
 
         Reset ->
             { model | attained = Set.empty, locations = Location.locations }
@@ -94,7 +105,7 @@ view : Model -> Document Msg
 view model =
     { title = "FFIV Free Enterprise Tracker"
     , body =
-        [ textarea [ onInput UpdateFlags ] []
+        [ textarea [ onInput UpdateFlags ] [ text model.flagString ]
         , h2 [] [ text "Key Items" ]
         , viewKeyItems model.metadata model.attained
 
@@ -169,16 +180,17 @@ viewKeyItems metadata attained =
                 td [] []
             , req RatTail "rat-tail"
             , req PinkTail "pink-tail"
-            , td
-                [ classList
-                    [ ( "requirement total", True )
-                    , ( "key-bonus-reached", numAttained >= 10 )
+            , displayIf metadata.flags.keyExpBonus <|
+                td
+                    [ classList
+                        [ ( "requirement total", True )
+                        , ( "key-bonus-reached", numAttained >= 10 )
+                        ]
                     ]
-                ]
-                [ displayIf (numAttained > 0) <|
-                    text <|
-                        String.fromInt numAttained
-                ]
+                    [ displayIf (numAttained > 0) <|
+                        text <|
+                            String.fromInt numAttained
+                    ]
             ]
         ]
 

@@ -16,6 +16,7 @@ type alias Flags =
     { keyItems : Set KeyItemClass
     , noFreeChars : Bool
     , warpGlitch : Bool
+    , keyExpBonus : Bool
     , pushBToJump : Bool
     }
 
@@ -32,6 +33,7 @@ default =
     { keyItems = Set.singleton Free
     , noFreeChars = False
     , warpGlitch = False
+    , keyExpBonus = True
     , pushBToJump = False
     }
 
@@ -48,6 +50,11 @@ parse flagString =
 parseFlag : String -> Flags -> Flags
 parseFlag flag flags =
     case String.uncons flag of
+        Just ( 'O', opts ) ->
+            opts
+                |> String.split "/"
+                |> List.foldl parseO flags
+
         Just ( 'K', opts ) ->
             opts
                 |> String.split "/"
@@ -63,9 +70,19 @@ parseFlag flag flags =
                 |> String.split "/"
                 |> List.foldl parseG flags
 
+        Just ( '-', "exp:nokeybonus" ) ->
+            { flags | keyExpBonus = False }
+
         Just ( '-', "pushbtojump" ) ->
             { flags | pushBToJump = True }
 
+        _ ->
+            flags
+
+
+parseO : String -> Flags -> Flags
+parseO switch flags =
+    case switch of
         _ ->
             flags
 
