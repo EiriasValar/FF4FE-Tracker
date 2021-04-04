@@ -6,7 +6,7 @@ import Flags exposing (Flags)
 import Html exposing (Html, button, div, h2, input, span, table, td, text, textarea, tr)
 import Html.Attributes exposing (class, classList, style, type_)
 import Html.Events exposing (onClick, onInput)
-import Location exposing (Location, Requirement(..))
+import Location exposing (Location, Metadata, Requirement(..))
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
@@ -22,7 +22,7 @@ type alias Params =
 
 type alias Model =
     { url : Url Params
-    , flags : Flags
+    , metadata : Metadata
     , attained : Set Requirement
     , locations : Dict Int Location
     , showCheckedLocations : Bool
@@ -33,6 +33,7 @@ type Msg
     = ToggleRequirement Requirement
     | ToggleLocation Int
     | ToggleCheckedLocations
+    | ToggleWarpGlitchUsed
     | UpdateFlags String
     | Reset
 
@@ -49,7 +50,10 @@ page =
 init : Url Params -> Model
 init url =
     { url = url
-    , flags = Flags.default
+    , metadata =
+        { flags = Flags.default
+        , warpGlitchUsed = False
+        }
     , attained = Set.empty
     , locations = Location.locations
     , showCheckedLocations = False
@@ -68,8 +72,19 @@ update msg model =
         ToggleCheckedLocations ->
             { model | showCheckedLocations = not model.showCheckedLocations }
 
+        ToggleWarpGlitchUsed ->
+            let
+                metadata =
+                    model.metadata
+            in
+            { model | metadata = { metadata | warpGlitchUsed = not metadata.warpGlitchUsed } }
+
         UpdateFlags flagString ->
-            { model | flags = Flags.parse flagString }
+            let
+                metadata =
+                    model.metadata
+            in
+            { model | metadata = { metadata | flags = Flags.parse flagString } }
 
         Reset ->
             { model | attained = Set.empty, locations = Location.locations }
@@ -81,7 +96,7 @@ view model =
     , body =
         [ textarea [ onInput UpdateFlags ] []
         , h2 [] [ text "Key Items" ]
-        , viewKeyItems model.flags model.attained
+        , viewKeyItems model.metadata model.attained
 
         --, h2 [] [ text "Objectives" ]
         --, viewObjectives
@@ -93,13 +108,13 @@ view model =
                 ]
                 []
             ]
-        , viewLocations model.flags model.locations model.attained model.showCheckedLocations
+        , viewLocations model.metadata model.locations model.attained model.showCheckedLocations
         ]
     }
 
 
-viewKeyItems : Flags -> Set Requirement -> Html Msg
-viewKeyItems flags attained =
+viewKeyItems : Metadata -> Set Requirement -> Html Msg
+viewKeyItems metadata attained =
     let
         req : Requirement -> String -> Html Msg
         req requirement class =
@@ -147,7 +162,7 @@ viewKeyItems flags attained =
             , req Spoon "spoon"
             ]
         , tr []
-            [ if not <| Set.member Flags.Free flags.keyItems then
+            [ if not <| Set.member Flags.Free metadata.flags.keyItems then
                 req MistDragon "mist-dragon"
 
               else
@@ -173,28 +188,49 @@ viewObjectives =
     text ""
 
 
-viewLocations : Flags -> Dict Int Location -> Set Requirement -> Bool -> Html Msg
-viewLocations flags locations attained showChecked =
+viewLocations : Metadata -> Dict Int Location -> Set Requirement -> Bool -> Html Msg
+viewLocations metadata locations attained showChecked =
     locations
         -- toList sorts by key
         |> Dict.toList
         |> List.filterMap
             (\( key, loc ) ->
-                if Location.isProspect flags attained loc || (showChecked && Location.isChecked loc) then
+                if Location.isProspect metadata attained loc || (showChecked && Location.isChecked loc) then
+                    let
+                        warpItem =
+                            -- assuming here that there's always an item to be had, regardless of K flags
+                            if metadata.flags.warpGlitch && Location.isDwarfCastle loc then
+                                [ span
+                                    [ classList
+                                        [ ( "icon key-item clickable", True )
+                                        , ( "disabled", not metadata.warpGlitchUsed )
+                                        ]
+                                    , onClick ToggleWarpGlitchUsed
+                                    ]
+                                    []
+                                ]
+
+                            else
+                                []
+                    in
                     Just <|
                         div
-                            [ onClick <| ToggleLocation key
-                            , classList
+                            [ classList
                                 [ ( "location", True )
                                 , ( "checked", Location.isChecked loc )
                                 ]
                             ]
                         <|
-                            [ span [ class "name" ] [ text <| Location.getName loc ]
+                            [ span
+                                [ class "name"
+                                , onClick <| ToggleLocation key
+                                ]
+                                [ text <| Location.getName loc ]
                             , span [ class "icons" ] <|
-                                List.repeat (Location.getCharacters flags loc) (span [ class "icon character" ] [])
-                                    ++ List.repeat (Location.getBosses flags loc) (span [ class "icon boss" ] [])
-                                    ++ List.repeat (Location.getKeyItems flags loc) (span [ class "icon key-item" ] [])
+                                List.repeat (Location.getCharacters metadata loc) (span [ class "icon character" ] [])
+                                    ++ List.repeat (Location.getBosses metadata loc) (span [ class "icon boss" ] [])
+                                    ++ List.repeat (Location.getKeyItems metadata loc) (span [ class "icon key-item" ] [])
+                                    ++ warpItem
                             ]
 
                 else

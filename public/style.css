@@ -116,15 +116,12 @@ body {
   text-align: center;
 }
 
-.location {
-  cursor: pointer;
-}
-
 .location.checked {
   color: green;
 }
 
 .location .name {
+  cursor: pointer;
   padding-right: 5px;
 }
 
@@ -132,6 +129,10 @@ body {
   width: 16px;
   height: 16px;
   padding: 0 1px;
+}
+
+.location .icon.clickable {
+  cursor: pointer;
 }
 
 .location .character {
@@ -144,4 +145,8 @@ body {
 
 .location .key-item {
   content: url("/img/sprites/BrownChest1.gif");
+}
+
+.location .key-item.disabled {
+  filter: grayscale(100%) opacity(50%); 
 }

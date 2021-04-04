@@ -1,11 +1,13 @@
 module Location exposing
     ( Location
+    , Metadata
     , Requirement(..)
     , getBosses
     , getCharacters
     , getKeyItems
     , getName
     , isChecked
+    , isDwarfCastle
     , isProspect
     , locations
     , toggleChecked
@@ -70,6 +72,12 @@ type CharacterCount
     | Gated Int
 
 
+type alias Metadata =
+    { flags : Flags
+    , warpGlitchUsed : Bool
+    }
+
+
 
 -- Names of locations with one-off rules so we can reference them directly
 
@@ -89,8 +97,8 @@ getName (Location location) =
     location.name
 
 
-getCharacters : Flags -> Location -> Int
-getCharacters flags (Location location) =
+getCharacters : Metadata -> Location -> Int
+getCharacters { flags } (Location location) =
     case location.characters of
         Just (Gated n) ->
             n
@@ -106,36 +114,34 @@ getCharacters flags (Location location) =
             0
 
 
-getBosses : Flags -> Location -> Int
+getBosses : Metadata -> Location -> Int
 getBosses _ (Location location) =
     location.bosses
 
 
-getKeyItems : Flags -> Location -> Int
-getKeyItems flags (Location location) =
+getKeyItems : Metadata -> Location -> Int
+getKeyItems metadata (Location location) =
     let
-        warpOverride =
-            if flags.warpGlitch && location.name == dwarfCastle then
-                Just 2
-                -- else if flags.warpGlitch && location.name == sealedCave then
-                --     Just 0
+        keyItems =
+            case location.keyItem of
+                Just itemClass ->
+                    if Set.member itemClass metadata.flags.keyItems then
+                        1
 
-            else
-                Nothing
-    in
-    case ( warpOverride, location.keyItem ) of
-        ( Just override, _ ) ->
-            override
+                    else
+                        0
 
-        ( Nothing, Just itemClass ) ->
-            if Set.member itemClass flags.keyItems then
-                1
+                _ ->
+                    0
+
+        modifier =
+            if metadata.warpGlitchUsed && location.name == sealedCave then
+                -1
 
             else
                 0
-
-        _ ->
-            0
+    in
+    keyItems + modifier
 
 
 isChecked : Location -> Bool
@@ -148,28 +154,33 @@ toggleChecked (Location location) =
     Location { location | checked = not location.checked }
 
 
-isProspect : Flags -> Set Requirement -> Location -> Bool
-isProspect flags attained ((Location l) as location) =
+isDwarfCastle : Location -> Bool
+isDwarfCastle (Location location) =
+    location.name == dwarfCastle
+
+
+isProspect : Metadata -> Set Requirement -> Location -> Bool
+isProspect metadata attained ((Location l) as location) =
     let
         newAttained =
-            if flags.pushBToJump || Set.member MagmaKey attained || Set.member Hook attained then
+            if metadata.flags.pushBToJump || Set.member MagmaKey attained || Set.member Hook attained then
                 Set.insert UndergroundAccess attained
 
             else
                 attained
     in
     not l.checked
-        && hasValue flags location
+        && hasValue metadata location
         && areaAccessible newAttained location
-        && (flags.pushBToJump && l.jumpable || requirementsMet newAttained location)
+        && (metadata.flags.pushBToJump && l.jumpable || requirementsMet newAttained location)
 
 
-hasValue : Flags -> Location -> Bool
-hasValue flags location =
+hasValue : Metadata -> Location -> Bool
+hasValue metadata location =
     -- TODO suppress getBosses if there's no boss objective or item-bearing dmist still to find
-    (getCharacters flags location > 0)
-        || (getBosses flags location > 0)
-        || (getKeyItems flags location > 0)
+    (getCharacters metadata location > 0)
+        || (getBosses metadata location > 0)
+        || (getKeyItems metadata location > 0)
 
 
 areaAccessible : Set Requirement -> Location -> Bool
