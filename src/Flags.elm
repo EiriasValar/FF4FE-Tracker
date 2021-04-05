@@ -5,7 +5,9 @@ module Flags exposing
     , parse
     )
 
+import Array exposing (Array)
 import EverySet as Set exposing (EverySet)
+import Objective exposing (Objective)
 
 
 type alias Set a =
@@ -13,8 +15,13 @@ type alias Set a =
 
 
 type alias Flags =
-    { classicGiantObjective : Bool
+    { objectives : Array (Maybe Objective)
+    , randomObjectives : Int
+    , randomObjectiveTypes : Set ObjectiveType
+    , requiredObjectives : Int
+    , objectiveReward : Reward
     , keyItems : Set KeyItemClass
+    , classicGiantObjective : Bool
     , noFreeChars : Bool
     , warpGlitch : Bool
     , keyExpBonus : Bool
@@ -29,10 +36,26 @@ type KeyItemClass
     | Free
 
 
+type Reward
+    = Crystal
+    | Win
+
+
+type ObjectiveType
+    = Character
+    | Boss
+    | Quest
+
+
 default : Flags
 default =
-    { classicGiantObjective = False
+    { objectives = Array.empty
+    , randomObjectives = 0
+    , randomObjectiveTypes = Set.empty
+    , requiredObjectives = 0
+    , objectiveReward = Win
     , keyItems = Set.singleton Free
+    , classicGiantObjective = False
     , noFreeChars = False
     , warpGlitch = False
     , keyExpBonus = True
@@ -44,9 +67,22 @@ default =
 -}
 parse : String -> Flags
 parse flagString =
+    let
+        -- Random objective types aren't additive flags: if none are given, all are enabled;
+        -- if some are given, only they are enabled. So we default to the empty set, pushing
+        -- enabled types into it - then if it's still empty when we're done, fill it with every
+        -- type.
+        fixupObjectiveTypes flags =
+            if Set.isEmpty flags.randomObjectiveTypes then
+                { flags | randomObjectiveTypes = Set.fromList [ Character, Boss, Quest ] }
+
+            else
+                flags
+    in
     flagString
         |> String.words
         |> List.foldl parseFlag default
+        |> fixupObjectiveTypes
 
 
 parseFlag : String -> Flags -> Flags
@@ -72,32 +108,85 @@ parseFlag flag flags =
                 |> String.split "/"
                 |> List.foldl parseG flags
 
-        Just ( '-', "exp:nokeybonus" ) ->
-            { flags | keyExpBonus = False }
-
-        Just ( '-', "pushbtojump" ) ->
-            { flags | pushBToJump = True }
+        Just ( '-', opt ) ->
+            parseOther opt flags
 
         _ ->
             flags
 
 
 parseO : String -> Flags -> Flags
-parseO subopts incomingFlags =
+parseO opts incomingFlags =
     let
         parseMode mode flags =
-            case mode of
-                "classicgiant" ->
-                    { flags | classicGiantObjective = True }
+            case Objective.fromString mode of
+                Just objective ->
+                    { flags
+                        | classicGiantObjective = objective == Objective.ClassicGiant
+                        , objectives = Array.push (Just objective) flags.objectives
+                    }
 
-                _ ->
+                Nothing ->
                     flags
+
+        parseRandom switch flags =
+            case switch of
+                "char" ->
+                    { flags | randomObjectiveTypes = Set.insert Character flags.randomObjectiveTypes }
+
+                "boss" ->
+                    { flags | randomObjectiveTypes = Set.insert Boss flags.randomObjectiveTypes }
+
+                "quest" ->
+                    { flags | randomObjectiveTypes = Set.insert Quest flags.randomObjectiveTypes }
+
+                num ->
+                    case String.toInt num of
+                        Just n ->
+                            { flags | randomObjectives = n }
+
+                        Nothing ->
+                            flags
     in
-    case String.split ":" subopts of
+    case String.split ":" opts of
         [ "mode", modes ] ->
             modes
                 |> String.split ","
                 |> List.foldl parseMode incomingFlags
+
+        [ "random", subopts ] ->
+            subopts
+                |> String.split ","
+                |> List.foldl parseRandom incomingFlags
+
+        [ "req", count ] ->
+            case String.toInt count of
+                Just c ->
+                    { incomingFlags | requiredObjectives = c }
+
+                Nothing ->
+                    incomingFlags
+
+        [ "win", reward ] ->
+            case reward of
+                "game" ->
+                    { incomingFlags | objectiveReward = Win }
+
+                "crystal" ->
+                    { incomingFlags | objectiveReward = Crystal }
+
+                _ ->
+                    incomingFlags
+
+        [ num, objective ] ->
+            case String.toInt num of
+                Just _ ->
+                    -- since we want to parse in one pass, ignore the given
+                    -- numbers and assume the objectives are in order
+                    { incomingFlags | objectives = Array.push (Objective.fromString objective) incomingFlags.objectives }
+
+                Nothing ->
+                    incomingFlags
 
         _ ->
             incomingFlags
@@ -141,6 +230,19 @@ parseG switch flags =
     case switch of
         "warp" ->
             { flags | warpGlitch = True }
+
+        _ ->
+            flags
+
+
+parseOther : String -> Flags -> Flags
+parseOther switch flags =
+    case switch of
+        "exp:nokeybonus" ->
+            { flags | keyExpBonus = False }
+
+        "pushbtojump" ->
+            { flags | pushBToJump = True }
 
         _ ->
             flags
