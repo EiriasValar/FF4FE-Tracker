@@ -3,6 +3,7 @@ module Flags exposing
     , KeyItemClass(..)
     , default
     , parse
+    , updateRandomObjectives
     )
 
 import Array exposing (Array)
@@ -15,7 +16,7 @@ type alias Set a =
 
 
 type alias Flags =
-    { objectives : Array (Maybe Objective)
+    { objectives : Array Objective
     , randomObjectives : Int
     , randomObjectiveTypes : Set ObjectiveType
     , requiredObjectives : Int
@@ -61,6 +62,28 @@ default =
     , keyExpBonus = True
     , pushBToJump = False
     }
+
+
+{-| Non-destructively updates the given array of set or unset random objectives
+based on the given flags
+-}
+updateRandomObjectives : Array (Maybe Objective) -> Flags -> Array (Maybe Objective)
+updateRandomObjectives objectives flags =
+    let
+        randomDelta =
+            flags.randomObjectives - Array.length objectives
+    in
+    if randomDelta > 0 then
+        -- add unset objectives to the end of the array
+        Array.append objectives <|
+            Array.repeat randomDelta Nothing
+
+    else if randomDelta < 0 then
+        -- remove excess objectives from the end of the array
+        Array.slice 0 randomDelta objectives
+
+    else
+        objectives
 
 
 {-| Would this be cleaner with a Parser?
@@ -123,7 +146,7 @@ parseO opts incomingFlags =
                 Just objective ->
                     { flags
                         | classicGiantObjective = objective == Objective.ClassicGiant
-                        , objectives = Array.push (Just objective) flags.objectives
+                        , objectives = Array.push objective flags.objectives
                     }
 
                 Nothing ->
@@ -178,14 +201,14 @@ parseO opts incomingFlags =
                 _ ->
                     incomingFlags
 
-        [ num, objective ] ->
-            case String.toInt num of
-                Just _ ->
+        [ num, objectiveStr ] ->
+            case ( String.toInt num, Objective.fromString objectiveStr ) of
+                ( Just _, Just objective ) ->
                     -- since we want to parse in one pass, ignore the given
                     -- numbers and assume the objectives are in order
-                    { incomingFlags | objectives = Array.push (Objective.fromString objective) incomingFlags.objectives }
+                    { incomingFlags | objectives = Array.push objective incomingFlags.objectives }
 
-                Nothing ->
+                _ ->
                     incomingFlags
 
         _ ->

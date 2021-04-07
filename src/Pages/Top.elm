@@ -1,12 +1,14 @@
 module Pages.Top exposing (Model, Msg, Params, page)
 
+import Array exposing (Array)
 import Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags)
 import Html exposing (Html, button, div, h2, input, span, table, td, text, textarea, tr)
 import Html.Attributes exposing (class, classList, style, type_)
 import Html.Events exposing (onClick, onInput)
-import Location exposing (Location, Metadata, Requirement(..))
+import Location exposing (Context, Location, Requirement(..))
+import Objective exposing (Objective)
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
@@ -23,10 +25,13 @@ type alias Params =
 type alias Model =
     { url : Url Params
     , flagString : String
-    , metadata : Metadata
-    , attained : Set Requirement
+    , flags : Flags
+    , randomObjectives : Array (Maybe Objective)
+    , completedObjectives : Set Objective
+    , attainedRequirements : Set Requirement
     , locations : Dict Int Location
     , showCheckedLocations : Bool
+    , warpGlitchUsed : Bool
     }
 
 
@@ -53,16 +58,19 @@ init url =
     let
         flagString =
             "Kmain"
+
+        flags =
+            Flags.parse flagString
     in
     { url = url
     , flagString = flagString
-    , metadata =
-        { flags = Flags.parse flagString
-        , warpGlitchUsed = False
-        }
-    , attained = Set.empty
+    , flags = flags
+    , randomObjectives = Flags.updateRandomObjectives Array.empty flags
+    , completedObjectives = Set.empty
+    , attainedRequirements = Set.empty
     , locations = Location.locations
     , showCheckedLocations = False
+    , warpGlitchUsed = False
     }
 
 
@@ -70,7 +78,7 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         ToggleRequirement requirement ->
-            { model | attained = toggle requirement model.attained }
+            { model | attainedRequirements = toggle requirement model.attainedRequirements }
 
         ToggleLocation key ->
             { model | locations = Dict.update key (Maybe.map Location.toggleChecked) model.locations }
@@ -79,26 +87,23 @@ update msg model =
             { model | showCheckedLocations = not model.showCheckedLocations }
 
         ToggleWarpGlitchUsed ->
-            let
-                metadata =
-                    model.metadata
-            in
-            { model | metadata = { metadata | warpGlitchUsed = not metadata.warpGlitchUsed } }
+            { model | warpGlitchUsed = not model.warpGlitchUsed }
 
         UpdateFlags flagString ->
             let
-                metadata =
-                    model.metadata
+                flags =
+                    Flags.parse flagString
             in
-            -- storing both flagString and the Flags derived from it isn't ideal, but we pretty much
-            -- ignore flagString; it only exists so we can prepopulate the flags textarea
+            -- storing both flagString and the Flags derived from it isn't ideal, but we ignore
+            -- flagString everywhere else; it only exists so we can prepopulate the flags textarea
             { model
                 | flagString = flagString
-                , metadata = { metadata | flags = Flags.parse flagString }
+                , flags = flags
+                , randomObjectives = Flags.updateRandomObjectives model.randomObjectives flags
             }
 
         Reset ->
-            { model | attained = Set.empty, locations = Location.locations }
+            init model.url
 
 
 view : Model -> Document Msg
@@ -106,11 +111,10 @@ view model =
     { title = "FFIV Free Enterprise Tracker"
     , body =
         [ textarea [ onInput UpdateFlags ] [ text model.flagString ]
+        , h2 [] [ text "Objectives" ]
+        , viewObjectives
         , h2 [] [ text "Key Items" ]
-        , viewKeyItems model.metadata model.attained
-
-        --, h2 [] [ text "Objectives" ]
-        --, viewObjectives
+        , viewKeyItems model.flags model.attainedRequirements
         , h2 []
             [ text "Locations"
             , input
@@ -119,13 +123,18 @@ view model =
                 ]
                 []
             ]
-        , viewLocations model.metadata model.locations model.attained model.showCheckedLocations
+        , viewLocations model
         ]
     }
 
 
-viewKeyItems : Metadata -> Set Requirement -> Html Msg
-viewKeyItems metadata attained =
+viewObjectives : Html Msg
+viewObjectives =
+    text ""
+
+
+viewKeyItems : Flags -> Set Requirement -> Html Msg
+viewKeyItems flags attained =
     let
         req : Requirement -> String -> Html Msg
         req requirement class =
@@ -173,14 +182,14 @@ viewKeyItems metadata attained =
             , req Spoon "spoon"
             ]
         , tr []
-            [ if not <| Set.member Flags.Free metadata.flags.keyItems then
+            [ if not <| Set.member Flags.Free flags.keyItems then
                 req MistDragon "mist-dragon"
 
               else
                 td [] []
             , req RatTail "rat-tail"
             , req PinkTail "pink-tail"
-            , displayIf metadata.flags.keyExpBonus <|
+            , displayIf flags.keyExpBonus <|
                 td
                     [ classList
                         [ ( "requirement total", True )
@@ -195,27 +204,31 @@ viewKeyItems metadata attained =
         ]
 
 
-viewObjectives : Html Msg
-viewObjectives =
-    text ""
-
-
-viewLocations : Metadata -> Dict Int Location -> Set Requirement -> Bool -> Html Msg
-viewLocations metadata locations attained showChecked =
-    locations
+viewLocations : Model -> Html Msg
+viewLocations model =
+    let
+        context =
+            { flags = model.flags
+            , randomObjectives = model.randomObjectives
+            , completedObjectives = model.completedObjectives
+            , attainedRequirements = model.attainedRequirements
+            , warpGlitchUsed = model.warpGlitchUsed
+            }
+    in
+    model.locations
         -- toList sorts by key
         |> Dict.toList
         |> List.filterMap
             (\( key, loc ) ->
-                if Location.isProspect metadata attained loc || (showChecked && Location.isChecked loc) then
+                if Location.isProspect context loc || (model.showCheckedLocations && Location.isChecked loc) then
                     let
                         warpItem =
                             -- assuming here that there's always an item to be had, regardless of K flags
-                            if metadata.flags.warpGlitch && Location.isDwarfCastle loc then
+                            if model.flags.warpGlitch && Location.isDwarfCastle loc then
                                 [ span
                                     [ classList
                                         [ ( "icon key-item clickable", True )
-                                        , ( "disabled", not metadata.warpGlitchUsed )
+                                        , ( "disabled", not model.warpGlitchUsed )
                                         ]
                                     , onClick ToggleWarpGlitchUsed
                                     ]
@@ -239,9 +252,9 @@ viewLocations metadata locations attained showChecked =
                                 ]
                                 [ text <| Location.getName loc ]
                             , span [ class "icons" ] <|
-                                List.repeat (Location.getCharacters metadata loc) (span [ class "icon character" ] [])
-                                    ++ List.repeat (Location.getBosses metadata loc) (span [ class "icon boss" ] [])
-                                    ++ List.repeat (Location.getKeyItems metadata loc) (span [ class "icon key-item" ] [])
+                                List.repeat (Location.getCharacters context loc) (span [ class "icon character" ] [])
+                                    ++ List.repeat (Location.getBosses context loc) (span [ class "icon boss" ] [])
+                                    ++ List.repeat (Location.getKeyItems context loc) (span [ class "icon key-item" ] [])
                                     ++ warpItem
                             ]
 

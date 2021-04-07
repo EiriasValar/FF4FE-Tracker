@@ -1,6 +1,6 @@
 module Location exposing
-    ( Location
-    , Metadata
+    ( Context
+    , Location
     , Requirement(..)
     , getBosses
     , getCharacters
@@ -13,9 +13,11 @@ module Location exposing
     , toggleChecked
     )
 
+import Array exposing (Array)
 import Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
+import Objective exposing (Objective)
 
 
 type alias Set a =
@@ -72,8 +74,11 @@ type CharacterCount
     | Gated Int
 
 
-type alias Metadata =
+type alias Context =
     { flags : Flags
+    , randomObjectives : Array (Maybe Objective)
+    , completedObjectives : Set Objective
+    , attainedRequirements : Set Requirement
     , warpGlitchUsed : Bool
     }
 
@@ -102,7 +107,7 @@ getName (Location location) =
     location.name
 
 
-getCharacters : Metadata -> Location -> Int
+getCharacters : Context -> Location -> Int
 getCharacters { flags } (Location location) =
     case location.characters of
         Just (Gated n) ->
@@ -123,18 +128,18 @@ getCharacters { flags } (Location location) =
             0
 
 
-getBosses : Metadata -> Location -> Int
+getBosses : Context -> Location -> Int
 getBosses _ (Location location) =
     location.bosses
 
 
-getKeyItems : Metadata -> Location -> Int
-getKeyItems metadata (Location location) =
+getKeyItems : Context -> Location -> Int
+getKeyItems { flags, warpGlitchUsed } (Location location) =
     let
         keyItems =
             case location.keyItem of
                 Just itemClass ->
-                    if Set.member itemClass metadata.flags.keyItems then
+                    if Set.member itemClass flags.keyItems then
                         1
 
                     else
@@ -144,7 +149,7 @@ getKeyItems metadata (Location location) =
                     0
 
         modifier =
-            if metadata.warpGlitchUsed && location.name == sealedCave then
+            if warpGlitchUsed && location.name == sealedCave then
                 -1
 
             else
@@ -168,28 +173,32 @@ isDwarfCastle (Location location) =
     location.name == dwarfCastle
 
 
-isProspect : Metadata -> Set Requirement -> Location -> Bool
-isProspect metadata attained ((Location l) as location) =
+isProspect : Context -> Location -> Bool
+isProspect ({ flags, attainedRequirements } as context) ((Location l) as location) =
     let
-        newAttained =
-            if metadata.flags.pushBToJump || Set.member MagmaKey attained || Set.member Hook attained then
-                Set.insert UndergroundAccess attained
+        attained =
+            if
+                flags.pushBToJump
+                    || Set.member MagmaKey attainedRequirements
+                    || Set.member Hook attainedRequirements
+            then
+                Set.insert UndergroundAccess attainedRequirements
 
             else
-                attained
+                attainedRequirements
     in
     not l.checked
-        && hasValue metadata location
-        && areaAccessible newAttained location
-        && (metadata.flags.pushBToJump && l.jumpable || requirementsMet newAttained location)
+        && hasValue context location
+        && areaAccessible attained location
+        && (flags.pushBToJump && l.jumpable || requirementsMet attained location)
 
 
-hasValue : Metadata -> Location -> Bool
-hasValue metadata location =
+hasValue : Context -> Location -> Bool
+hasValue context location =
     -- TODO suppress getBosses if there's no boss objective or item-bearing dmist still to find
-    (getCharacters metadata location > 0)
-        || (getBosses metadata location > 0)
-        || (getKeyItems metadata location > 0)
+    (getCharacters context location > 0)
+        || (getBosses context location > 0)
+        || (getKeyItems context location > 0)
 
 
 areaAccessible : Set Requirement -> Location -> Bool
