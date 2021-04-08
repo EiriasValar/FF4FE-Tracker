@@ -1,6 +1,6 @@
 body {
   font-family: sans-serif;
-  margin: 20px
+  margin: 20px;
 }
 
 .navbar {
@@ -11,7 +11,28 @@ body {
 
 .page { margin-top: 20px; }
 
+.objectives {
+  list-style: none;
+  padding-left: 1em;
+}
 
+.objective {
+  margin: 1px 0;
+  cursor: pointer;
+}
+
+.objective .icon {
+  content: url("/img/sprites/Crystal-still.png");
+  filter: grayscale(100%) opacity(50%);
+  margin-right: 0.5em;
+  height: 1.25em;
+  vertical-align: middle;
+}
+
+.objective.completed .icon {
+  filter: none;
+}
+  
 .requirements {
   background-color: rgb(0,0,175);
   border-style: double;

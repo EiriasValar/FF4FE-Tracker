@@ -4,7 +4,7 @@ import Array exposing (Array)
 import Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags)
-import Html exposing (Html, button, div, h2, input, span, table, td, text, textarea, tr)
+import Html exposing (Html, button, div, h2, input, li, span, table, td, text, textarea, tr, ul)
 import Html.Attributes exposing (class, classList, style, type_)
 import Html.Events exposing (onClick, onInput)
 import Location exposing (Context, Location, Requirement(..))
@@ -36,7 +36,8 @@ type alias Model =
 
 
 type Msg
-    = ToggleRequirement Requirement
+    = ToggleObjective Objective
+    | ToggleRequirement Requirement
     | ToggleLocation Int
     | ToggleCheckedLocations
     | ToggleWarpGlitchUsed
@@ -57,7 +58,7 @@ init : Url Params -> Model
 init url =
     let
         flagString =
-            "Kmain"
+            "Kmain O1:char_kain/2:quest_antlionnest/random:3,char,boss/req:4"
 
         flags =
             Flags.parse flagString
@@ -77,6 +78,9 @@ init url =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
+        ToggleObjective objective ->
+            { model | completedObjectives = toggle objective model.completedObjectives }
+
         ToggleRequirement requirement ->
             { model | attainedRequirements = toggle requirement model.attainedRequirements }
 
@@ -112,7 +116,7 @@ view model =
     , body =
         [ textarea [ onInput UpdateFlags ] [ text model.flagString ]
         , h2 [] [ text "Objectives" ]
-        , viewObjectives
+        , viewObjectives model
         , h2 [] [ text "Key Items" ]
         , viewKeyItems model.flags model.attainedRequirements
         , h2 []
@@ -128,9 +132,30 @@ view model =
     }
 
 
-viewObjectives : Html Msg
-viewObjectives =
-    text ""
+viewObjectives : Model -> Html Msg
+viewObjectives model =
+    let
+        fixed =
+            model.flags.objectives
+                |> Array.map (\o -> viewObjective o <| Set.member o model.completedObjectives)
+                |> Array.toList
+    in
+    ul [ class "objectives" ]
+        fixed
+
+
+viewObjective : Objective -> Bool -> Html Msg
+viewObjective objective completed =
+    li
+        [ classList
+            [ ( "objective", True )
+            , ( "completed", completed )
+            ]
+        , onClick (ToggleObjective objective)
+        ]
+        [ span [ class "icon" ] []
+        , text <| Objective.toString objective
+        ]
 
 
 viewKeyItems : Flags -> Set Requirement -> Html Msg

@@ -4,6 +4,7 @@ module Objective exposing
     , Objective(..)
     , QuestObjective(..)
     , fromString
+    , toString
     )
 
 
@@ -112,9 +113,304 @@ type QuestObjective
     | Pass
 
 
+toString : Objective -> String
+toString objective =
+    case objective of
+        ClassicForge ->
+            "Classic Forge the Crystal"
+
+        ClassicGiant ->
+            "Classic Giant%"
+
+        Fiends ->
+            "Fiends%"
+
+        DarkMatterHunt ->
+            "Dark Matter Hunt"
+
+        Character characterObjective ->
+            "Get " ++ charToString characterObjective
+
+        Boss bossObjective ->
+            "Defeat " ++ bossToString bossObjective
+
+        Quest questObjective ->
+            questToString questObjective
+
+
+charToString : CharacterObjective -> String
+charToString char =
+    case char of
+        Cecil ->
+            "Cecil"
+
+        Kain ->
+            "Kain"
+
+        Rydia ->
+            "Rydia"
+
+        Tellah ->
+            "Tellah"
+
+        Edward ->
+            "Edward"
+
+        Rosa ->
+            "Rosa"
+
+        Yang ->
+            "Yang"
+
+        Palom ->
+            "Palom"
+
+        Porom ->
+            "Porom"
+
+        Cid ->
+            "Cid"
+
+        Edge ->
+            "Edge"
+
+        FuSoYa ->
+            "FuSoYa"
+
+
+bossToString : BossObjective -> String
+bossToString boss =
+    case boss of
+        DMist ->
+            "DMist"
+
+        Officer ->
+            "Officer"
+
+        Octomamm ->
+            "Octomamm"
+
+        Antlion ->
+            "Antlion"
+
+        Waterhag ->
+            "Waterhag"
+
+        MomBom ->
+            "MomBom"
+
+        Gauntlet ->
+            "Gauntlet"
+
+        Milon ->
+            "Milon"
+
+        MilonZ ->
+            "MilonZ"
+
+        DarkKnight ->
+            "DarkKnight"
+
+        Guards ->
+            "Guards"
+
+        Karate ->
+            "Karate"
+
+        Baigan ->
+            "Baigan"
+
+        Kainazzo ->
+            "Kainazzo"
+
+        DarkElf ->
+            "DarkElf"
+
+        MagusSisters ->
+            "MagusSisters"
+
+        Valvalis ->
+            "Valvalis"
+
+        Calbrena ->
+            "Calbrena"
+
+        Golbez ->
+            "Golbez"
+
+        DrLugae ->
+            "DrLugae"
+
+        DarkImps ->
+            "DarkImps"
+
+        KQEblan ->
+            "KQEblan"
+
+        Rubicant ->
+            "Rubicant"
+
+        EvilWall ->
+            "EvilWall"
+
+        Asura ->
+            "Asura"
+
+        Leviatan ->
+            "Leviatan"
+
+        Odin ->
+            "Odin"
+
+        Bahamut ->
+            "Bahamut"
+
+        Elements ->
+            "Elements"
+
+        CPU ->
+            "CPU"
+
+        PaleDim ->
+            "PaleDim"
+
+        Wyvern ->
+            "Wyvern"
+
+        Plague ->
+            "Plague"
+
+        DLunars ->
+            "DLunars"
+
+        Ogopogo ->
+            "Ogopogo"
+
+
+questToString : QuestObjective -> String
+questToString quest =
+    case quest of
+        MistCave ->
+            "MistCave"
+
+        Waterfall ->
+            "Waterfall"
+
+        AntlionCave ->
+            "AntlionCave"
+
+        MtHobs ->
+            "MtHobs"
+
+        Fabul ->
+            "Fabul"
+
+        MtOrdeals ->
+            "MtOrdeals"
+
+        BaronInn ->
+            "BaronInn"
+
+        BaronCastle ->
+            "BaronCastle"
+
+        CaveMagnes ->
+            "CaveMagnes"
+
+        TowerZot ->
+            "TowerZot"
+
+        DwarfCastle ->
+            "DwarfCastle"
+
+        LowerBabil ->
+            "LowerBabil"
+
+        Falcon ->
+            "Falcon"
+
+        SealedCave ->
+            "SealedCave"
+
+        FeymarchQueen ->
+            "FeymarchQueen"
+
+        FeymarchKing ->
+            "FeymarchKing"
+
+        BaronBasement ->
+            "BaronBasement"
+
+        Giant ->
+            "Giant"
+
+        CaveBahamut ->
+            "CaveBahamut"
+
+        MurasameAltar ->
+            "MurasameAltar"
+
+        WyvernAltar ->
+            "WyvernAltar"
+
+        WhiteSpearAltar ->
+            "WhiteSpearAltar"
+
+        RibbonRoom ->
+            "RibbonRoom"
+
+        MasamuneAltar ->
+            "MasamuneAltar"
+
+        Package ->
+            "Package"
+
+        SandRuby ->
+            "SandRuby"
+
+        UnlockSewer ->
+            "UnlockSewer"
+
+        TwinHarp ->
+            "TwinHarp"
+
+        Treasury ->
+            "Treasury"
+
+        MagmaKey ->
+            "MagmaKey"
+
+        SuperCannon ->
+            "SuperCannon"
+
+        UnlockSealedCave ->
+            "UnlockSealedCave"
+
+        BigWhale ->
+            "BigWhale"
+
+        RatTail ->
+            "RatTail"
+
+        Forge ->
+            "Forge"
+
+        PanWake ->
+            "PanWake"
+
+        PanReturn ->
+            "PanReturn"
+
+        PinkTail ->
+            "PinkTail"
+
+        Pass ->
+            "Pass"
+
+
 fromString : String -> Maybe Objective
 fromString str =
-    case String.split "_" str of
+    case String.split "_" (String.toLower str) of
         [ "classicforge" ] ->
             Just ClassicForge
 
