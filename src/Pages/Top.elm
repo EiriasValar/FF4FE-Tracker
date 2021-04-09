@@ -1,6 +1,8 @@
 module Pages.Top exposing (Model, Msg, Params, page)
 
 import Array exposing (Array)
+import Bootstrap.CDN
+import Bootstrap.Dropdown as Dropdown
 import Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags)
@@ -27,6 +29,7 @@ type alias Model =
     , flagString : String
     , flags : Flags
     , randomObjectives : Array (Maybe Objective)
+    , dropdowns : Array Dropdown.State
     , completedObjectives : Set Objective
     , attainedRequirements : Set Requirement
     , locations : Dict Int Location
@@ -37,24 +40,26 @@ type alias Model =
 
 type Msg
     = ToggleObjective Objective
+    | SetRandomObjective Int Objective
+    | DropdownMsg Int Dropdown.State
     | ToggleRequirement Requirement
     | ToggleLocation Int
     | ToggleCheckedLocations
     | ToggleWarpGlitchUsed
     | UpdateFlags String
-    | Reset
 
 
 page : Page Params Model Msg
 page =
-    Page.sandbox
+    Page.element
         { init = init
         , update = update
         , view = view
+        , subscriptions = subscriptions
         }
 
 
-init : Url Params -> Model
+init : Url Params -> ( Model, Cmd Msg )
 init url =
     let
         flagString =
@@ -62,24 +67,55 @@ init url =
 
         flags =
             Flags.parse flagString
+
+        randomObjectives =
+            Flags.updateRandomObjectives Array.empty flags
+
+        dropdowns =
+            fixDropdownsLength (Array.length randomObjectives) Array.empty
     in
     { url = url
     , flagString = flagString
     , flags = flags
-    , randomObjectives = Flags.updateRandomObjectives Array.empty flags
+    , randomObjectives = randomObjectives
+    , dropdowns = dropdowns
     , completedObjectives = Set.empty
     , attainedRequirements = Set.empty
     , locations = Location.locations
     , showCheckedLocations = False
     , warpGlitchUsed = False
     }
+        |> with Cmd.none
 
 
-update : Msg -> Model -> Model
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    model.dropdowns
+        |> Array.indexedMap
+            (\index dropdown ->
+                Dropdown.subscriptions dropdown (DropdownMsg index)
+            )
+        |> Array.toList
+        |> Sub.batch
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    innerUpdate msg model
+        |> with Cmd.none
+
+
+innerUpdate : Msg -> Model -> Model
+innerUpdate msg model =
     case msg of
         ToggleObjective objective ->
             { model | completedObjectives = toggle objective model.completedObjectives }
+
+        SetRandomObjective index objective ->
+            { model | randomObjectives = Array.set index (Just objective) model.randomObjectives }
+
+        DropdownMsg index dropdown ->
+            { model | dropdowns = Array.set index dropdown model.dropdowns }
 
         ToggleRequirement requirement ->
             { model | attainedRequirements = toggle requirement model.attainedRequirements }
@@ -97,24 +133,30 @@ update msg model =
             let
                 flags =
                     Flags.parse flagString
+
+                randomObjectives =
+                    Flags.updateRandomObjectives model.randomObjectives flags
+
+                dropdowns =
+                    fixDropdownsLength (Array.length randomObjectives) model.dropdowns
             in
             -- storing both flagString and the Flags derived from it isn't ideal, but we ignore
             -- flagString everywhere else; it only exists so we can prepopulate the flags textarea
             { model
                 | flagString = flagString
                 , flags = flags
-                , randomObjectives = Flags.updateRandomObjectives model.randomObjectives flags
+                , randomObjectives = randomObjectives
+                , dropdowns = dropdowns
             }
-
-        Reset ->
-            init model.url
 
 
 view : Model -> Document Msg
 view model =
     { title = "FFIV Free Enterprise Tracker"
     , body =
-        [ textarea
+        [ -- TODO remove this
+          Bootstrap.CDN.stylesheet
+        , textarea
             [ class "flagstring"
             , onInput UpdateFlags
             ]
@@ -146,7 +188,7 @@ viewObjectives model =
 
         random =
             model.randomObjectives
-                |> Array.indexedMap (\i o -> viewEditableObjective i o model.completedObjectives)
+                |> Array.indexedMap (\i o -> viewEditableObjective i o model.completedObjectives (Array.get i model.dropdowns))
                 |> Array.toList
     in
     ul [ class "objectives" ]
@@ -163,20 +205,59 @@ viewObjective objective completed =
         , onClick (ToggleObjective objective)
         ]
         [ span [ class "icon" ] []
-        , text <| Objective.toString objective
+        , span [] [ text <| Objective.toString objective ]
         ]
 
 
-viewEditableObjective : Int -> Maybe Objective -> Set Objective -> Html Msg
-viewEditableObjective index maybeObjective completedObjectives =
-    case maybeObjective of
-        Just objective ->
+viewEditableObjective : Int -> Maybe Objective -> Set Objective -> Maybe Dropdown.State -> Html Msg
+viewEditableObjective index maybeObjective completedObjectives maybeDropdown =
+    case ( maybeObjective, maybeDropdown ) of
+        ( Just objective, _ ) ->
             -- TODO allow for changing a set objective
             viewObjective objective <| Set.member objective completedObjectives
 
-        Nothing ->
+        ( Nothing, Just dropdown ) ->
             -- TODO allow for setting an objective
-            li [] [ text "(Set random objective)" ]
+            li []
+                [ Dropdown.dropdown
+                    dropdown
+                    { options = []
+                    , toggleMsg = DropdownMsg index
+                    , toggleButton =
+                        Dropdown.toggle [] [ text "(Set random objective)" ]
+                    , items =
+                        Dropdown.header [ text "Character Hunts" ]
+                            :: (Objective.characters
+                                    |> List.map
+                                        (\char ->
+                                            Dropdown.buttonItem
+                                                [ onClick <| SetRandomObjective index <| Objective.Character char ]
+                                                [ text <| Objective.toString <| Objective.Character char ]
+                                        )
+                               )
+                            ++ Dropdown.header [ text "Boss Hunts" ]
+                            :: (Objective.bosses
+                                    |> List.map
+                                        (\boss ->
+                                            Dropdown.buttonItem
+                                                [ onClick <| SetRandomObjective index <| Objective.Boss boss ]
+                                                [ text <| Objective.toString <| Objective.Boss boss ]
+                                        )
+                               )
+                            ++ Dropdown.header [ text "Quests" ]
+                            :: (Objective.quests
+                                    |> List.map
+                                        (\quest ->
+                                            Dropdown.buttonItem
+                                                [ onClick <| SetRandomObjective index <| Objective.Quest quest ]
+                                                [ text <| Objective.toString <| Objective.Quest quest ]
+                                        )
+                               )
+                    }
+                ]
+
+        ( Nothing, Nothing ) ->
+            li [] [ text "No objective, no dropdown state, no way out!" ]
 
 
 viewKeyItems : Flags -> Set Requirement -> Html Msg
@@ -310,6 +391,23 @@ viewLocations model =
         |> div [ class "locations" ]
 
 
+fixDropdownsLength : Int -> Array Dropdown.State -> Array Dropdown.State
+fixDropdownsLength newCount dropdowns =
+    let
+        delta =
+            newCount - Array.length dropdowns
+    in
+    if delta > 0 then
+        Array.append dropdowns <|
+            Array.repeat delta Dropdown.initialState
+
+    else if delta < 0 then
+        Array.slice 0 delta dropdowns
+
+    else
+        dropdowns
+
+
 memberOf : List a -> a -> Bool
 memberOf xs x =
     List.member x xs
@@ -331,3 +429,8 @@ displayIf predicate html =
 
     else
         text ""
+
+
+with : b -> a -> ( a, b )
+with b a =
+    ( a, b )

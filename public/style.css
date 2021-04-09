@@ -24,6 +24,7 @@ body {
 .objective {
   margin: 1px 0;
   cursor: pointer;
+  width: fit-content;
 }
 
 .objective .icon {
@@ -37,7 +38,12 @@ body {
 .objective.completed .icon {
   filter: none;
 }
-  
+
+.objectives .dropdown-menu.show {
+  height: 13em;
+  overflow: auto;
+}
+
 .requirements {
   background-color: rgb(0,0,175);
   border-style: double;

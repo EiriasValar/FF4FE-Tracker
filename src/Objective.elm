@@ -3,7 +3,10 @@ module Objective exposing
     , CharacterObjective(..)
     , Objective(..)
     , QuestObjective(..)
+    , bosses
+    , characters
     , fromString
+    , quests
     , toString
     )
 
@@ -31,6 +34,23 @@ type CharacterObjective
     | Cid
     | Edge
     | FuSoYa
+
+
+characters : List CharacterObjective
+characters =
+    [ Cecil
+    , Kain
+    , Rydia
+    , Tellah
+    , Edward
+    , Rosa
+    , Yang
+    , Palom
+    , Porom
+    , Cid
+    , Edge
+    , FuSoYa
+    ]
 
 
 type BossObjective
@@ -69,6 +89,46 @@ type BossObjective
     | Plague
     | DLunars
     | Ogopogo
+
+
+bosses : List BossObjective
+bosses =
+    [ DMist
+    , Officer
+    , Octomamm
+    , Antlion
+    , Waterhag
+    , MomBom
+    , Gauntlet
+    , Milon
+    , MilonZ
+    , DarkKnight
+    , Guards
+    , Karate
+    , Baigan
+    , Kainazzo
+    , DarkElf
+    , MagusSisters
+    , Valvalis
+    , Calbrena
+    , Golbez
+    , DrLugae
+    , DarkImps
+    , KQEblan
+    , Rubicant
+    , EvilWall
+    , Asura
+    , Leviatan
+    , Odin
+    , Bahamut
+    , Elements
+    , CPU
+    , PaleDim
+    , Wyvern
+    , Plague
+    , DLunars
+    , Ogopogo
+    ]
 
 
 type QuestObjective
@@ -111,6 +171,50 @@ type QuestObjective
     | PanReturn
     | PinkTail
     | Pass
+
+
+quests : List QuestObjective
+quests =
+    [ MistCave
+    , Waterfall
+    , AntlionCave
+    , MtHobs
+    , Fabul
+    , MtOrdeals
+    , BaronInn
+    , BaronCastle
+    , CaveMagnes
+    , TowerZot
+    , DwarfCastle
+    , LowerBabil
+    , Falcon
+    , SealedCave
+    , FeymarchQueen
+    , FeymarchKing
+    , BaronBasement
+    , Giant
+    , CaveBahamut
+    , MurasameAltar
+    , WyvernAltar
+    , WhiteSpearAltar
+    , RibbonRoom
+    , MasamuneAltar
+    , Package
+    , SandRuby
+    , UnlockSewer
+    , TwinHarp
+    , Treasury
+    , MagmaKey
+    , SuperCannon
+    , UnlockSealedCave
+    , BigWhale
+    , RatTail
+    , Forge
+    , PanWake
+    , PanReturn
+    , PinkTail
+    , Pass
+    ]
 
 
 toString : Objective -> String
