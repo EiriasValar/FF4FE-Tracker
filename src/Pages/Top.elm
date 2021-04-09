@@ -114,7 +114,11 @@ view : Model -> Document Msg
 view model =
     { title = "FFIV Free Enterprise Tracker"
     , body =
-        [ textarea [ onInput UpdateFlags ] [ text model.flagString ]
+        [ textarea
+            [ class "flagstring"
+            , onInput UpdateFlags
+            ]
+            [ text model.flagString ]
         , h2 [] [ text "Objectives" ]
         , viewObjectives model
         , h2 [] [ text "Key Items" ]
@@ -139,9 +143,14 @@ viewObjectives model =
             model.flags.objectives
                 |> Array.map (\o -> viewObjective o <| Set.member o model.completedObjectives)
                 |> Array.toList
+
+        random =
+            model.randomObjectives
+                |> Array.indexedMap (\i o -> viewEditableObjective i o model.completedObjectives)
+                |> Array.toList
     in
     ul [ class "objectives" ]
-        fixed
+        (fixed ++ random)
 
 
 viewObjective : Objective -> Bool -> Html Msg
@@ -156,6 +165,18 @@ viewObjective objective completed =
         [ span [ class "icon" ] []
         , text <| Objective.toString objective
         ]
+
+
+viewEditableObjective : Int -> Maybe Objective -> Set Objective -> Html Msg
+viewEditableObjective index maybeObjective completedObjectives =
+    case maybeObjective of
+        Just objective ->
+            -- TODO allow for changing a set objective
+            viewObjective objective <| Set.member objective completedObjectives
+
+        Nothing ->
+            -- TODO allow for setting an objective
+            li [] [ text "(Set random objective)" ]
 
 
 viewKeyItems : Flags -> Set Requirement -> Html Msg

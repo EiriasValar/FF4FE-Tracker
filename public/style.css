@@ -11,9 +11,14 @@ body {
 
 .page { margin-top: 20px; }
 
+.flagstring {
+    width: 50em;
+}
+
 .objectives {
   list-style: none;
-  padding-left: 1em;
+  padding: 0;
+  margin-left: 1em;
 }
 
 .objective {
@@ -38,6 +43,7 @@ body {
   border-style: double;
   border-color: white;
   padding: 5px;
+  margin-left: 1em;
 }
 
 .requirement {
@@ -137,8 +143,13 @@ body {
   text-align: center;
 }
 
+.locations {
+    margin-left: 1em;
+}
+
 .location.checked {
   color: green;
+  text-decoration: line-through;
 }
 
 .location .name {
