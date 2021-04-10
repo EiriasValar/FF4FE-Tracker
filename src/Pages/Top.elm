@@ -1,15 +1,14 @@
 module Pages.Top exposing (Model, Msg, Params, page)
 
 import Array exposing (Array)
-import Bootstrap.CDN
-import Bootstrap.Dropdown as Dropdown
+import Bootstrap.Dropdown as Dropdown exposing (DropdownItem)
 import Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags)
-import Html exposing (Html, button, div, h2, input, li, span, table, td, text, textarea, tr, ul)
-import Html.Attributes exposing (class, classList, style, type_)
+import Html exposing (Html, div, h2, input, li, span, table, td, text, textarea, tr, ul)
+import Html.Attributes exposing (class, classList, type_)
 import Html.Events exposing (onClick, onInput)
-import Location exposing (Context, Location, Requirement(..))
+import Location exposing (Location, Requirement(..))
 import Objective exposing (Objective)
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
@@ -186,7 +185,7 @@ viewObjectives model =
 
         random =
             model.randomObjectives
-                |> Array.indexedMap (\i o -> viewEditableObjective i o model.completedObjectives (Array.get i model.dropdowns))
+                |> Array.indexedMap (\i o -> viewEditableObjective i o (Array.get i model.dropdowns) model.completedObjectives model.flags.randomObjectiveTypes)
                 |> Array.toList
     in
     ul [ class "objectives" ]
@@ -207,15 +206,30 @@ viewObjective objective completed =
         ]
 
 
-viewEditableObjective : Int -> Maybe Objective -> Set Objective -> Maybe Dropdown.State -> Html Msg
-viewEditableObjective index maybeObjective completedObjectives maybeDropdown =
+viewEditableObjective : Int -> Maybe Objective -> Maybe Dropdown.State -> Set Objective -> Set Objective.Type -> Html Msg
+viewEditableObjective index maybeObjective maybeDropdown completedObjectives objectiveTypes =
+    let
+        item : Objective -> DropdownItem Msg
+        item objective =
+            Dropdown.buttonItem
+                [ onClick <| SetRandomObjective index objective ]
+                [ text <| Objective.toString objective ]
+
+        section : Objective.Type -> String -> List Objective -> List (DropdownItem Msg)
+        section objectiveType header objectives =
+            if Set.member objectiveType objectiveTypes then
+                Dropdown.header [ text header ]
+                    :: List.map item objectives
+
+            else
+                []
+    in
     case ( maybeObjective, maybeDropdown ) of
         ( Just objective, _ ) ->
             -- TODO allow for changing a set objective
             viewObjective objective <| Set.member objective completedObjectives
 
         ( Nothing, Just dropdown ) ->
-            -- TODO allow for setting an objective
             li []
                 [ Dropdown.dropdown
                     dropdown
@@ -224,33 +238,9 @@ viewEditableObjective index maybeObjective completedObjectives maybeDropdown =
                     , toggleButton =
                         Dropdown.toggle [] [ text "(Set random objective)" ]
                     , items =
-                        Dropdown.header [ text "Character Hunts" ]
-                            :: (Objective.characters
-                                    |> List.map
-                                        (\char ->
-                                            Dropdown.buttonItem
-                                                [ onClick <| SetRandomObjective index <| Objective.Character char ]
-                                                [ text <| Objective.toString <| Objective.Character char ]
-                                        )
-                               )
-                            ++ Dropdown.header [ text "Boss Hunts" ]
-                            :: (Objective.bosses
-                                    |> List.map
-                                        (\boss ->
-                                            Dropdown.buttonItem
-                                                [ onClick <| SetRandomObjective index <| Objective.Boss boss ]
-                                                [ text <| Objective.toString <| Objective.Boss boss ]
-                                        )
-                               )
-                            ++ Dropdown.header [ text "Quests" ]
-                            :: (Objective.quests
-                                    |> List.map
-                                        (\quest ->
-                                            Dropdown.buttonItem
-                                                [ onClick <| SetRandomObjective index <| Objective.Quest quest ]
-                                                [ text <| Objective.toString <| Objective.Quest quest ]
-                                        )
-                               )
+                        section Objective.Character "Character Hunts" Objective.characters
+                            ++ section Objective.Boss "Boss Hunts" Objective.bosses
+                            ++ section Objective.Quest "Quests" Objective.quests
                     }
                 ]
 

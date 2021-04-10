@@ -1,7 +1,6 @@
 module Flags exposing
     ( Flags
     , KeyItemClass(..)
-    , default
     , parse
     , updateRandomObjectives
     )
@@ -18,7 +17,7 @@ type alias Set a =
 type alias Flags =
     { objectives : Array Objective
     , randomObjectives : Int
-    , randomObjectiveTypes : Set ObjectiveType
+    , randomObjectiveTypes : Set Objective.Type
     , requiredObjectives : Int
     , objectiveReward : Reward
     , keyItems : Set KeyItemClass
@@ -40,28 +39,6 @@ type KeyItemClass
 type Reward
     = Crystal
     | Win
-
-
-type ObjectiveType
-    = Character
-    | Boss
-    | Quest
-
-
-default : Flags
-default =
-    { objectives = Array.empty
-    , randomObjectives = 0
-    , randomObjectiveTypes = Set.empty
-    , requiredObjectives = 0
-    , objectiveReward = Win
-    , keyItems = Set.singleton Free
-    , classicGiantObjective = False
-    , noFreeChars = False
-    , warpGlitch = False
-    , keyExpBonus = True
-    , pushBToJump = False
-    }
 
 
 {-| Non-destructively updates the given array of set or unset random objectives
@@ -91,13 +68,28 @@ updateRandomObjectives objectives flags =
 parse : String -> Flags
 parse flagString =
     let
+        default : Flags
+        default =
+            { objectives = Array.empty
+            , randomObjectives = 0
+            , randomObjectiveTypes = Set.empty
+            , requiredObjectives = 0
+            , objectiveReward = Win
+            , keyItems = Set.singleton Free
+            , classicGiantObjective = False
+            , noFreeChars = False
+            , warpGlitch = False
+            , keyExpBonus = True
+            , pushBToJump = False
+            }
+
         -- Random objective types aren't additive flags: if none are given, all are enabled;
         -- if some are given, only they are enabled. So we default to the empty set, pushing
         -- enabled types into it - then if it's still empty when we're done, fill it with every
         -- type.
         fixupObjectiveTypes flags =
             if Set.isEmpty flags.randomObjectiveTypes then
-                { flags | randomObjectiveTypes = Set.fromList [ Character, Boss, Quest ] }
+                { flags | randomObjectiveTypes = Set.fromList [ Objective.Character, Objective.Boss, Objective.Quest ] }
 
             else
                 flags
@@ -155,13 +147,13 @@ parseO opts incomingFlags =
         parseRandom switch flags =
             case switch of
                 "char" ->
-                    { flags | randomObjectiveTypes = Set.insert Character flags.randomObjectiveTypes }
+                    { flags | randomObjectiveTypes = Set.insert Objective.Character flags.randomObjectiveTypes }
 
                 "boss" ->
-                    { flags | randomObjectiveTypes = Set.insert Boss flags.randomObjectiveTypes }
+                    { flags | randomObjectiveTypes = Set.insert Objective.Boss flags.randomObjectiveTypes }
 
                 "quest" ->
-                    { flags | randomObjectiveTypes = Set.insert Quest flags.randomObjectiveTypes }
+                    { flags | randomObjectiveTypes = Set.insert Objective.Quest flags.randomObjectiveTypes }
 
                 num ->
                     case String.toInt num of

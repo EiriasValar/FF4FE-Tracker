@@ -3,6 +3,7 @@ module Objective exposing
     , CharacterObjective(..)
     , Objective(..)
     , QuestObjective(..)
+    , Type(..)
     , bosses
     , characters
     , fromString
@@ -16,9 +17,15 @@ type Objective
     | ClassicGiant
     | Fiends
     | DarkMatterHunt
-    | Character CharacterObjective
-    | Boss BossObjective
-    | Quest QuestObjective
+    | GetCharacter CharacterObjective
+    | DefeatBoss BossObjective
+    | DoQuest QuestObjective
+
+
+type Type
+    = Character
+    | Boss
+    | Quest
 
 
 type CharacterObjective
@@ -36,7 +43,7 @@ type CharacterObjective
     | FuSoYa
 
 
-characters : List CharacterObjective
+characters : List Objective
 characters =
     [ Cecil
     , Kain
@@ -51,6 +58,7 @@ characters =
     , Edge
     , FuSoYa
     ]
+        |> List.map GetCharacter
 
 
 type BossObjective
@@ -91,7 +99,7 @@ type BossObjective
     | Ogopogo
 
 
-bosses : List BossObjective
+bosses : List Objective
 bosses =
     [ DMist
     , Officer
@@ -129,6 +137,7 @@ bosses =
     , DLunars
     , Ogopogo
     ]
+        |> List.map DefeatBoss
 
 
 type QuestObjective
@@ -173,7 +182,7 @@ type QuestObjective
     | Pass
 
 
-quests : List QuestObjective
+quests : List Objective
 quests =
     [ MistCave
     , Waterfall
@@ -215,6 +224,7 @@ quests =
     , PinkTail
     , Pass
     ]
+        |> List.map DoQuest
 
 
 toString : Objective -> String
@@ -232,13 +242,13 @@ toString objective =
         DarkMatterHunt ->
             "Dark Matter Hunt"
 
-        Character characterObjective ->
+        GetCharacter characterObjective ->
             "Get " ++ charToString characterObjective
 
-        Boss bossObjective ->
+        DefeatBoss bossObjective ->
             "Defeat " ++ bossToString bossObjective
 
-        Quest questObjective ->
+        DoQuest questObjective ->
             questToString questObjective
 
 
@@ -529,15 +539,15 @@ fromString str =
 
         [ "char", char ] ->
             charFromString char
-                |> Maybe.map Character
+                |> Maybe.map GetCharacter
 
         [ "boss", boss ] ->
             bossFromString boss
-                |> Maybe.map Boss
+                |> Maybe.map DefeatBoss
 
         [ "quest", quest ] ->
             questFromString quest
-                |> Maybe.map Quest
+                |> Maybe.map DoQuest
 
         _ ->
             Nothing
