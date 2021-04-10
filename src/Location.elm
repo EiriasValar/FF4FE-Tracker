@@ -76,7 +76,7 @@ type CharacterCount
 
 type alias Context =
     { flags : Flags
-    , randomObjectives : Array (Maybe Objective)
+    , randomObjectives : Set Objective
     , completedObjectives : Set Objective
     , attainedRequirements : Set Requirement
     , warpGlitchUsed : Bool

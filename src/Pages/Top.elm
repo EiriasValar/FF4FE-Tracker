@@ -27,14 +27,18 @@ type alias Model =
     { url : Url Params
     , flagString : String
     , flags : Flags
-    , randomObjectives : Array (Maybe Objective)
-    , dropdowns : Array Dropdown.State
+    , randomObjectives : Array RandomObjective
     , completedObjectives : Set Objective
     , attainedRequirements : Set Requirement
     , locations : Dict Int Location
     , showCheckedLocations : Bool
     , warpGlitchUsed : Bool
     }
+
+
+type RandomObjective
+    = Set Objective
+    | Unset Dropdown.State
 
 
 type Msg
@@ -68,16 +72,12 @@ init url =
             Flags.parse flagString
 
         randomObjectives =
-            Flags.updateRandomObjectives Array.empty flags
-
-        dropdowns =
-            fixDropdownsLength (Array.length randomObjectives) Array.empty
+            updateRandomObjectives flags Array.empty
     in
     { url = url
     , flagString = flagString
     , flags = flags
     , randomObjectives = randomObjectives
-    , dropdowns = dropdowns
     , completedObjectives = Set.empty
     , attainedRequirements = Set.empty
     , locations = Location.locations
@@ -89,10 +89,15 @@ init url =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    model.dropdowns
+    model.randomObjectives
         |> Array.indexedMap
-            (\index dropdown ->
-                Dropdown.subscriptions dropdown (DropdownMsg index)
+            (\index randomObjective ->
+                case randomObjective of
+                    Unset dropdown ->
+                        Dropdown.subscriptions dropdown (DropdownMsg index)
+
+                    Set _ ->
+                        Sub.none
             )
         |> Array.toList
         |> Sub.batch
@@ -111,10 +116,15 @@ innerUpdate msg model =
             { model | completedObjectives = toggle objective model.completedObjectives }
 
         SetRandomObjective index objective ->
-            { model | randomObjectives = Array.set index (Just objective) model.randomObjectives }
+            { model | randomObjectives = Array.set index (Set objective) model.randomObjectives }
 
         DropdownMsg index dropdown ->
-            { model | dropdowns = Array.set index dropdown model.dropdowns }
+            case Array.get index model.randomObjectives of
+                Just (Unset _) ->
+                    { model | randomObjectives = Array.set index (Unset dropdown) model.randomObjectives }
+
+                _ ->
+                    model
 
         ToggleRequirement requirement ->
             { model | attainedRequirements = toggle requirement model.attainedRequirements }
@@ -134,10 +144,7 @@ innerUpdate msg model =
                     Flags.parse flagString
 
                 randomObjectives =
-                    Flags.updateRandomObjectives model.randomObjectives flags
-
-                dropdowns =
-                    fixDropdownsLength (Array.length randomObjectives) model.dropdowns
+                    updateRandomObjectives flags model.randomObjectives
             in
             -- storing both flagString and the Flags derived from it isn't ideal, but we ignore
             -- flagString everywhere else; it only exists so we can prepopulate the flags textarea
@@ -145,7 +152,6 @@ innerUpdate msg model =
                 | flagString = flagString
                 , flags = flags
                 , randomObjectives = randomObjectives
-                , dropdowns = dropdowns
             }
 
 
@@ -185,7 +191,7 @@ viewObjectives model =
 
         random =
             model.randomObjectives
-                |> Array.indexedMap (\i o -> viewEditableObjective i o (Array.get i model.dropdowns) model.completedObjectives model.flags.randomObjectiveTypes)
+                |> Array.indexedMap (\i o -> viewEditableObjective i o model.completedObjectives model.flags.randomObjectiveTypes)
                 |> Array.toList
     in
     ul [ class "objectives" ]
@@ -206,8 +212,8 @@ viewObjective objective completed =
         ]
 
 
-viewEditableObjective : Int -> Maybe Objective -> Maybe Dropdown.State -> Set Objective -> Set Objective.Type -> Html Msg
-viewEditableObjective index maybeObjective maybeDropdown completedObjectives objectiveTypes =
+viewEditableObjective : Int -> RandomObjective -> Set Objective -> Set Objective.Type -> Html Msg
+viewEditableObjective index randomObjective completedObjectives objectiveTypes =
     let
         item : Objective -> DropdownItem Msg
         item objective =
@@ -224,12 +230,12 @@ viewEditableObjective index maybeObjective maybeDropdown completedObjectives obj
             else
                 []
     in
-    case ( maybeObjective, maybeDropdown ) of
-        ( Just objective, _ ) ->
+    case randomObjective of
+        Set objective ->
             -- TODO allow for changing a set objective
             viewObjective objective <| Set.member objective completedObjectives
 
-        ( Nothing, Just dropdown ) ->
+        Unset dropdown ->
             li []
                 [ Dropdown.dropdown
                     dropdown
@@ -243,9 +249,6 @@ viewEditableObjective index maybeObjective maybeDropdown completedObjectives obj
                             ++ section Objective.Quest "Quests" Objective.quests
                     }
                 ]
-
-        ( Nothing, Nothing ) ->
-            li [] [ text "No objective, no dropdown state, no way out!" ]
 
 
 viewKeyItems : Flags -> Set Requirement -> Html Msg
@@ -322,9 +325,19 @@ viewKeyItems flags attained =
 viewLocations : Model -> Html Msg
 viewLocations model =
     let
+        setValue : RandomObjective -> Maybe Objective
+        setValue randomObjective =
+            case randomObjective of
+                Set objective ->
+                    Just objective
+
+                Unset _ ->
+                    Nothing
+
+        context : Location.Context
         context =
             { flags = model.flags
-            , randomObjectives = model.randomObjectives
+            , randomObjectives = model.randomObjectives |> Array.toList |> List.filterMap setValue |> Set.fromList
             , completedObjectives = model.completedObjectives
             , attainedRequirements = model.attainedRequirements
             , warpGlitchUsed = model.warpGlitchUsed
@@ -379,21 +392,23 @@ viewLocations model =
         |> div [ class "locations" ]
 
 
-fixDropdownsLength : Int -> Array Dropdown.State -> Array Dropdown.State
-fixDropdownsLength newCount dropdowns =
+updateRandomObjectives : Flags -> Array RandomObjective -> Array RandomObjective
+updateRandomObjectives flags objectives =
     let
         delta =
-            newCount - Array.length dropdowns
+            flags.randomObjectives - Array.length objectives
     in
     if delta > 0 then
-        Array.append dropdowns <|
-            Array.repeat delta Dropdown.initialState
+        -- add unset objectives to the end of the array
+        Array.append objectives <|
+            Array.repeat delta (Unset Dropdown.initialState)
 
     else if delta < 0 then
-        Array.slice 0 delta dropdowns
+        -- remove excess objectives from the end of the array
+        Array.slice 0 delta objectives
 
     else
-        dropdowns
+        objectives
 
 
 memberOf : List a -> a -> Bool

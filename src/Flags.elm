@@ -2,7 +2,6 @@ module Flags exposing
     ( Flags
     , KeyItemClass(..)
     , parse
-    , updateRandomObjectives
     )
 
 import Array exposing (Array)
@@ -39,28 +38,6 @@ type KeyItemClass
 type Reward
     = Crystal
     | Win
-
-
-{-| Non-destructively updates the given array of set or unset random objectives
-based on the given flags
--}
-updateRandomObjectives : Array (Maybe Objective) -> Flags -> Array (Maybe Objective)
-updateRandomObjectives objectives flags =
-    let
-        randomDelta =
-            flags.randomObjectives - Array.length objectives
-    in
-    if randomDelta > 0 then
-        -- add unset objectives to the end of the array
-        Array.append objectives <|
-            Array.repeat randomDelta Nothing
-
-    else if randomDelta < 0 then
-        -- remove excess objectives from the end of the array
-        Array.slice 0 randomDelta objectives
-
-    else
-        objectives
 
 
 {-| Would this be cleaner with a Parser?
