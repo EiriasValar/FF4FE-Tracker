@@ -59,7 +59,7 @@ type BossObjective
     | Octomamm
     | Antlion
     | Waterhag
-    | MomBom
+    | MomBomb
     | Gauntlet
     | Milon
     | MilonZ
@@ -98,7 +98,7 @@ bosses =
     , Octomamm
     , Antlion
     , Waterhag
-    , MomBom
+    , MomBomb
     , Gauntlet
     , Milon
     , MilonZ
@@ -286,7 +286,7 @@ bossToString : BossObjective -> String
 bossToString boss =
     case boss of
         DMist ->
-            "DMist"
+            "D. Mist"
 
         Officer ->
             "Officer"
@@ -300,23 +300,23 @@ bossToString boss =
         Waterhag ->
             "Waterhag"
 
-        MomBom ->
-            "MomBom"
+        MomBomb ->
+            "MomBomb"
 
         Gauntlet ->
-            "Gauntlet"
+            "the Fabul Gauntlet"
 
         Milon ->
             "Milon"
 
         MilonZ ->
-            "MilonZ"
+            "Milon Z."
 
         DarkKnight ->
-            "DarkKnight"
+            "D.Knight"
 
         Guards ->
-            "Guards"
+            "the Guards"
 
         Karate ->
             "Karate"
@@ -328,10 +328,10 @@ bossToString boss =
             "Kainazzo"
 
         DarkElf ->
-            "DarkElf"
+            "the Dark Elf"
 
         MagusSisters ->
-            "MagusSisters"
+            "the Magus Sisters"
 
         Valvalis ->
             "Valvalis"
@@ -343,13 +343,13 @@ bossToString boss =
             "Golbez"
 
         DrLugae ->
-            "DrLugae"
+            "Dr. Lugae"
 
         DarkImps ->
-            "DarkImps"
+            "the Dark Imps"
 
         KQEblan ->
-            "KQEblan"
+            "K.Eblan and Q.Eblan"
 
         Rubicant ->
             "Rubicant"
@@ -376,7 +376,7 @@ bossToString boss =
             "CPU"
 
         PaleDim ->
-            "PaleDim"
+            "Pale Dim"
 
         Wyvern ->
             "Wyvern"
@@ -385,7 +385,7 @@ bossToString boss =
             "Plague"
 
         DLunars ->
-            "DLunars"
+            "D.Lunars"
 
         Ogopogo ->
             "Ogopogo"
@@ -395,121 +395,121 @@ questToString : QuestObjective -> String
 questToString quest =
     case quest of
         MistCave ->
-            "MistCave"
+            "Defeat the boss of the Mist Cave"
 
         Waterfall ->
-            "Waterfall"
+            "Defeat the boss of the Waterfall"
 
         AntlionCave ->
-            "AntlionCave"
+            "Complete the Antlion Nest"
 
         MtHobs ->
-            "MtHobs"
+            "Rescue the hostage on Mt. Hobs"
 
         Fabul ->
-            "Fabul"
+            "Defend Fabul"
 
         MtOrdeals ->
-            "MtOrdeals"
+            "Complete Mt. Ordeals"
 
         BaronInn ->
-            "BaronInn"
+            "Defeat the bosses of Baron Inn"
 
         BaronCastle ->
-            "BaronCastle"
+            "Liberate Baron Castle"
 
         CaveMagnes ->
-            "CaveMagnes"
+            "Complete Cave Magnes"
 
         TowerZot ->
-            "TowerZot"
+            "Complete the Tower of Zot"
 
         DwarfCastle ->
-            "DwarfCastle"
+            "Defeat the bosses of Dwarf Castle"
 
         LowerBabil ->
-            "LowerBabil"
+            "Defeat the boss of Lower Bab-il"
 
         Falcon ->
-            "Falcon"
+            "Launch the Falcon"
 
         SealedCave ->
-            "SealedCave"
+            "Complete the Sealed Cave"
 
         FeymarchQueen ->
-            "FeymarchQueen"
+            "Defeat the queen at the Town of Monsters"
 
         FeymarchKing ->
-            "FeymarchKing"
+            "Defeat the king at the Town of Monsters"
 
         BaronBasement ->
-            "BaronBasement"
+            "Defeat the Baron Castle basement throne"
 
         Giant ->
-            "Giant"
+            "Complete the Giant of Bab-il"
 
         CaveBahamut ->
-            "CaveBahamut"
+            "Complete Cave Bahamut"
 
         MurasameAltar ->
-            "MurasameAltar"
+            "Conquer the vanilla Murasame altar"
 
         WyvernAltar ->
-            "WyvernAltar"
+            "Conquer the vanilla Crystal Sword altar"
 
         WhiteSpearAltar ->
-            "WhiteSpearAltar"
+            "Conquer the vanilla White Spear altar"
 
         RibbonRoom ->
-            "RibbonRoom"
+            "Conquer the vanillla Ribbon room"
 
         MasamuneAltar ->
-            "MasamuneAltar"
+            "Conquer the vanilla Masamune Altar"
 
         Package ->
-            "Package"
+            "Burn village Mist with the Package"
 
         SandRuby ->
-            "SandRuby"
+            "Cure the fever with the SandRuby"
 
         UnlockSewer ->
-            "UnlockSewer"
+            "Unlock the swere with the Baron Key"
 
         TwinHarp ->
-            "TwinHarp"
+            "Break the Dark Elf's spell with the TwinHarp"
 
         Treasury ->
-            "Treasury"
+            "Open the Toroia Treasury with the Earth Crystal"
 
         MagmaKey ->
-            "MagmaKey"
+            "Drop the Magma Key into the Agart well"
 
         SuperCannon ->
-            "SuperCannon"
+            "Destroy the Super Cannon"
 
         UnlockSealedCave ->
-            "UnlockSealedCave"
+            "Unlock the Sealed Cave"
 
         BigWhale ->
-            "BigWhale"
+            "Raise the Big Whale"
 
         RatTail ->
-            "RatTail"
+            "Trade away the Rat Tail"
 
         Forge ->
-            "Forge"
+            "Have Kokkol forge Legend Sword with Adamant"
 
         PanWake ->
-            "PanWake"
+            "Wake Yang with the Pan"
 
         PanReturn ->
-            "PanReturn"
+            "Return the Pan to Yang's wife"
 
         PinkTail ->
-            "PinkTail"
+            "Trade away the Pink Tail"
 
         Pass ->
-            "Pass"
+            "Unlock the Pass door in Toroia"
 
 
 fromString : String -> Maybe Objective
@@ -605,7 +605,7 @@ bossFromString boss =
             Just Waterhag
 
         "mombom" ->
-            Just MomBom
+            Just MomBomb
 
         "fabulgauntlet" ->
             Just Gauntlet

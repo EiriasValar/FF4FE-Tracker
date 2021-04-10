@@ -154,9 +154,7 @@ view : Model -> Document Msg
 view model =
     { title = "FFIV Free Enterprise Tracker"
     , body =
-        [ -- TODO remove this
-          Bootstrap.CDN.stylesheet
-        , textarea
+        [ textarea
             [ class "flagstring"
             , onInput UpdateFlags
             ]
