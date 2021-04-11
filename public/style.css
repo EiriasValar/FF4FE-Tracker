@@ -29,7 +29,11 @@ body {
   width: fit-content;
 }
 
-.objective .icon {
+.objective .text:hover {
+  background-color: #f8f9fa;
+}
+
+.objective .icon.state {
   content: url("/img/sprites/Crystal-still.png");
   filter: grayscale(100%) opacity(50%);
   margin-right: 0.5em;
@@ -37,7 +41,16 @@ body {
   vertical-align: middle;
 }
 
-.objective.completed .icon {
+.objective .icon.delete {
+  content: url("/img/sprites/TrashCan.gif");
+  height: 1em;
+  vertical-align: top;
+  padding-top: 2px;
+  margin-left: .5em;
+  filter: opacity(75%)
+}
+
+.objective.completed .icon.state {
   filter: none;
 }
 

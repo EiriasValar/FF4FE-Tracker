@@ -44,6 +44,7 @@ type RandomObjective
 type Msg
     = ToggleObjective Objective
     | SetRandomObjective Int Objective
+    | UnsetRandomObjective Int
     | DropdownMsg Int Dropdown.State
     | ToggleRequirement Requirement
     | ToggleLocation Int
@@ -118,6 +119,9 @@ innerUpdate msg model =
         SetRandomObjective index objective ->
             { model | randomObjectives = Array.set index (Set objective) model.randomObjectives }
 
+        UnsetRandomObjective index ->
+            { model | randomObjectives = Array.set index (Unset Dropdown.initialState) model.randomObjectives }
+
         DropdownMsg index dropdown ->
             case Array.get index model.randomObjectives of
                 Just (Unset _) ->
@@ -186,7 +190,7 @@ viewObjectives model =
     let
         fixed =
             model.flags.objectives
-                |> Array.map (\o -> viewObjective o <| Set.member o model.completedObjectives)
+                |> Array.map (\o -> viewObjective o (Set.member o model.completedObjectives) Nothing)
                 |> Array.toList
 
         random =
@@ -198,8 +202,8 @@ viewObjectives model =
         (fixed ++ random)
 
 
-viewObjective : Objective -> Bool -> Html Msg
-viewObjective objective completed =
+viewObjective : Objective -> Bool -> Maybe Int -> Html Msg
+viewObjective objective completed randomIndex =
     li
         [ classList
             [ ( "objective", True )
@@ -207,8 +211,16 @@ viewObjective objective completed =
             ]
         , onClick (ToggleObjective objective)
         ]
-        [ span [ class "icon" ] []
-        , span [] [ text <| Objective.toString objective ]
+        [ span [ class "icon state" ] []
+        , span [ class "text" ] [ text <| Objective.toString objective ]
+        , case ( completed, randomIndex ) of
+            ( False, Just index ) ->
+                -- we're unlikely to want to delete a completed objective, and in the
+                -- event that we do, it's easy enough to toggle it off again first
+                span [ class "icon delete", onClick <| UnsetRandomObjective index ] []
+
+            _ ->
+                text ""
         ]
 
 
@@ -232,8 +244,7 @@ viewEditableObjective index randomObjective completedObjectives objectiveTypes =
     in
     case randomObjective of
         Set objective ->
-            -- TODO allow for changing a set objective
-            viewObjective objective <| Set.member objective completedObjectives
+            viewObjective objective (Set.member objective completedObjectives) (Just index)
 
         Unset dropdown ->
             li []
@@ -325,8 +336,8 @@ viewKeyItems flags attained =
 viewLocations : Model -> Html Msg
 viewLocations model =
     let
-        setValue : RandomObjective -> Maybe Objective
-        setValue randomObjective =
+        toMaybe : RandomObjective -> Maybe Objective
+        toMaybe randomObjective =
             case randomObjective of
                 Set objective ->
                     Just objective
@@ -337,7 +348,7 @@ viewLocations model =
         context : Location.Context
         context =
             { flags = model.flags
-            , randomObjectives = model.randomObjectives |> Array.toList |> List.filterMap setValue |> Set.fromList
+            , randomObjectives = model.randomObjectives |> Array.toList |> List.filterMap toMaybe |> Set.fromList
             , completedObjectives = model.completedObjectives
             , attainedRequirements = model.attainedRequirements
             , warpGlitchUsed = model.warpGlitchUsed
