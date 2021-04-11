@@ -1,3 +1,11 @@
+{- Lotta unfortunate boilerplate in here, partly as a result of not being able
+   to get at all the possible values of a union type through reflection.
+   Could go the same route as Location, and just define (once) a list of records,
+   but that feels unnecessarily clunky when the records would have only two fields,
+   plus `fromString` would then have to scan the list for the given name.
+-}
+
+
 module Objective exposing
     ( BossObjective(..)
     , CharacterObjective(..)

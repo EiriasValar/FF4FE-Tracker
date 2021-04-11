@@ -336,15 +336,6 @@ viewKeyItems flags attained =
 viewLocations : Model -> Html Msg
 viewLocations model =
     let
-        toMaybe : RandomObjective -> Maybe Objective
-        toMaybe randomObjective =
-            case randomObjective of
-                Set objective ->
-                    Just objective
-
-                Unset _ ->
-                    Nothing
-
         context : Location.Context
         context =
             { flags = model.flags
@@ -353,6 +344,15 @@ viewLocations model =
             , attainedRequirements = model.attainedRequirements
             , warpGlitchUsed = model.warpGlitchUsed
             }
+
+        toMaybe : RandomObjective -> Maybe Objective
+        toMaybe randomObjective =
+            case randomObjective of
+                Set objective ->
+                    Just objective
+
+                Unset _ ->
+                    Nothing
     in
     model.locations
         -- toList sorts by key
@@ -360,47 +360,51 @@ viewLocations model =
         |> List.filterMap
             (\( key, loc ) ->
                 if Location.isProspect context loc || (model.showCheckedLocations && Location.isChecked loc) then
-                    let
-                        warpItem =
-                            -- assuming here that there's always an item to be had, regardless of K flags
-                            if model.flags.warpGlitch && Location.isDwarfCastle loc then
-                                [ span
-                                    [ classList
-                                        [ ( "icon key-item clickable", True )
-                                        , ( "disabled", not model.warpGlitchUsed )
-                                        ]
-                                    , onClick ToggleWarpGlitchUsed
-                                    ]
-                                    []
-                                ]
-
-                            else
-                                []
-                    in
-                    Just <|
-                        div
-                            [ classList
-                                [ ( "location", True )
-                                , ( "checked", Location.isChecked loc )
-                                ]
-                            ]
-                        <|
-                            [ span
-                                [ class "name"
-                                , onClick <| ToggleLocation key
-                                ]
-                                [ text <| Location.getName loc ]
-                            , span [ class "icons" ] <|
-                                List.repeat (Location.getCharacters context loc) (span [ class "icon character" ] [])
-                                    ++ List.repeat (Location.getBosses context loc) (span [ class "icon boss" ] [])
-                                    ++ List.repeat (Location.getKeyItems context loc) (span [ class "icon key-item" ] [])
-                                    ++ warpItem
-                            ]
+                    Just <| viewLocation key loc context
 
                 else
                     Nothing
             )
         |> div [ class "locations" ]
+
+
+viewLocation : Int -> Location -> Location.Context -> Html Msg
+viewLocation locationKey location context =
+    let
+        warpItem =
+            -- assuming here that there's always an item to be had via the
+            -- warp glitch, regardless of K flags
+            if context.flags.warpGlitch && Location.isDwarfCastle location then
+                [ span
+                    [ classList
+                        [ ( "icon key-item clickable", True )
+                        , ( "disabled", not context.warpGlitchUsed )
+                        ]
+                    , onClick ToggleWarpGlitchUsed
+                    ]
+                    []
+                ]
+
+            else
+                []
+    in
+    div
+        [ classList
+            [ ( "location", True )
+            , ( "checked", Location.isChecked location )
+            ]
+        ]
+        [ span
+            [ class "name"
+            , onClick <| ToggleLocation locationKey
+            ]
+            [ text <| Location.getName location ]
+        , span [ class "icons" ] <|
+            List.repeat (Location.getCharacters context location) (span [ class "icon character" ] [])
+                ++ List.repeat (Location.getBosses context location) (span [ class "icon boss" ] [])
+                ++ List.repeat (Location.getKeyItems context location) (span [ class "icon key-item" ] [])
+                ++ warpItem
+        ]
 
 
 updateRandomObjectives : Flags -> Array RandomObjective -> Array RandomObjective
