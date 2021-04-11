@@ -220,7 +220,7 @@ requirementsMet attained (Location location) =
         |> Set.isEmpty
 
 
-locations : Dict Int Location
+locations : Array Location
 locations =
     [ { name = "Mist Cave"
       , area = Surface
@@ -535,18 +535,17 @@ locations =
       , keyItem = Just MoonBoss
       }
     ]
-        |> List.indexedMap
-            (\index l ->
-                Tuple.pair index <|
-                    Location
-                        { name = l.name
-                        , area = l.area
-                        , checked = False
-                        , requirements = Set.fromList l.requirements
-                        , jumpable = l.jumpable
-                        , characters = l.characters
-                        , bosses = l.bosses
-                        , keyItem = l.keyItem
-                        }
+        |> List.map
+            (\l ->
+                Location
+                    { name = l.name
+                    , area = l.area
+                    , checked = False
+                    , requirements = Set.fromList l.requirements
+                    , jumpable = l.jumpable
+                    , characters = l.characters
+                    , bosses = l.bosses
+                    , keyItem = l.keyItem
+                    }
             )
-        |> Dict.fromList
+        |> Array.fromList

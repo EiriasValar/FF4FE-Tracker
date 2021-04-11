@@ -30,7 +30,7 @@ type alias Model =
     , randomObjectives : Array RandomObjective
     , completedObjectives : Set Objective
     , attainedRequirements : Set Requirement
-    , locations : Dict Int Location
+    , locations : Array Location
     , showCheckedLocations : Bool
     , warpGlitchUsed : Bool
     }
@@ -47,7 +47,7 @@ type Msg
     | UnsetRandomObjective Int
     | DropdownMsg Int Dropdown.State
     | ToggleRequirement Requirement
-    | ToggleLocation Int
+    | ToggleLocation Int Location
     | ToggleCheckedLocations
     | ToggleWarpGlitchUsed
     | UpdateFlags String
@@ -133,8 +133,8 @@ innerUpdate msg model =
         ToggleRequirement requirement ->
             { model | attainedRequirements = toggle requirement model.attainedRequirements }
 
-        ToggleLocation key ->
-            { model | locations = Dict.update key (Maybe.map Location.toggleChecked) model.locations }
+        ToggleLocation index location ->
+            { model | locations = Array.set index (Location.toggleChecked location) model.locations }
 
         ToggleCheckedLocations ->
             { model | showCheckedLocations = not model.showCheckedLocations }
@@ -355,12 +355,11 @@ viewLocations model =
                     Nothing
     in
     model.locations
-        -- toList sorts by key
-        |> Dict.toList
+        |> Array.toIndexedList
         |> List.filterMap
-            (\( key, loc ) ->
-                if Location.isProspect context loc || (model.showCheckedLocations && Location.isChecked loc) then
-                    Just <| viewLocation key loc context
+            (\( index, location ) ->
+                if Location.isProspect context location || (model.showCheckedLocations && Location.isChecked location) then
+                    Just <| viewLocation index location context
 
                 else
                     Nothing
@@ -369,7 +368,7 @@ viewLocations model =
 
 
 viewLocation : Int -> Location -> Location.Context -> Html Msg
-viewLocation locationKey location context =
+viewLocation index location context =
     let
         warpItem =
             -- assuming here that there's always an item to be had via the
@@ -396,7 +395,7 @@ viewLocation locationKey location context =
         ]
         [ span
             [ class "name"
-            , onClick <| ToggleLocation locationKey
+            , onClick <| ToggleLocation index location
             ]
             [ text <| Location.getName location ]
         , span [ class "icons" ] <|
