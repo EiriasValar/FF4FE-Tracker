@@ -164,24 +164,34 @@ view : Model -> Document Msg
 view model =
     { title = "FFIV Free Enterprise Tracker"
     , body =
-        [ textarea
-            [ class "flagstring"
-            , onInput UpdateFlags
-            ]
-            [ text model.flagString ]
-        , h2 [] [ text "Objectives" ]
-        , viewObjectives model
-        , h2 [] [ text "Key Items" ]
-        , viewKeyItems model.flags model.attainedRequirements
-        , h2 []
-            [ text "Locations"
-            , input
-                [ type_ "checkbox"
-                , onClick ToggleCheckedLocations
+        [ div [ class "content" ]
+            [ div [ id "flagstring" ]
+                [ textarea
+                    [ class "flagstring"
+                    , onInput UpdateFlags
+                    ]
+                    [ text model.flagString ]
                 ]
-                []
+            , div [ id "objectives" ]
+                [ h2 [] [ text "Objectives" ]
+                , viewObjectives model
+                ]
+            , div [ id "key-items" ]
+                [ h2 [] [ text "Key Items" ]
+                , viewKeyItems model.flags model.attainedRequirements
+                ]
+            , div [ id "locations" ]
+                [ h2 []
+                    [ text "Locations"
+                    , input
+                        [ type_ "checkbox"
+                        , onClick ToggleCheckedLocations
+                        ]
+                        []
+                    ]
+                , viewLocations model
+                ]
             ]
-        , viewLocations model
         ]
     }
 
@@ -199,6 +209,9 @@ viewObjectives model =
                 |> Array.indexedMap (\i o -> viewEditableObjective i o model.completedObjectives model.flags.randomObjectiveTypes)
                 |> Array.toList
     in
+    -- TODO show completed/needed and reward
+    -- note that the size of model.completedObjectives isn't necessarily accurate,
+    -- since we don't clean it up when dropping or unsetting random requirements
     ul [ class "objectives" ]
         (fixed ++ random)
 
@@ -252,7 +265,7 @@ viewEditableObjective index randomObjective completedObjectives objectiveTypes =
             viewObjective objective (Set.member objective completedObjectives) (Just index)
 
         Unset dropdown ->
-            li []
+            li [ class "objective unset" ]
                 [ Dropdown.dropdown
                     dropdown
                     { options = []

@@ -13,20 +13,55 @@ body {
 
 .page { margin-top: 20px; }
 
+.content {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  width: 500px;
+}
+
+#flagstring {
+  flex: 1 100%;
+  order: 0;
+}
+
+#objectives {
+  flex: 1 60%;
+  order: 2;
+}
+
+#key-items {
+  flex: 0 35%;
+  order: 1;
+}
+
+#locations {
+  flex: 1 50%;
+  order: 3;
+}
+
+h2 {
+  font-size: 1em;
+}
+
 .flagstring {
-    width: 50em;
+  width: 100%;
 }
 
 .objectives {
   list-style: none;
   padding: 0;
-  margin-left: 1em;
+  margin: 0;
 }
 
 .objective {
   margin: 1px 0;
   cursor: pointer;
   width: fit-content;
+}
+
+.objective.unset {
+  height: 1.25em;
 }
 
 .objective .text:hover {
@@ -64,7 +99,6 @@ body {
   border-style: double;
   border-color: white;
   padding: 5px;
-  margin-left: 1em;
 }
 
 .requirement {
