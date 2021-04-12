@@ -6,8 +6,9 @@ import Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags)
 import Html exposing (Html, div, h2, input, li, span, table, td, text, textarea, tr, ul)
-import Html.Attributes exposing (class, classList, type_)
+import Html.Attributes exposing (class, classList, id, type_)
 import Html.Events exposing (onClick, onInput)
+import Json.Decode
 import Location exposing (Location, Requirement(..))
 import Objective exposing (Objective)
 import Spa.Document exposing (Document)
@@ -204,6 +205,10 @@ viewObjectives model =
 
 viewObjective : Objective -> Bool -> Maybe Int -> Html Msg
 viewObjective objective completed randomIndex =
+    let
+        onClickNoPropagate msg =
+            Html.Events.stopPropagationOn "click" <| Json.Decode.succeed ( msg, True )
+    in
     li
         [ classList
             [ ( "objective", True )
@@ -217,7 +222,7 @@ viewObjective objective completed randomIndex =
             ( False, Just index ) ->
                 -- we're unlikely to want to delete a completed objective, and in the
                 -- event that we do, it's easy enough to toggle it off again first
-                span [ class "icon delete", onClick <| UnsetRandomObjective index ] []
+                span [ class "icon delete", onClickNoPropagate <| UnsetRandomObjective index ] []
 
             _ ->
                 text ""
