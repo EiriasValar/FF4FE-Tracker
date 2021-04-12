@@ -2,7 +2,6 @@ module Pages.Top exposing (Model, Msg, Params, page)
 
 import Array exposing (Array)
 import Bootstrap.Dropdown as Dropdown exposing (DropdownItem)
-import Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags)
 import Html exposing (Html, div, h2, input, li, span, table, td, text, textarea, tr, ul)
@@ -82,7 +81,7 @@ init url =
     , randomObjectives = randomObjectives
     , completedObjectives = Set.empty
     , attainedRequirements = Set.empty
-    , locations = Location.locations
+    , locations = Location.all
     , showCheckedLocations = False
     , warpGlitchUsed = False
     }
@@ -150,6 +149,8 @@ innerUpdate msg model =
 
                 randomObjectives =
                     updateRandomObjectives flags model.randomObjectives
+
+                -- TODO uncomplete any removed objectives
             in
             -- storing both flagString and the Flags derived from it isn't ideal, but we ignore
             -- flagString everywhere else; it only exists so we can prepopulate the flags textarea
@@ -361,6 +362,7 @@ viewLocations model =
             , completedObjectives = model.completedObjectives
             , attainedRequirements = model.attainedRequirements
             , warpGlitchUsed = model.warpGlitchUsed
+            , showChecked = model.showCheckedLocations
             }
 
         toMaybe : RandomObjective -> Maybe Objective
@@ -373,20 +375,17 @@ viewLocations model =
                     Nothing
     in
     model.locations
+        |> Location.pruneIrrelevant context
         |> Array.toIndexedList
         |> List.filterMap
-            (\( index, location ) ->
-                if Location.isProspect context location || (model.showCheckedLocations && Location.isChecked location) then
-                    Just <| viewLocation index location context
-
-                else
-                    Nothing
+            (\( index, maybeLocation ) ->
+                Maybe.map (viewLocation index context) maybeLocation
             )
         |> div [ class "locations" ]
 
 
-viewLocation : Int -> Location -> Location.Context -> Html Msg
-viewLocation index location context =
+viewLocation : Int -> Location.Context -> Location -> Html Msg
+viewLocation index context location =
     let
         warpItem =
             -- assuming here that there's always an item to be had via the
@@ -406,6 +405,7 @@ viewLocation index location context =
                 []
     in
     div
+        -- TODO style surface/underground/moon
         [ classList
             [ ( "location", True )
             , ( "checked", Location.isChecked location )

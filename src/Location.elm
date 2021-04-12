@@ -2,19 +2,18 @@ module Location exposing
     ( Context
     , Location
     , Requirement(..)
+    , all
     , getBosses
     , getCharacters
     , getKeyItems
     , getName
     , isChecked
     , isDwarfCastle
-    , isProspect
-    , locations
+    , pruneIrrelevant
     , toggleChecked
     )
 
 import Array exposing (Array)
-import Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
 import Objective exposing (Objective)
@@ -80,6 +79,7 @@ type alias Context =
     , completedObjectives : Set Objective
     , attainedRequirements : Set Requirement
     , warpGlitchUsed : Bool
+    , showChecked : Bool
     }
 
 
@@ -173,32 +173,85 @@ isDwarfCastle (Location location) =
     location.name == dwarfCastle
 
 
-isProspect : Context -> Location -> Bool
-isProspect ({ flags, attainedRequirements } as context) ((Location l) as location) =
+{-| Nothings out any of the provided locations that don't have anything
+to offer, based on the given context. Returning Maybe instead of outright
+filtering to preserve the array indices.
+-}
+pruneIrrelevant : Context -> Array Location -> Array (Maybe Location)
+pruneIrrelevant c =
     let
-        attained =
+        attainedRequirements =
             if
-                flags.pushBToJump
-                    || Set.member MagmaKey attainedRequirements
-                    || Set.member Hook attainedRequirements
+                c.flags.pushBToJump
+                    || Set.member MagmaKey c.attainedRequirements
+                    || Set.member Hook c.attainedRequirements
             then
-                Set.insert UndergroundAccess attainedRequirements
+                Set.insert UndergroundAccess c.attainedRequirements
 
             else
-                attainedRequirements
+                c.attainedRequirements
+
+        context =
+            { c | attainedRequirements = attainedRequirements }
+
+        -- worried about calling this for each location when it depends only on the context
+        bossesRelevant =
+            bossesHaveValue context
+
+        isRelevant ((Location l) as location) =
+            (context.showChecked || not l.checked)
+                && ((getCharacters context location > 0)
+                        || (bossesRelevant && getBosses context location > 0)
+                        || (getKeyItems context location > 0)
+                   )
+                && areaAccessible attainedRequirements location
+                && (context.flags.pushBToJump && l.jumpable || requirementsMet attainedRequirements location)
     in
-    not l.checked
-        && hasValue context location
-        && areaAccessible attained location
-        && (flags.pushBToJump && l.jumpable || requirementsMet attained location)
+    Array.map
+        (\l ->
+            if isRelevant l then
+                Just l
+
+            else
+                Nothing
+        )
 
 
-hasValue : Context -> Location -> Bool
-hasValue context location =
-    -- TODO suppress getBosses if there's no boss objective or item-bearing dmist still to find
-    (getCharacters context location > 0)
-        || (getBosses context location > 0)
-        || (getKeyItems context location > 0)
+{-| Returns True if, based on the given Context, bosses may be intrisically
+valuable. Namely, if there are Boss Hunt objectives to fullfil, or a D.Mist
+to find when the Nkey flag is on.
+-}
+bossesHaveValue : Context -> Bool
+bossesHaveValue context =
+    let
+        combinedObjectives =
+            context.flags.objectives
+                |> Array.toList
+                |> Set.fromList
+                |> Set.union context.randomObjectives
+
+        outstandingObjectives =
+            if Set.size context.completedObjectives >= context.flags.requiredObjectives then
+                Set.empty
+
+            else
+                Set.diff combinedObjectives context.completedObjectives
+
+        activeBossHunt =
+            outstandingObjectives
+                |> Set.filter Objective.isBoss
+                |> Set.isEmpty
+                |> not
+
+        -- Finding D.Mist is interesting if the Free key item is turned off and we
+        -- haven't already found it. Technically it may also stop being interesting
+        -- if we've already attained Go Mode without it, but at that point *most* of
+        -- what we track stops being interesting.
+        huntingDMist =
+            (not <| Set.member Flags.Free context.flags.keyItems)
+                && (not <| Set.member MistDragon context.attainedRequirements)
+    in
+    activeBossHunt || huntingDMist
 
 
 areaAccessible : Set Requirement -> Location -> Bool
@@ -220,8 +273,8 @@ requirementsMet attained (Location location) =
         |> Set.isEmpty
 
 
-locations : Array Location
-locations =
+all : Array Location
+all =
     [ { name = "Mist Cave"
       , area = Surface
       , requirements = []

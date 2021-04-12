@@ -15,6 +15,7 @@ module Objective exposing
     , bosses
     , characters
     , fromString
+    , isBoss
     , quests
     , toString
     )
@@ -34,6 +35,19 @@ type Type
     = Character
     | Boss
     | Quest
+
+
+isBoss : Objective -> Bool
+isBoss objective =
+    case objective of
+        Fiends ->
+            True
+
+        DefeatBoss _ ->
+            True
+
+        _ ->
+            False
 
 
 type CharacterObjective

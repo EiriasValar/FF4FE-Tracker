@@ -152,6 +152,7 @@ parseO opts incomingFlags =
                 |> List.foldl parseRandom incomingFlags
 
         [ "req", count ] ->
+            -- TODO parse req:all, default correctly when there's no req at all
             case String.toInt count of
                 Just c ->
                     { incomingFlags | requiredObjectives = c }
