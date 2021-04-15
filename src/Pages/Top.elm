@@ -8,7 +8,7 @@ import Html exposing (Html, div, h2, input, li, span, table, td, text, textarea,
 import Html.Attributes exposing (class, classList, id, type_)
 import Html.Events exposing (onClick, onInput)
 import Json.Decode
-import Location exposing (Location, Requirement(..))
+import Location exposing (Location, Locations, Requirement(..))
 import Objective exposing (Objective)
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
@@ -30,7 +30,7 @@ type alias Model =
     , randomObjectives : Array RandomObjective
     , completedObjectives : Set Objective
     , attainedRequirements : Set Requirement
-    , locations : Array Location
+    , locations : Locations
     , showCheckedLocations : Bool
     , warpGlitchUsed : Bool
     }
@@ -47,7 +47,7 @@ type Msg
     | UnsetRandomObjective Int
     | DropdownMsg Int Dropdown.State
     | ToggleRequirement Requirement
-    | ToggleLocation Int Location
+    | ToggleLocation Location.Key
     | ToggleCheckedLocations
     | ToggleWarpGlitchUsed
     | UpdateFlags String
@@ -133,8 +133,8 @@ innerUpdate msg model =
         ToggleRequirement requirement ->
             { model | attainedRequirements = toggle requirement model.attainedRequirements }
 
-        ToggleLocation index location ->
-            { model | locations = Array.set index (Location.toggleChecked location) model.locations }
+        ToggleLocation key ->
+            { model | locations = Location.update key (Maybe.map Location.toggleChecked) model.locations }
 
         ToggleCheckedLocations ->
             { model | showCheckedLocations = not model.showCheckedLocations }
@@ -375,22 +375,22 @@ viewLocations model =
                     Nothing
     in
     model.locations
-        |> Location.pruneIrrelevant context
-        |> Array.toIndexedList
-        |> List.filterMap
-            (\( index, maybeLocation ) ->
-                Maybe.map (viewLocation index context) maybeLocation
-            )
+        |> Location.filterByContext context
+        |> Location.values
+        |> List.map (viewLocation context)
         |> div [ class "locations" ]
 
 
-viewLocation : Int -> Location.Context -> Location -> Html Msg
-viewLocation index context location =
+viewLocation : Location.Context -> Location -> Html Msg
+viewLocation context location =
     let
+        key =
+            Location.getKey location
+
         warpItem =
             -- assuming here that there's always an item to be had via the
             -- warp glitch, regardless of K flags
-            if context.flags.warpGlitch && Location.isDwarfCastle location then
+            if context.flags.warpGlitch && key == Location.DwarfCastle then
                 [ span
                     [ classList
                         [ ( "icon key-item clickable", True )
@@ -413,7 +413,7 @@ viewLocation index context location =
         ]
         [ span
             [ class "name"
-            , onClick <| ToggleLocation index location
+            , onClick <| ToggleLocation key
             ]
             [ text <| Location.getName location ]
         , span [ class "icons" ] <|

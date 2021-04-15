@@ -1,19 +1,24 @@
 module Location exposing
     ( Context
+    , Key(..)
     , Location
+    , Locations
     , Requirement(..)
     , all
+    , filterByContext
     , getBosses
     , getCharacters
+    , getKey
     , getKeyItems
     , getName
     , isChecked
-    , isDwarfCastle
-    , pruneIrrelevant
     , toggleChecked
+    , update
+    , values
     )
 
-import Array exposing (Array)
+import Array
+import AssocList as Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
 import Objective exposing (Objective)
@@ -23,12 +28,17 @@ type alias Set a =
     EverySet a
 
 
+type Locations
+    = Locations (Dict Key Location)
+
+
 type Location
-    = Location Internals
+    = Location Data
 
 
-type alias Internals =
-    { name : String
+type alias Data =
+    { key : Key
+    , name : String
     , area : Area
     , checked : Bool
     , requirements : Set Requirement
@@ -37,6 +47,48 @@ type alias Internals =
     , bosses : Int
     , keyItem : Maybe KeyItemClass
     }
+
+
+type Key
+    = MistCave
+    | MistVillagePackage
+    | MistVillageMom
+    | Kaipo
+    | WateryPass
+    | Waterfall
+    | Damcyan
+    | AntlionCave
+    | MtHobs
+    | FabulDefence
+    | Sheila
+    | SheilaPan
+    | AdamantGrotto
+    | Mysidia
+    | MtOrdeals
+    | BaronInn
+    | BaronCastle
+    | BaronBasement
+    | Toroia
+    | CaveMagnes
+    | TowerZot1
+    | TowerZot2
+    | CaveEblan
+    | UpperBabil
+    | GiantBabil
+    | DwarfCastle
+    | LowerBabilCannon
+    | LowerBabilTop
+    | SylphCave
+    | FeymarchKing
+    | FeymarchQueen
+    | SealedCave
+    | LunarDais
+    | CaveBahamut
+    | MurasameAltar
+    | WyvernAltar
+    | WhiteSpearAltar
+    | RibbonRoom
+    | MasamuneAltar
 
 
 type Requirement
@@ -83,23 +135,9 @@ type alias Context =
     }
 
 
-
--- Names of locations with one-off rules so we can reference them directly
-
-
-dwarfCastle : String
-dwarfCastle =
-    "Dwarf Castle"
-
-
-sealedCave : String
-sealedCave =
-    "Sealed Cave"
-
-
-giantOfBabil : String
-giantOfBabil =
-    "Giant of Bab-il"
+getKey : Location -> Key
+getKey (Location location) =
+    location.key
 
 
 getName : Location -> String
@@ -111,7 +149,7 @@ getCharacters : Context -> Location -> Int
 getCharacters { flags } (Location location) =
     case location.characters of
         Just (Gated n) ->
-            if flags.classicGiantObjective && location.name == giantOfBabil then
+            if flags.classicGiantObjective && location.key == GiantBabil then
                 0
 
             else
@@ -149,7 +187,7 @@ getKeyItems { flags, warpGlitchUsed } (Location location) =
                     0
 
         modifier =
-            if warpGlitchUsed && location.name == sealedCave then
+            if warpGlitchUsed && location.key == SealedCave then
                 -1
 
             else
@@ -168,17 +206,46 @@ toggleChecked (Location location) =
     Location { location | checked = not location.checked }
 
 
-isDwarfCastle : Location -> Bool
-isDwarfCastle (Location location) =
-    location.name == dwarfCastle
+{-| Dict.get without the Maybe; we're soft-guaranteeing that every Key
+has an entry in Locations by making it opaque.
+-}
+get : Key -> Locations -> Location
+get key (Locations locations) =
+    let
+        empty =
+            Location
+                { key = MistCave
+                , name = "Unknown"
+                , area = Surface
+                , checked = False
+                , requirements = Set.empty
+                , jumpable = False
+                , characters = Nothing
+                , bosses = 0
+                , keyItem = Nothing
+                }
+    in
+    Dict.get key locations
+        |> Maybe.withDefault empty
+
+
+values : Locations -> List Location
+values (Locations locations) =
+    Dict.values locations
+
+
+update : Key -> (Maybe Location -> Maybe Location) -> Locations -> Locations
+update key fn (Locations locations) =
+    Locations <|
+        Dict.update key fn locations
 
 
 {-| Nothings out any of the provided locations that don't have anything
 to offer, based on the given context. Returning Maybe instead of outright
 filtering to preserve the array indices.
 -}
-pruneIrrelevant : Context -> Array Location -> Array (Maybe Location)
-pruneIrrelevant c =
+filterByContext : Context -> Locations -> Locations
+filterByContext c (Locations locations) =
     let
         attainedRequirements =
             if
@@ -207,14 +274,9 @@ pruneIrrelevant c =
                 && areaAccessible attainedRequirements location
                 && (context.flags.pushBToJump && l.jumpable || requirementsMet attainedRequirements location)
     in
-    Array.map
-        (\l ->
-            if isRelevant l then
-                Just l
-
-            else
-                Nothing
-        )
+    locations
+        |> Dict.filter (always isRelevant)
+        |> Locations
 
 
 {-| Returns True if, based on the given Context, bosses may be intrisically
@@ -273,9 +335,10 @@ requirementsMet attained (Location location) =
         |> Set.isEmpty
 
 
-all : Array Location
+all : Locations
 all =
-    [ { name = "Mist Cave"
+    [ { key = MistCave
+      , name = "Mist Cave"
       , area = Surface
       , requirements = []
       , jumpable = False
@@ -283,7 +346,8 @@ all =
       , bosses = 1
       , keyItem = Nothing
       }
-    , { name = "Mist Village - Package"
+    , { key = MistVillagePackage
+      , name = "Mist Village - Package"
       , area = Surface
       , requirements = [ Package ]
       , jumpable = False
@@ -291,7 +355,8 @@ all =
       , bosses = 1
       , keyItem = Nothing
       }
-    , { name = "Mist Village - Mom"
+    , { key = MistVillageMom
+      , name = "Mist Village - Mom"
       , area = Surface
       , requirements = [ MistDragon ]
       , jumpable = False
@@ -299,7 +364,8 @@ all =
       , bosses = 0
       , keyItem = Just Main
       }
-    , { name = "Kaipo"
+    , { key = Kaipo
+      , name = "Kaipo"
       , area = Surface
       , requirements = [ SandRuby ]
       , jumpable = False
@@ -307,7 +373,8 @@ all =
       , bosses = 0
       , keyItem = Nothing
       }
-    , { name = "Watery Pass"
+    , { key = WateryPass
+      , name = "Watery Pass"
       , area = Surface
       , requirements = []
       , jumpable = False
@@ -315,7 +382,8 @@ all =
       , bosses = 0
       , keyItem = Nothing
       }
-    , { name = "Waterfall"
+    , { key = Waterfall
+      , name = "Waterfall"
       , area = Surface
       , requirements = []
       , jumpable = False
@@ -323,7 +391,8 @@ all =
       , bosses = 1
       , keyItem = Nothing
       }
-    , { name = "Damcyan"
+    , { key = Damcyan
+      , name = "Damcyan"
       , area = Surface
       , requirements = []
       , jumpable = False
@@ -331,7 +400,8 @@ all =
       , bosses = 0
       , keyItem = Nothing
       }
-    , { name = "Antlion Cave"
+    , { key = AntlionCave
+      , name = "Antlion Cave"
       , area = Surface
       , requirements = []
       , jumpable = False
@@ -339,7 +409,8 @@ all =
       , bosses = 1
       , keyItem = Just Main
       }
-    , { name = "Mt. Hobbs"
+    , { key = MtHobs
+      , name = "Mt. Hobs"
       , area = Surface
       , requirements = []
       , jumpable = False
@@ -347,7 +418,8 @@ all =
       , bosses = 1
       , keyItem = Nothing
       }
-    , { name = "Fabul Defence"
+    , { key = FabulDefence
+      , name = "Fabul Defence"
       , area = Surface
       , requirements = []
       , jumpable = False
@@ -355,7 +427,8 @@ all =
       , bosses = 1
       , keyItem = Just Main
       }
-    , { name = "Sheila 1"
+    , { key = Sheila
+      , name = "Sheila"
       , area = Surface
       , requirements = [ UndergroundAccess ]
       , jumpable = False
@@ -363,7 +436,8 @@ all =
       , bosses = 0
       , keyItem = Just Main
       }
-    , { name = "Sheila 2"
+    , { key = SheilaPan
+      , name = "Sheila - Pan"
       , area = Surface
       , requirements = [ UndergroundAccess, Pan ]
       , jumpable = False
@@ -371,7 +445,8 @@ all =
       , bosses = 0
       , keyItem = Just Main
       }
-    , { name = "Adamant Grotto"
+    , { key = AdamantGrotto
+      , name = "Adamant Grotto"
       , area = Surface
       , requirements = [ Hook, RatTail ]
       , jumpable = False
@@ -379,7 +454,8 @@ all =
       , bosses = 0
       , keyItem = Just Main
       }
-    , { name = "Mysidia"
+    , { key = Mysidia
+      , name = "Mysidia"
       , area = Surface
       , requirements = []
       , jumpable = False
@@ -387,7 +463,8 @@ all =
       , bosses = 0
       , keyItem = Nothing
       }
-    , { name = "Mt. Ordeals"
+    , { key = MtOrdeals
+      , name = "Mt. Ordeals"
       , area = Surface
       , requirements = []
       , jumpable = False
@@ -395,7 +472,8 @@ all =
       , bosses = 3
       , keyItem = Just Main
       }
-    , { name = "Baron Inn"
+    , { key = BaronInn
+      , name = "Baron Inn"
       , area = Surface
       , requirements = []
       , jumpable = False
@@ -403,7 +481,8 @@ all =
       , bosses = 2
       , keyItem = Just Main
       }
-    , { name = "Baron Castle"
+    , { key = BaronCastle
+      , name = "Baron Castle"
       , area = Surface
       , requirements = [ BaronKey ]
       , jumpable = True
@@ -411,7 +490,8 @@ all =
       , bosses = 2
       , keyItem = Just Main
       }
-    , { name = "Baron Castle Basement"
+    , { key = BaronBasement
+      , name = "Baron Castle Basement"
       , area = Surface
       , requirements = [ BaronKey ]
       , jumpable = True
@@ -419,7 +499,8 @@ all =
       , bosses = 1
       , keyItem = Just Summon
       }
-    , { name = "Bedward"
+    , { key = Toroia
+      , name = "Edward in Toroia"
       , area = Surface
       , requirements = []
       , jumpable = False
@@ -427,7 +508,8 @@ all =
       , bosses = 0
       , keyItem = Just Free
       }
-    , { name = "Cave Magnes"
+    , { key = CaveMagnes
+      , name = "Cave Magnes"
       , area = Surface
       , requirements = [ TwinHarp ]
       , jumpable = True
@@ -435,7 +517,8 @@ all =
       , bosses = 1
       , keyItem = Just Main
       }
-    , { name = "Tower of Zot 1"
+    , { key = TowerZot1
+      , name = "Tower of Zot 1"
       , area = Surface
       , requirements = []
       , jumpable = False
@@ -443,7 +526,8 @@ all =
       , bosses = 1
       , keyItem = Nothing
       }
-    , { name = "Tower of Zot 2"
+    , { key = TowerZot2
+      , name = "Tower of Zot 2"
       , area = Surface
       , requirements = [ EarthCrystal ]
       , jumpable = True
@@ -451,7 +535,8 @@ all =
       , bosses = 1
       , keyItem = Just Main
       }
-    , { name = "Cave Eblan"
+    , { key = CaveEblan
+      , name = "Cave Eblan"
       , area = Surface
       , requirements = [ Hook ]
       , jumpable = True
@@ -459,7 +544,8 @@ all =
       , bosses = 0
       , keyItem = Nothing
       }
-    , { name = "Upper Bab-il"
+    , { key = UpperBabil
+      , name = "Upper Bab-il"
       , area = Surface
       , requirements = [ Hook ]
       , jumpable = True
@@ -467,7 +553,8 @@ all =
       , bosses = 2
       , keyItem = Nothing
       }
-    , { name = giantOfBabil
+    , { key = GiantBabil
+      , name = "Giant of Bab-il"
       , area = Surface
       , requirements = [ DarknessCrystal ]
       , jumpable = False
@@ -475,7 +562,8 @@ all =
       , bosses = 2
       , keyItem = Nothing
       }
-    , { name = dwarfCastle
+    , { key = DwarfCastle
+      , name = "Dwarf Castle"
       , area = Underground
       , requirements = []
       , jumpable = False
@@ -483,7 +571,8 @@ all =
       , bosses = 2
       , keyItem = Just Main
       }
-    , { name = "Lower Bab-il - Cannon"
+    , { key = LowerBabilCannon
+      , name = "Lower Bab-il - Cannon"
       , area = Underground
       , requirements = [ TowerKey ]
       , jumpable = False
@@ -491,7 +580,8 @@ all =
       , bosses = 1
       , keyItem = Just Main
       }
-    , { name = "Lower Bab-il - Top"
+    , { key = LowerBabilTop
+      , name = "Lower Bab-il - Top"
       , area = Underground
       , requirements = []
       , jumpable = False
@@ -499,7 +589,8 @@ all =
       , bosses = 1
       , keyItem = Just Main
       }
-    , { name = "Sylph Cave"
+    , { key = SylphCave
+      , name = "Sylph Cave"
       , area = Underground
       , requirements = [ Pan ]
       , jumpable = False
@@ -507,7 +598,8 @@ all =
       , bosses = 0
       , keyItem = Just Summon
       }
-    , { name = "Feymarch - King"
+    , { key = FeymarchKing
+      , name = "Feymarch - King"
       , area = Underground
       , requirements = []
       , jumpable = False
@@ -515,7 +607,8 @@ all =
       , bosses = 1
       , keyItem = Just Summon
       }
-    , { name = "Feymarch - Queen"
+    , { key = FeymarchQueen
+      , name = "Feymarch - Queen"
       , area = Underground
       , requirements = []
       , jumpable = False
@@ -523,7 +616,8 @@ all =
       , bosses = 1
       , keyItem = Just Summon
       }
-    , { name = sealedCave
+    , { key = SealedCave
+      , name = "Sealed Cave"
       , area = Underground
       , requirements = [ LucaKey ]
       , jumpable = False
@@ -531,7 +625,8 @@ all =
       , bosses = 1
       , keyItem = Just Main
       }
-    , { name = "Lunar Dais"
+    , { key = LunarDais
+      , name = "Lunar Dais"
       , area = Moon
       , requirements = []
       , jumpable = False
@@ -539,7 +634,8 @@ all =
       , bosses = 0
       , keyItem = Nothing
       }
-    , { name = "Cave Bahamut"
+    , { key = CaveBahamut
+      , name = "Cave Bahamut"
       , area = Moon
       , requirements = []
       , jumpable = False
@@ -547,7 +643,8 @@ all =
       , bosses = 1
       , keyItem = Just Summon
       }
-    , { name = "Murasame Altar"
+    , { key = MurasameAltar
+      , name = "Murasame Altar"
       , area = Moon
       , requirements = []
       , jumpable = False
@@ -555,7 +652,8 @@ all =
       , bosses = 1
       , keyItem = Just MoonBoss
       }
-    , { name = "Wyvern Altar"
+    , { key = WyvernAltar
+      , name = "Wyvern Altar"
       , area = Moon
       , requirements = []
       , jumpable = False
@@ -563,7 +661,8 @@ all =
       , bosses = 1
       , keyItem = Just MoonBoss
       }
-    , { name = "White Spear Altar"
+    , { key = WhiteSpearAltar
+      , name = "White Spear Altar"
       , area = Moon
       , requirements = []
       , jumpable = False
@@ -571,7 +670,8 @@ all =
       , bosses = 1
       , keyItem = Just MoonBoss
       }
-    , { name = "Ribbon Room"
+    , { key = RibbonRoom
+      , name = "Ribbon Room"
       , area = Moon
       , requirements = []
       , jumpable = False
@@ -579,7 +679,8 @@ all =
       , bosses = 1
       , keyItem = Just MoonBoss
       }
-    , { name = "Masamune Altar"
+    , { key = MasamuneAltar
+      , name = "Masamune Altar"
       , area = Moon
       , requirements = []
       , jumpable = False
@@ -590,15 +691,20 @@ all =
     ]
         |> List.map
             (\l ->
-                Location
-                    { name = l.name
-                    , area = l.area
-                    , checked = False
-                    , requirements = Set.fromList l.requirements
-                    , jumpable = l.jumpable
-                    , characters = l.characters
-                    , bosses = l.bosses
-                    , keyItem = l.keyItem
-                    }
+                Tuple.pair l.key <|
+                    Location
+                        { key = l.key
+                        , name = l.name
+                        , area = l.area
+                        , checked = False
+                        , requirements = Set.fromList l.requirements
+                        , jumpable = l.jumpable
+                        , characters = l.characters
+                        , bosses = l.bosses
+                        , keyItem = l.keyItem
+                        }
             )
-        |> Array.fromList
+        -- reverse so the AssocList dict is in the right order
+        |> List.reverse
+        |> Dict.fromList
+        |> Locations
