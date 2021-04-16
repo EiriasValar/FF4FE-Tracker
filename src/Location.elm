@@ -220,12 +220,13 @@ update key fn (Locations locations) =
 filterByContext : Context -> Locations -> Locations
 filterByContext c (Locations locations) =
     let
+        undergroundAccess =
+            c.flags.pushBToJump
+                || Set.member MagmaKey c.attainedRequirements
+                || (Dict.get UpperBabil locations |> Maybe.map isChecked |> Maybe.withDefault False)
+
         attainedRequirements =
-            if
-                c.flags.pushBToJump
-                    || Set.member MagmaKey c.attainedRequirements
-                    || Set.member Hook c.attainedRequirements
-            then
+            if undergroundAccess then
                 Set.insert UndergroundAccess c.attainedRequirements
 
             else
@@ -234,18 +235,23 @@ filterByContext c (Locations locations) =
         context =
             { c | attainedRequirements = attainedRequirements }
 
-        -- worried about calling this for each location when it depends only on the context
+        -- don't want to call this repeatedly for each location when it depends only on the context
         bossesRelevant =
             bossesHaveValue context
 
         isRelevant ((Location l) as location) =
-            (context.showChecked || not l.checked)
-                && ((getCharacters context location > 0)
-                        || (bossesRelevant && getBosses context location > 0)
-                        || (getKeyItems context location > 0)
-                   )
-                && areaAccessible attainedRequirements location
-                && (context.flags.pushBToJump && l.jumpable || requirementsMet attainedRequirements location)
+            if l.checked then
+                -- always show checked items if showChecked is on, never if it's off
+                context.showChecked
+
+            else
+                ((getCharacters context location > 0)
+                    || (bossesRelevant && getBosses context location > 0)
+                    || (getKeyItems context location > 0)
+                    || (l.key == UpperBabil && not undergroundAccess)
+                )
+                    && areaAccessible attainedRequirements location
+                    && (context.flags.pushBToJump && l.jumpable || requirementsMet attainedRequirements location)
     in
     locations
         |> Dict.filter (always isRelevant)
