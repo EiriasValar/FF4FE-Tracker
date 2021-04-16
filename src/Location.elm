@@ -28,10 +28,6 @@ type alias Set a =
     EverySet a
 
 
-type Locations
-    = Locations (Dict Key Location)
-
-
 type Location
     = Location Data
 
@@ -206,27 +202,8 @@ toggleChecked (Location location) =
     Location { location | checked = not location.checked }
 
 
-{-| Dict.get without the Maybe; we're soft-guaranteeing that every Key
-has an entry in Locations by making it opaque.
--}
-get : Key -> Locations -> Location
-get key (Locations locations) =
-    let
-        empty =
-            Location
-                { key = MistCave
-                , name = "Unknown"
-                , area = Surface
-                , checked = False
-                , requirements = Set.empty
-                , jumpable = False
-                , characters = Nothing
-                , bosses = 0
-                , keyItem = Nothing
-                }
-    in
-    Dict.get key locations
-        |> Maybe.withDefault empty
+type Locations
+    = Locations (Dict Key Location)
 
 
 values : Locations -> List Location
@@ -240,10 +217,6 @@ update key fn (Locations locations) =
         Dict.update key fn locations
 
 
-{-| Nothings out any of the provided locations that don't have anything
-to offer, based on the given context. Returning Maybe instead of outright
-filtering to preserve the array indices.
--}
 filterByContext : Context -> Locations -> Locations
 filterByContext c (Locations locations) =
     let
