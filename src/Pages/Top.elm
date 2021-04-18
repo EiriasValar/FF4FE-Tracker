@@ -390,7 +390,7 @@ viewLocation context location =
         warpItem =
             -- assuming here that there's always an item to be had via the
             -- warp glitch, regardless of K flags
-            if context.flags.warpGlitch && key == Location.DwarfCastle then
+            if context.flags.warpGlitch && key == Location.DwarfCastleThrone then
                 [ span
                     [ classList
                         [ ( "icon key-item clickable", True )

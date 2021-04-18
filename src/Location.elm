@@ -12,6 +12,7 @@ module Location exposing
     , getKeyItems
     , getName
     , isChecked
+    , shops
     , toggleChecked
     , update
     , values
@@ -48,7 +49,7 @@ type Key
     = MistCave
     | MistVillagePackage
     | MistVillageMom
-    | Kaipo
+    | KaipoBed
     | WateryPass
     | Waterfall
     | Damcyan
@@ -58,19 +59,19 @@ type Key
     | Sheila
     | SheilaPan
     | AdamantGrotto
-    | Mysidia
+    | MysidiaElder
     | MtOrdeals
     | BaronInn
     | BaronCastle
     | BaronBasement
-    | Toroia
+    | ToroiaBed
     | CaveMagnes
     | TowerZot1
     | TowerZot2
     | CaveEblan
     | UpperBabil
     | GiantBabil
-    | DwarfCastle
+    | DwarfCastleThrone
     | LowerBabilCannon
     | LowerBabilTop
     | SylphCave
@@ -84,6 +85,24 @@ type Key
     | WhiteSpearAltar
     | RibbonRoom
     | MasamuneAltar
+    | Shop Shop
+
+
+type Shop
+    = Baron
+    | MistVillage
+    | Kaipo
+    | Fabul
+    | Mysidia
+    | Toroia
+    | Agart
+    | Silvera
+    | Eblan
+    | DwarfCastle
+    | Tomra
+    | Feymarch
+    | Kokkol
+    | Hummingway
 
 
 type Requirement
@@ -245,6 +264,7 @@ filterByContext c (Locations locations) =
                 , BaronBasement
                 , CaveMagnes
                 , TowerZot2
+                , Shop Eblan
                 , CaveEblan
                 , UpperBabil
                 ]
@@ -327,7 +347,7 @@ requirementsMet attained (Location location) =
 all : Locations
 all =
     let
-        finish : Area -> PartialData -> ( Key, Location )
+        finish : Area -> PartialData -> Data
         finish area l =
             { key = l.key
             , name = l.name
@@ -339,8 +359,6 @@ all =
             , keyItem = Nothing
             }
                 |> foldInto addValue l.value
-                |> Location
-                |> Tuple.pair l.key
 
         addValue : Value -> Data -> Data
         addValue v d =
@@ -357,6 +375,11 @@ all =
     List.map (finish Surface) surface
         ++ List.map (finish Underground) underground
         ++ List.map (finish Moon) moon
+        ++ shops
+        |> List.map
+            (\l ->
+                ( l.key, Location l )
+            )
         -- reverse so the AssocList dict is in the right order
         |> List.reverse
         |> Dict.fromList
@@ -401,7 +424,7 @@ surface =
             [ KeyItem Main
             ]
       }
-    , { key = Kaipo
+    , { key = KaipoBed
       , name = "Kaipo"
       , requirements = [ SandRuby ]
       , value =
@@ -474,7 +497,7 @@ surface =
             [ KeyItem Main
             ]
       }
-    , { key = Mysidia
+    , { key = MysidiaElder
       , name = "Mysidia"
       , requirements = []
       , value =
@@ -516,7 +539,7 @@ surface =
             , KeyItem Summon
             ]
       }
-    , { key = Toroia
+    , { key = ToroiaBed
       , name = "Edward in Toroia"
       , requirements = []
       , value =
@@ -574,7 +597,7 @@ surface =
 
 underground : List PartialData
 underground =
-    [ { key = DwarfCastle
+    [ { key = DwarfCastleThrone
       , name = "Dwarf Castle"
       , requirements = []
       , value =
@@ -691,6 +714,93 @@ moon =
             ]
       }
     ]
+
+
+shops : List Data
+shops =
+    [ { key = Shop Baron
+      , name = "Baron"
+      , area = Surface
+      , requirements = []
+      }
+    , { key = Shop MistVillage
+      , name = "Mist Villange"
+      , area = Surface
+      , requirements = []
+      }
+    , { key = Shop Kaipo
+      , name = "Kaipo"
+      , area = Surface
+      , requirements = []
+      }
+    , { key = Shop Fabul
+      , name = "Fabul"
+      , area = Surface
+      , requirements = []
+      }
+    , { key = Shop Mysidia
+      , name = "Mysidia"
+      , area = Surface
+      , requirements = []
+      }
+    , { key = Shop Toroia
+      , name = "Toroia"
+      , area = Surface
+      , requirements = []
+      }
+    , { key = Shop Agart
+      , name = "Agart"
+      , area = Surface
+      , requirements = []
+      }
+    , { key = Shop Silvera
+      , name = "Silvera"
+      , area = Surface
+      , requirements = []
+      }
+    , { key = Shop Eblan
+      , name = "Eblan"
+      , area = Surface
+      , requirements = [ Hook ]
+      }
+    , { key = Shop DwarfCastle
+      , name = "Dwarf Castle"
+      , area = Underground
+      , requirements = []
+      }
+    , { key = Shop Tomra
+      , name = "Tomra"
+      , area = Underground
+      , requirements = []
+      }
+    , { key = Shop Feymarch
+      , name = "Feymarch"
+      , area = Underground
+      , requirements = []
+      }
+    , { key = Shop Kokkol
+      , name = "Kokkol's Forge"
+      , area = Underground
+      , requirements = [ LegendSword, Adamant ]
+      }
+    , { key = Shop Hummingway
+      , name = "Hummingway"
+      , area = Moon
+      , requirements = []
+      }
+    ]
+        |> List.map
+            (\l ->
+                { key = l.key
+                , name = l.name
+                , area = l.area
+                , checked = False
+                , requirements = Set.fromList l.requirements
+                , characters = Nothing
+                , bosses = 0
+                , keyItem = Nothing
+                }
+            )
 
 
 {-| List.foldl but with the accumulator as the last argument,
