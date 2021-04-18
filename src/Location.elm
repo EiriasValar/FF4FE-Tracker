@@ -314,6 +314,12 @@ requirementsMet attained (Location location) =
         |> Set.isEmpty
 
 
+type Value
+    = Characters CharacterCount
+    | Bosses Int
+    | KeyItem KeyItemClass
+
+
 all : Locations
 all =
     [ { key = MistCave
@@ -321,367 +327,410 @@ all =
       , area = Surface
       , requirements = []
       , jumpable = False
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Nothing
+      , value =
+            [ Bosses 1
+            ]
       }
     , { key = MistVillagePackage
       , name = "Mist Village - Package"
       , area = Surface
       , requirements = [ Package ]
       , jumpable = False
-      , characters = Just <| Gated 1
-      , bosses = 1
-      , keyItem = Nothing
+      , value =
+            [ Characters <| Gated 1
+            , Bosses 1
+            ]
       }
     , { key = MistVillageMom
       , name = "Mist Village - Mom"
       , area = Surface
       , requirements = [ MistDragon ]
       , jumpable = False
-      , characters = Nothing
-      , bosses = 0
-      , keyItem = Just Main
+      , value =
+            [ KeyItem Main
+            ]
       }
     , { key = Kaipo
       , name = "Kaipo"
       , area = Surface
       , requirements = [ SandRuby ]
       , jumpable = False
-      , characters = Just <| Gated 1
-      , bosses = 0
-      , keyItem = Nothing
+      , value =
+            [ Characters <| Gated 1
+            ]
       }
     , { key = WateryPass
       , name = "Watery Pass"
       , area = Surface
       , requirements = []
       , jumpable = False
-      , characters = Just <| Ungated 1
-      , bosses = 0
-      , keyItem = Nothing
+      , value =
+            [ Characters <| Ungated 1
+            ]
       }
     , { key = Waterfall
       , name = "Waterfall"
       , area = Surface
       , requirements = []
       , jumpable = False
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Nothing
+      , value =
+            [ Bosses 1
+            ]
       }
     , { key = Damcyan
       , name = "Damcyan"
       , area = Surface
       , requirements = []
       , jumpable = False
-      , characters = Just <| Ungated 1
-      , bosses = 0
-      , keyItem = Nothing
+      , value =
+            [ Characters <| Ungated 1
+            ]
       }
     , { key = AntlionCave
       , name = "Antlion Cave"
       , area = Surface
       , requirements = []
       , jumpable = False
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Just Main
+      , value =
+            [ Bosses 1
+            , KeyItem Main
+            ]
       }
     , { key = MtHobs
       , name = "Mt. Hobs"
       , area = Surface
       , requirements = []
       , jumpable = False
-      , characters = Just <| Gated 1
-      , bosses = 1
-      , keyItem = Nothing
+      , value =
+            [ Characters <| Gated 1
+            , Bosses 1
+            ]
       }
     , { key = FabulDefence
       , name = "Fabul Defence"
       , area = Surface
       , requirements = []
       , jumpable = False
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Just Main
+      , value =
+            [ Bosses 1
+            , KeyItem Main
+            ]
       }
     , { key = Sheila
       , name = "Sheila"
       , area = Surface
       , requirements = [ UndergroundAccess ]
       , jumpable = False
-      , characters = Nothing
-      , bosses = 0
-      , keyItem = Just Main
+      , value =
+            [ KeyItem Main
+            ]
       }
     , { key = SheilaPan
       , name = "Sheila - Pan"
       , area = Surface
       , requirements = [ UndergroundAccess, Pan ]
       , jumpable = False
-      , characters = Nothing
-      , bosses = 0
-      , keyItem = Just Main
+      , value =
+            [ KeyItem Main
+            ]
       }
     , { key = AdamantGrotto
       , name = "Adamant Grotto"
       , area = Surface
       , requirements = [ Hook, RatTail ]
       , jumpable = False
-      , characters = Nothing
-      , bosses = 0
-      , keyItem = Just Main
+      , value =
+            [ KeyItem Main
+            ]
       }
     , { key = Mysidia
       , name = "Mysidia"
       , area = Surface
       , requirements = []
       , jumpable = False
-      , characters = Just <| Ungated 2
-      , bosses = 0
-      , keyItem = Nothing
+      , value =
+            [ Characters <| Ungated 2
+            ]
       }
     , { key = MtOrdeals
       , name = "Mt. Ordeals"
       , area = Surface
       , requirements = []
       , jumpable = False
-      , characters = Just <| Ungated 1
-      , bosses = 3
-      , keyItem = Just Main
+      , value =
+            [ Characters <| Ungated 1
+            , Bosses 3
+            , KeyItem Main
+            ]
       }
     , { key = BaronInn
       , name = "Baron Inn"
       , area = Surface
       , requirements = []
       , jumpable = False
-      , characters = Just <| Gated 1
-      , bosses = 2
-      , keyItem = Just Main
+      , value =
+            [ Characters <| Gated 1
+            , Bosses 2
+            , KeyItem Main
+            ]
       }
     , { key = BaronCastle
       , name = "Baron Castle"
       , area = Surface
       , requirements = [ BaronKey ]
       , jumpable = True
-      , characters = Just <| Gated 1
-      , bosses = 2
-      , keyItem = Just Main
+      , value =
+            [ Characters <| Gated 1
+            , Bosses 2
+            , KeyItem Main
+            ]
       }
     , { key = BaronBasement
       , name = "Baron Castle Basement"
       , area = Surface
       , requirements = [ BaronKey ]
       , jumpable = True
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Just Summon
+      , value =
+            [ Bosses 1
+            , KeyItem Summon
+            ]
       }
     , { key = Toroia
       , name = "Edward in Toroia"
       , area = Surface
       , requirements = []
       , jumpable = False
-      , characters = Nothing
-      , bosses = 0
-      , keyItem = Just Free
+      , value =
+            [ KeyItem Free
+            ]
       }
     , { key = CaveMagnes
       , name = "Cave Magnes"
       , area = Surface
       , requirements = [ TwinHarp ]
       , jumpable = True
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Just Main
+      , value =
+            [ Bosses 1
+            , KeyItem Main
+            ]
       }
     , { key = TowerZot1
       , name = "Tower of Zot 1"
       , area = Surface
       , requirements = []
       , jumpable = False
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Nothing
+      , value =
+            [ Bosses 1
+            ]
       }
     , { key = TowerZot2
       , name = "Tower of Zot 2"
       , area = Surface
       , requirements = [ EarthCrystal ]
       , jumpable = True
-      , characters = Just <| Gated 2
-      , bosses = 1
-      , keyItem = Just Main
+      , value =
+            [ Characters <| Gated 2
+            , Bosses 1
+            , KeyItem Main
+            ]
       }
     , { key = CaveEblan
       , name = "Cave Eblan"
       , area = Surface
       , requirements = [ Hook ]
       , jumpable = True
-      , characters = Just <| Gated 1
-      , bosses = 0
-      , keyItem = Nothing
+      , value =
+            [ Characters <| Gated 1
+            ]
       }
     , { key = UpperBabil
       , name = "Upper Bab-il"
       , area = Surface
       , requirements = [ Hook ]
       , jumpable = True
-      , characters = Nothing
-      , bosses = 2
-      , keyItem = Nothing
+      , value =
+            [ Bosses 2
+            ]
       }
     , { key = GiantBabil
       , name = "Giant of Bab-il"
       , area = Surface
       , requirements = [ DarknessCrystal ]
       , jumpable = False
-      , characters = Just <| Gated 1
-      , bosses = 2
-      , keyItem = Nothing
+      , value =
+            [ Characters <| Gated 1
+            , Bosses 2
+            ]
       }
     , { key = DwarfCastle
       , name = "Dwarf Castle"
       , area = Underground
       , requirements = []
       , jumpable = False
-      , characters = Just <| Gated 1
-      , bosses = 2
-      , keyItem = Just Main
+      , value =
+            [ Characters <| Gated 1
+            , Bosses 2
+            , KeyItem Main
+            ]
       }
     , { key = LowerBabilCannon
       , name = "Lower Bab-il - Cannon"
       , area = Underground
       , requirements = [ TowerKey ]
       , jumpable = False
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Just Main
+      , value =
+            [ Bosses 1
+            , KeyItem Main
+            ]
       }
     , { key = LowerBabilTop
       , name = "Lower Bab-il - Top"
       , area = Underground
       , requirements = []
       , jumpable = False
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Just Main
+      , value =
+            [ Bosses 1
+            , KeyItem Main
+            ]
       }
     , { key = SylphCave
       , name = "Sylph Cave"
       , area = Underground
       , requirements = [ Pan ]
       , jumpable = False
-      , characters = Nothing
-      , bosses = 0
-      , keyItem = Just Summon
+      , value =
+            [ KeyItem Summon
+            ]
       }
     , { key = FeymarchKing
       , name = "Feymarch - King"
       , area = Underground
       , requirements = []
       , jumpable = False
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Just Summon
+      , value =
+            [ Bosses 1
+            , KeyItem Summon
+            ]
       }
     , { key = FeymarchQueen
       , name = "Feymarch - Queen"
       , area = Underground
       , requirements = []
       , jumpable = False
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Just Summon
+      , value =
+            [ Bosses 1
+            , KeyItem Summon
+            ]
       }
     , { key = SealedCave
       , name = "Sealed Cave"
       , area = Underground
       , requirements = [ LucaKey ]
       , jumpable = False
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Just Main
+      , value =
+            [ Bosses 1
+            , KeyItem Main
+            ]
       }
     , { key = LunarDais
       , name = "Lunar Dais"
       , area = Moon
       , requirements = []
       , jumpable = False
-      , characters = Just <| Gated 1
-      , bosses = 0
-      , keyItem = Nothing
+      , value =
+            [ Characters <| Gated 1
+            ]
       }
     , { key = CaveBahamut
       , name = "Cave Bahamut"
       , area = Moon
       , requirements = []
       , jumpable = False
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Just Summon
+      , value =
+            [ Bosses 1
+            , KeyItem Summon
+            ]
       }
     , { key = MurasameAltar
       , name = "Murasame Altar"
       , area = Moon
       , requirements = []
       , jumpable = False
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Just MoonBoss
+      , value =
+            [ Bosses 1
+            , KeyItem MoonBoss
+            ]
       }
     , { key = WyvernAltar
       , name = "Wyvern Altar"
       , area = Moon
       , requirements = []
       , jumpable = False
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Just MoonBoss
+      , value =
+            [ Bosses 1
+            , KeyItem MoonBoss
+            ]
       }
     , { key = WhiteSpearAltar
       , name = "White Spear Altar"
       , area = Moon
       , requirements = []
       , jumpable = False
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Just MoonBoss
+      , value =
+            [ Bosses 1
+            , KeyItem MoonBoss
+            ]
       }
     , { key = RibbonRoom
       , name = "Ribbon Room"
       , area = Moon
       , requirements = []
       , jumpable = False
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Just MoonBoss
+      , value =
+            [ Bosses 1
+            , KeyItem MoonBoss
+            ]
       }
     , { key = MasamuneAltar
       , name = "Masamune Altar"
       , area = Moon
       , requirements = []
       , jumpable = False
-      , characters = Nothing
-      , bosses = 1
-      , keyItem = Just MoonBoss
+      , value =
+            [ Bosses 1
+            , KeyItem MoonBoss
+            ]
       }
     ]
         |> List.map
             (\l ->
-                Tuple.pair l.key <|
-                    Location
+                let
+                    data =
                         { key = l.key
                         , name = l.name
                         , area = l.area
                         , checked = False
                         , requirements = Set.fromList l.requirements
                         , jumpable = l.jumpable
-                        , characters = l.characters
-                        , bosses = l.bosses
-                        , keyItem = l.keyItem
+                        , characters = Nothing
+                        , bosses = 0
+                        , keyItem = Nothing
                         }
+
+                    addValue v d =
+                        case v of
+                            Characters c ->
+                                { d | characters = Just c }
+
+                            Bosses n ->
+                                { d | bosses = n }
+
+                            KeyItem k ->
+                                { d | keyItem = Just k }
+                in
+                List.foldl addValue data l.value
+                    |> Location
+                    |> Tuple.pair l.key
             )
         -- reverse so the AssocList dict is in the right order
         |> List.reverse
