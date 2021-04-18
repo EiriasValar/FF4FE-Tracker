@@ -38,7 +38,6 @@ type alias Data =
     , area : Area
     , checked : Bool
     , requirements : Set Requirement
-    , jumpable : Bool
     , characters : Maybe CharacterCount
     , bosses : Int
     , keyItem : Maybe KeyItemClass
@@ -239,6 +238,17 @@ filterByContext c (Locations locations) =
         bossesRelevant =
             bossesHaveValue context
 
+        -- locations that can be accessed regardless of requirements if we can jump
+        jumpable =
+            Set.fromList <|
+                [ BaronCastle
+                , BaronBasement
+                , CaveMagnes
+                , TowerZot2
+                , CaveEblan
+                , UpperBabil
+                ]
+
         isRelevant ((Location l) as location) =
             if l.checked then
                 -- always show checked items if showChecked is on, never if it's off
@@ -251,7 +261,7 @@ filterByContext c (Locations locations) =
                     || (l.key == UpperBabil && not undergroundAccess)
                 )
                     && areaAccessible attainedRequirements location
-                    && (context.flags.pushBToJump && l.jumpable || requirementsMet attainedRequirements location)
+                    && (context.flags.pushBToJump && Set.member l.key jumpable || requirementsMet attainedRequirements location)
     in
     locations
         |> Dict.filter (always isRelevant)
@@ -324,7 +334,6 @@ all =
             , area = area
             , checked = False
             , requirements = Set.fromList l.requirements
-            , jumpable = l.jumpable
             , characters = Nothing
             , bosses = 0
             , keyItem = Nothing
@@ -358,7 +367,6 @@ type alias PartialData =
     { key : Key
     , name : String
     , requirements : List Requirement
-    , jumpable : Bool
     , value : List Value
     }
 
@@ -374,7 +382,6 @@ surface =
     [ { key = MistCave
       , name = "Mist Cave"
       , requirements = []
-      , jumpable = False
       , value =
             [ Bosses 1
             ]
@@ -382,7 +389,6 @@ surface =
     , { key = MistVillagePackage
       , name = "Mist Village - Package"
       , requirements = [ Package ]
-      , jumpable = False
       , value =
             [ Characters <| Gated 1
             , Bosses 1
@@ -391,7 +397,6 @@ surface =
     , { key = MistVillageMom
       , name = "Mist Village - Mom"
       , requirements = [ MistDragon ]
-      , jumpable = False
       , value =
             [ KeyItem Main
             ]
@@ -399,7 +404,6 @@ surface =
     , { key = Kaipo
       , name = "Kaipo"
       , requirements = [ SandRuby ]
-      , jumpable = False
       , value =
             [ Characters <| Gated 1
             ]
@@ -407,7 +411,6 @@ surface =
     , { key = WateryPass
       , name = "Watery Pass"
       , requirements = []
-      , jumpable = False
       , value =
             [ Characters <| Ungated 1
             ]
@@ -415,7 +418,6 @@ surface =
     , { key = Waterfall
       , name = "Waterfall"
       , requirements = []
-      , jumpable = False
       , value =
             [ Bosses 1
             ]
@@ -423,7 +425,6 @@ surface =
     , { key = Damcyan
       , name = "Damcyan"
       , requirements = []
-      , jumpable = False
       , value =
             [ Characters <| Ungated 1
             ]
@@ -431,7 +432,6 @@ surface =
     , { key = AntlionCave
       , name = "Antlion Cave"
       , requirements = []
-      , jumpable = False
       , value =
             [ Bosses 1
             , KeyItem Main
@@ -440,7 +440,6 @@ surface =
     , { key = MtHobs
       , name = "Mt. Hobs"
       , requirements = []
-      , jumpable = False
       , value =
             [ Characters <| Gated 1
             , Bosses 1
@@ -449,7 +448,6 @@ surface =
     , { key = FabulDefence
       , name = "Fabul Defence"
       , requirements = []
-      , jumpable = False
       , value =
             [ Bosses 1
             , KeyItem Main
@@ -458,7 +456,6 @@ surface =
     , { key = Sheila
       , name = "Sheila"
       , requirements = [ UndergroundAccess ]
-      , jumpable = False
       , value =
             [ KeyItem Main
             ]
@@ -466,7 +463,6 @@ surface =
     , { key = SheilaPan
       , name = "Sheila - Pan"
       , requirements = [ UndergroundAccess, Pan ]
-      , jumpable = False
       , value =
             [ KeyItem Main
             ]
@@ -474,7 +470,6 @@ surface =
     , { key = AdamantGrotto
       , name = "Adamant Grotto"
       , requirements = [ Hook, RatTail ]
-      , jumpable = False
       , value =
             [ KeyItem Main
             ]
@@ -482,7 +477,6 @@ surface =
     , { key = Mysidia
       , name = "Mysidia"
       , requirements = []
-      , jumpable = False
       , value =
             [ Characters <| Ungated 2
             ]
@@ -490,7 +484,6 @@ surface =
     , { key = MtOrdeals
       , name = "Mt. Ordeals"
       , requirements = []
-      , jumpable = False
       , value =
             [ Characters <| Ungated 1
             , Bosses 3
@@ -500,7 +493,6 @@ surface =
     , { key = BaronInn
       , name = "Baron Inn"
       , requirements = []
-      , jumpable = False
       , value =
             [ Characters <| Gated 1
             , Bosses 2
@@ -510,7 +502,6 @@ surface =
     , { key = BaronCastle
       , name = "Baron Castle"
       , requirements = [ BaronKey ]
-      , jumpable = True
       , value =
             [ Characters <| Gated 1
             , Bosses 2
@@ -520,7 +511,6 @@ surface =
     , { key = BaronBasement
       , name = "Baron Castle Basement"
       , requirements = [ BaronKey ]
-      , jumpable = True
       , value =
             [ Bosses 1
             , KeyItem Summon
@@ -529,7 +519,6 @@ surface =
     , { key = Toroia
       , name = "Edward in Toroia"
       , requirements = []
-      , jumpable = False
       , value =
             [ KeyItem Free
             ]
@@ -537,7 +526,6 @@ surface =
     , { key = CaveMagnes
       , name = "Cave Magnes"
       , requirements = [ TwinHarp ]
-      , jumpable = True
       , value =
             [ Bosses 1
             , KeyItem Main
@@ -546,7 +534,6 @@ surface =
     , { key = TowerZot1
       , name = "Tower of Zot 1"
       , requirements = []
-      , jumpable = False
       , value =
             [ Bosses 1
             ]
@@ -554,7 +541,6 @@ surface =
     , { key = TowerZot2
       , name = "Tower of Zot 2"
       , requirements = [ EarthCrystal ]
-      , jumpable = True
       , value =
             [ Characters <| Gated 2
             , Bosses 1
@@ -564,7 +550,6 @@ surface =
     , { key = CaveEblan
       , name = "Cave Eblan"
       , requirements = [ Hook ]
-      , jumpable = True
       , value =
             [ Characters <| Gated 1
             ]
@@ -572,7 +557,6 @@ surface =
     , { key = UpperBabil
       , name = "Upper Bab-il"
       , requirements = [ Hook ]
-      , jumpable = True
       , value =
             [ Bosses 2
             ]
@@ -580,7 +564,6 @@ surface =
     , { key = GiantBabil
       , name = "Giant of Bab-il"
       , requirements = [ DarknessCrystal ]
-      , jumpable = False
       , value =
             [ Characters <| Gated 1
             , Bosses 2
@@ -594,7 +577,6 @@ underground =
     [ { key = DwarfCastle
       , name = "Dwarf Castle"
       , requirements = []
-      , jumpable = False
       , value =
             [ Characters <| Gated 1
             , Bosses 2
@@ -604,7 +586,6 @@ underground =
     , { key = LowerBabilCannon
       , name = "Lower Bab-il - Cannon"
       , requirements = [ TowerKey ]
-      , jumpable = False
       , value =
             [ Bosses 1
             , KeyItem Main
@@ -613,7 +594,6 @@ underground =
     , { key = LowerBabilTop
       , name = "Lower Bab-il - Top"
       , requirements = []
-      , jumpable = False
       , value =
             [ Bosses 1
             , KeyItem Main
@@ -622,7 +602,6 @@ underground =
     , { key = SylphCave
       , name = "Sylph Cave"
       , requirements = [ Pan ]
-      , jumpable = False
       , value =
             [ KeyItem Summon
             ]
@@ -630,7 +609,6 @@ underground =
     , { key = FeymarchKing
       , name = "Feymarch - King"
       , requirements = []
-      , jumpable = False
       , value =
             [ Bosses 1
             , KeyItem Summon
@@ -639,7 +617,6 @@ underground =
     , { key = FeymarchQueen
       , name = "Feymarch - Queen"
       , requirements = []
-      , jumpable = False
       , value =
             [ Bosses 1
             , KeyItem Summon
@@ -648,7 +625,6 @@ underground =
     , { key = SealedCave
       , name = "Sealed Cave"
       , requirements = [ LucaKey ]
-      , jumpable = False
       , value =
             [ Bosses 1
             , KeyItem Main
@@ -662,7 +638,6 @@ moon =
     [ { key = LunarDais
       , name = "Lunar Dais"
       , requirements = []
-      , jumpable = False
       , value =
             [ Characters <| Gated 1
             ]
@@ -670,7 +645,6 @@ moon =
     , { key = CaveBahamut
       , name = "Cave Bahamut"
       , requirements = []
-      , jumpable = False
       , value =
             [ Bosses 1
             , KeyItem Summon
@@ -679,7 +653,6 @@ moon =
     , { key = MurasameAltar
       , name = "Murasame Altar"
       , requirements = []
-      , jumpable = False
       , value =
             [ Bosses 1
             , KeyItem MoonBoss
@@ -688,7 +661,6 @@ moon =
     , { key = WyvernAltar
       , name = "Wyvern Altar"
       , requirements = []
-      , jumpable = False
       , value =
             [ Bosses 1
             , KeyItem MoonBoss
@@ -697,7 +669,6 @@ moon =
     , { key = WhiteSpearAltar
       , name = "White Spear Altar"
       , requirements = []
-      , jumpable = False
       , value =
             [ Bosses 1
             , KeyItem MoonBoss
@@ -706,7 +677,6 @@ moon =
     , { key = RibbonRoom
       , name = "Ribbon Room"
       , requirements = []
-      , jumpable = False
       , value =
             [ Bosses 1
             , KeyItem MoonBoss
@@ -715,7 +685,6 @@ moon =
     , { key = MasamuneAltar
       , name = "Masamune Altar"
       , requirements = []
-      , jumpable = False
       , value =
             [ Bosses 1
             , KeyItem MoonBoss
