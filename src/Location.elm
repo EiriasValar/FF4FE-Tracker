@@ -314,17 +314,65 @@ requirementsMet attained (Location location) =
         |> Set.isEmpty
 
 
+all : Locations
+all =
+    let
+        finish : Area -> PartialData -> ( Key, Location )
+        finish area l =
+            { key = l.key
+            , name = l.name
+            , area = area
+            , checked = False
+            , requirements = Set.fromList l.requirements
+            , jumpable = l.jumpable
+            , characters = Nothing
+            , bosses = 0
+            , keyItem = Nothing
+            }
+                |> foldInto addValue l.value
+                |> Location
+                |> Tuple.pair l.key
+
+        addValue : Value -> Data -> Data
+        addValue v d =
+            case v of
+                Characters c ->
+                    { d | characters = Just c }
+
+                Bosses n ->
+                    { d | bosses = n }
+
+                KeyItem k ->
+                    { d | keyItem = Just k }
+    in
+    List.map (finish Surface) surface
+        ++ List.map (finish Underground) underground
+        ++ List.map (finish Moon) moon
+        -- reverse so the AssocList dict is in the right order
+        |> List.reverse
+        |> Dict.fromList
+        |> Locations
+
+
+type alias PartialData =
+    { key : Key
+    , name : String
+    , requirements : List Requirement
+    , jumpable : Bool
+    , value : List Value
+    }
+
+
 type Value
     = Characters CharacterCount
     | Bosses Int
     | KeyItem KeyItemClass
 
 
-all : Locations
-all =
+surface : List PartialData
+surface =
     [ { key = MistCave
       , name = "Mist Cave"
-      , area = Surface
       , requirements = []
       , jumpable = False
       , value =
@@ -333,7 +381,6 @@ all =
       }
     , { key = MistVillagePackage
       , name = "Mist Village - Package"
-      , area = Surface
       , requirements = [ Package ]
       , jumpable = False
       , value =
@@ -343,7 +390,6 @@ all =
       }
     , { key = MistVillageMom
       , name = "Mist Village - Mom"
-      , area = Surface
       , requirements = [ MistDragon ]
       , jumpable = False
       , value =
@@ -352,7 +398,6 @@ all =
       }
     , { key = Kaipo
       , name = "Kaipo"
-      , area = Surface
       , requirements = [ SandRuby ]
       , jumpable = False
       , value =
@@ -361,7 +406,6 @@ all =
       }
     , { key = WateryPass
       , name = "Watery Pass"
-      , area = Surface
       , requirements = []
       , jumpable = False
       , value =
@@ -370,7 +414,6 @@ all =
       }
     , { key = Waterfall
       , name = "Waterfall"
-      , area = Surface
       , requirements = []
       , jumpable = False
       , value =
@@ -379,7 +422,6 @@ all =
       }
     , { key = Damcyan
       , name = "Damcyan"
-      , area = Surface
       , requirements = []
       , jumpable = False
       , value =
@@ -388,7 +430,6 @@ all =
       }
     , { key = AntlionCave
       , name = "Antlion Cave"
-      , area = Surface
       , requirements = []
       , jumpable = False
       , value =
@@ -398,7 +439,6 @@ all =
       }
     , { key = MtHobs
       , name = "Mt. Hobs"
-      , area = Surface
       , requirements = []
       , jumpable = False
       , value =
@@ -408,7 +448,6 @@ all =
       }
     , { key = FabulDefence
       , name = "Fabul Defence"
-      , area = Surface
       , requirements = []
       , jumpable = False
       , value =
@@ -418,7 +457,6 @@ all =
       }
     , { key = Sheila
       , name = "Sheila"
-      , area = Surface
       , requirements = [ UndergroundAccess ]
       , jumpable = False
       , value =
@@ -427,7 +465,6 @@ all =
       }
     , { key = SheilaPan
       , name = "Sheila - Pan"
-      , area = Surface
       , requirements = [ UndergroundAccess, Pan ]
       , jumpable = False
       , value =
@@ -436,7 +473,6 @@ all =
       }
     , { key = AdamantGrotto
       , name = "Adamant Grotto"
-      , area = Surface
       , requirements = [ Hook, RatTail ]
       , jumpable = False
       , value =
@@ -445,7 +481,6 @@ all =
       }
     , { key = Mysidia
       , name = "Mysidia"
-      , area = Surface
       , requirements = []
       , jumpable = False
       , value =
@@ -454,7 +489,6 @@ all =
       }
     , { key = MtOrdeals
       , name = "Mt. Ordeals"
-      , area = Surface
       , requirements = []
       , jumpable = False
       , value =
@@ -465,7 +499,6 @@ all =
       }
     , { key = BaronInn
       , name = "Baron Inn"
-      , area = Surface
       , requirements = []
       , jumpable = False
       , value =
@@ -476,7 +509,6 @@ all =
       }
     , { key = BaronCastle
       , name = "Baron Castle"
-      , area = Surface
       , requirements = [ BaronKey ]
       , jumpable = True
       , value =
@@ -487,7 +519,6 @@ all =
       }
     , { key = BaronBasement
       , name = "Baron Castle Basement"
-      , area = Surface
       , requirements = [ BaronKey ]
       , jumpable = True
       , value =
@@ -497,7 +528,6 @@ all =
       }
     , { key = Toroia
       , name = "Edward in Toroia"
-      , area = Surface
       , requirements = []
       , jumpable = False
       , value =
@@ -506,7 +536,6 @@ all =
       }
     , { key = CaveMagnes
       , name = "Cave Magnes"
-      , area = Surface
       , requirements = [ TwinHarp ]
       , jumpable = True
       , value =
@@ -516,7 +545,6 @@ all =
       }
     , { key = TowerZot1
       , name = "Tower of Zot 1"
-      , area = Surface
       , requirements = []
       , jumpable = False
       , value =
@@ -525,7 +553,6 @@ all =
       }
     , { key = TowerZot2
       , name = "Tower of Zot 2"
-      , area = Surface
       , requirements = [ EarthCrystal ]
       , jumpable = True
       , value =
@@ -536,7 +563,6 @@ all =
       }
     , { key = CaveEblan
       , name = "Cave Eblan"
-      , area = Surface
       , requirements = [ Hook ]
       , jumpable = True
       , value =
@@ -545,7 +571,6 @@ all =
       }
     , { key = UpperBabil
       , name = "Upper Bab-il"
-      , area = Surface
       , requirements = [ Hook ]
       , jumpable = True
       , value =
@@ -554,7 +579,6 @@ all =
       }
     , { key = GiantBabil
       , name = "Giant of Bab-il"
-      , area = Surface
       , requirements = [ DarknessCrystal ]
       , jumpable = False
       , value =
@@ -562,9 +586,13 @@ all =
             , Bosses 2
             ]
       }
-    , { key = DwarfCastle
+    ]
+
+
+underground : List PartialData
+underground =
+    [ { key = DwarfCastle
       , name = "Dwarf Castle"
-      , area = Underground
       , requirements = []
       , jumpable = False
       , value =
@@ -575,7 +603,6 @@ all =
       }
     , { key = LowerBabilCannon
       , name = "Lower Bab-il - Cannon"
-      , area = Underground
       , requirements = [ TowerKey ]
       , jumpable = False
       , value =
@@ -585,7 +612,6 @@ all =
       }
     , { key = LowerBabilTop
       , name = "Lower Bab-il - Top"
-      , area = Underground
       , requirements = []
       , jumpable = False
       , value =
@@ -595,7 +621,6 @@ all =
       }
     , { key = SylphCave
       , name = "Sylph Cave"
-      , area = Underground
       , requirements = [ Pan ]
       , jumpable = False
       , value =
@@ -604,7 +629,6 @@ all =
       }
     , { key = FeymarchKing
       , name = "Feymarch - King"
-      , area = Underground
       , requirements = []
       , jumpable = False
       , value =
@@ -614,7 +638,6 @@ all =
       }
     , { key = FeymarchQueen
       , name = "Feymarch - Queen"
-      , area = Underground
       , requirements = []
       , jumpable = False
       , value =
@@ -624,7 +647,6 @@ all =
       }
     , { key = SealedCave
       , name = "Sealed Cave"
-      , area = Underground
       , requirements = [ LucaKey ]
       , jumpable = False
       , value =
@@ -632,9 +654,13 @@ all =
             , KeyItem Main
             ]
       }
-    , { key = LunarDais
+    ]
+
+
+moon : List PartialData
+moon =
+    [ { key = LunarDais
       , name = "Lunar Dais"
-      , area = Moon
       , requirements = []
       , jumpable = False
       , value =
@@ -643,7 +669,6 @@ all =
       }
     , { key = CaveBahamut
       , name = "Cave Bahamut"
-      , area = Moon
       , requirements = []
       , jumpable = False
       , value =
@@ -653,7 +678,6 @@ all =
       }
     , { key = MurasameAltar
       , name = "Murasame Altar"
-      , area = Moon
       , requirements = []
       , jumpable = False
       , value =
@@ -663,7 +687,6 @@ all =
       }
     , { key = WyvernAltar
       , name = "Wyvern Altar"
-      , area = Moon
       , requirements = []
       , jumpable = False
       , value =
@@ -673,7 +696,6 @@ all =
       }
     , { key = WhiteSpearAltar
       , name = "White Spear Altar"
-      , area = Moon
       , requirements = []
       , jumpable = False
       , value =
@@ -683,7 +705,6 @@ all =
       }
     , { key = RibbonRoom
       , name = "Ribbon Room"
-      , area = Moon
       , requirements = []
       , jumpable = False
       , value =
@@ -693,7 +714,6 @@ all =
       }
     , { key = MasamuneAltar
       , name = "Masamune Altar"
-      , area = Moon
       , requirements = []
       , jumpable = False
       , value =
@@ -702,37 +722,11 @@ all =
             ]
       }
     ]
-        |> List.map
-            (\l ->
-                let
-                    data =
-                        { key = l.key
-                        , name = l.name
-                        , area = l.area
-                        , checked = False
-                        , requirements = Set.fromList l.requirements
-                        , jumpable = l.jumpable
-                        , characters = Nothing
-                        , bosses = 0
-                        , keyItem = Nothing
-                        }
 
-                    addValue v d =
-                        case v of
-                            Characters c ->
-                                { d | characters = Just c }
 
-                            Bosses n ->
-                                { d | bosses = n }
-
-                            KeyItem k ->
-                                { d | keyItem = Just k }
-                in
-                List.foldl addValue data l.value
-                    |> Location
-                    |> Tuple.pair l.key
-            )
-        -- reverse so the AssocList dict is in the right order
-        |> List.reverse
-        |> Dict.fromList
-        |> Locations
+{-| List.foldl but with the accumulator as the last argument,
+for ease of piping.
+-}
+foldInto : (a -> b -> b) -> List a -> b -> b
+foldInto fn list acc =
+    List.foldl fn acc list
