@@ -7,6 +7,7 @@ import Flags exposing (Flags)
 import Html exposing (Html, div, h2, input, li, span, table, td, text, textarea, tr, ul)
 import Html.Attributes exposing (class, classList, id, type_)
 import Html.Events exposing (onClick, onInput)
+import Icons
 import Json.Decode
 import Location exposing (Location, Locations, Requirement(..))
 import Objective exposing (Objective)
@@ -396,14 +397,7 @@ viewLocation context location =
             -- assuming here that there's always an item to be had via the
             -- warp glitch, regardless of K flags
             if context.flags.warpGlitch && key == Location.DwarfCastleThrone then
-                [ span
-                    [ classList
-                        [ ( "icon key-item clickable", True )
-                        , ( "disabled", not context.warpGlitchUsed )
-                        ]
-                    , onClick ToggleWarpGlitchUsed
-                    ]
-                    []
+                [ Icons.keyItemClickable (not context.warpGlitchUsed) ToggleWarpGlitchUsed
                 ]
 
             else
@@ -422,9 +416,9 @@ viewLocation context location =
             ]
             [ text <| Location.getName location ]
         , span [ class "icons" ] <|
-            List.repeat (Location.getCharacters context location) (span [ class "icon character" ] [])
-                ++ List.repeat (Location.getBosses context location) (span [ class "icon boss" ] [])
-                ++ List.repeat (Location.getKeyItems context location) (span [ class "icon key-item" ] [])
+            List.repeat (Location.getCharacters context location) Icons.character
+                ++ List.repeat (Location.getBosses context location) Icons.boss
+                ++ List.repeat (Location.getKeyItems context location) Icons.keyItem
                 ++ warpItem
         ]
 
