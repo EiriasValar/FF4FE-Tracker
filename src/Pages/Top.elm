@@ -106,6 +106,7 @@ subscriptions model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    -- just using Page.element for the subscriptions, don't have any Cmds to send
     innerUpdate msg model
         |> with Cmd.none
 
@@ -181,7 +182,7 @@ view model =
                 [ h2 [] [ text "Key Items" ]
                 , viewKeyItems model.flags model.attainedRequirements
                 ]
-            , div [ id "locations" ]
+            , div [ id "checks" ]
                 [ h2 []
                     [ text "Locations"
                     , input
@@ -190,7 +191,11 @@ view model =
                         ]
                         []
                     ]
-                , viewLocations model
+                , viewLocations model Location.Checks
+                ]
+            , div [ id "shops" ]
+                [ h2 [] [ text "Shops" ]
+                , viewLocations model Location.Shops
                 ]
             ]
         ]
@@ -352,8 +357,8 @@ viewKeyItems flags attained =
         ]
 
 
-viewLocations : Model -> Html Msg
-viewLocations model =
+viewLocations : Model -> Location.Class -> Html Msg
+viewLocations model locClass =
     let
         context : Location.Context
         context =
@@ -375,7 +380,7 @@ viewLocations model =
                     Nothing
     in
     model.locations
-        |> Location.filterByContext context
+        |> Location.filterByContext locClass context
         |> Location.values
         |> List.map (viewLocation context)
         |> div [ class "locations" ]

@@ -35,9 +35,14 @@ body {
   order: 1;
 }
 
-#locations {
+#checks {
   flex: 1 50%;
   order: 3;
+}
+
+#shops {
+  flex: 1 50%;
+  order: 4;
 }
 
 h2 {

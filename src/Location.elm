@@ -1,5 +1,6 @@
 module Location exposing
-    ( Context
+    ( Class(..)
+    , Context
     , Key(..)
     , Location
     , Locations
@@ -103,6 +104,11 @@ type Shop
     | Feymarch
     | Kokkol
     | Hummingway
+
+
+type Class
+    = Checks
+    | Shops
 
 
 type Requirement
@@ -220,6 +226,22 @@ toggleChecked (Location location) =
     Location { location | checked = not location.checked }
 
 
+isClass : Class -> Location -> Bool
+isClass class (Location location) =
+    case ( class, location.key ) of
+        ( Shops, Shop _ ) ->
+            True
+
+        ( Shops, _ ) ->
+            False
+
+        ( Checks, Shop _ ) ->
+            False
+
+        ( Checks, _ ) ->
+            True
+
+
 type Locations
     = Locations (Dict Key Location)
 
@@ -235,8 +257,8 @@ update key fn (Locations locations) =
         Dict.update key fn locations
 
 
-filterByContext : Context -> Locations -> Locations
-filterByContext c (Locations locations) =
+filterByContext : Class -> Context -> Locations -> Locations
+filterByContext class c (Locations locations) =
     let
         undergroundAccess =
             c.flags.pushBToJump
@@ -269,17 +291,23 @@ filterByContext c (Locations locations) =
                 , UpperBabil
                 ]
 
+        hasValue ((Location l) as location) =
+            isClass Shops location
+                || (l.key == UpperBabil && not undergroundAccess)
+                || (getCharacters context location > 0)
+                || (bossesRelevant && getBosses context location > 0)
+                || (getKeyItems context location > 0)
+
         isRelevant ((Location l) as location) =
-            if l.checked then
+            if not <| isClass class location then
+                False
+
+            else if l.checked then
                 -- always show checked items if showChecked is on, never if it's off
                 context.showChecked
 
             else
-                ((getCharacters context location > 0)
-                    || (bossesRelevant && getBosses context location > 0)
-                    || (getKeyItems context location > 0)
-                    || (l.key == UpperBabil && not undergroundAccess)
-                )
+                hasValue location
                     && areaAccessible attainedRequirements location
                     && (context.flags.pushBToJump && Set.member l.key jumpable || requirementsMet attainedRequirements location)
     in
@@ -724,7 +752,7 @@ shops =
       , requirements = []
       }
     , { key = Shop MistVillage
-      , name = "Mist Villange"
+      , name = "Mist Village"
       , area = Surface
       , requirements = []
       }
