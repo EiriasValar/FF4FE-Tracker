@@ -9,7 +9,7 @@ import Html.Attributes exposing (class, classList, id, type_)
 import Html.Events exposing (onClick, onInput)
 import Icons
 import Json.Decode
-import Location exposing (Location, Locations, Requirement(..))
+import Location exposing (Location, Locations, Requirement(..), Status(..))
 import Objective exposing (Objective)
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
@@ -48,7 +48,7 @@ type Msg
     | UnsetRandomObjective Int
     | DropdownMsg Int Dropdown.State
     | ToggleRequirement Requirement
-    | ToggleLocation Location.Key
+    | ToggleLocationStatus Location.Key Location.Status
     | ToggleCheckedLocations
     | ToggleWarpGlitchUsed
     | UpdateFlags String
@@ -135,8 +135,8 @@ innerUpdate msg model =
         ToggleRequirement requirement ->
             { model | attainedRequirements = toggle requirement model.attainedRequirements }
 
-        ToggleLocation key ->
-            { model | locations = Location.update key (Maybe.map Location.toggleChecked) model.locations }
+        ToggleLocationStatus key status ->
+            { model | locations = Location.update key (Maybe.map <| Location.toggleStatus status) model.locations }
 
         ToggleCheckedLocations ->
             { model | showCheckedLocations = not model.showCheckedLocations }
@@ -402,17 +402,19 @@ viewLocation context location =
 
             else
                 []
+
+        onRightClick msg =
+            Html.Events.preventDefaultOn "contextmenu" <| Json.Decode.succeed ( msg, True )
     in
     div
         -- TODO style surface/underground/moon
-        [ classList
-            [ ( "location", True )
-            , ( "checked", Location.isChecked location )
-            ]
+        [ class "location"
+        , class <| "status-" ++ (Location.statusToString <| Location.getStatus location)
         ]
         [ span
             [ class "name"
-            , onClick <| ToggleLocation key
+            , onClick <| ToggleLocationStatus key Dismissed
+            , onRightClick <| ToggleLocationStatus key Seen
             ]
             [ text <| Location.getName location ]
         , span [ class "icons" ] <|

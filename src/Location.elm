@@ -5,6 +5,7 @@ module Location exposing
     , Location
     , Locations
     , Requirement(..)
+    , Status(..)
     , all
     , filterByContext
     , getBosses
@@ -12,9 +13,10 @@ module Location exposing
     , getKey
     , getKeyItems
     , getName
-    , isChecked
+    , getStatus
     , shops
-    , toggleChecked
+    , statusToString
+    , toggleStatus
     , update
     , values
     )
@@ -38,7 +40,7 @@ type alias Data =
     { key : Key
     , name : String
     , area : Area
-    , checked : Bool
+    , status : Status
     , requirements : Set Requirement
     , characters : Maybe CharacterCount
     , bosses : Int
@@ -134,6 +136,12 @@ type Requirement
     | UndergroundAccess
 
 
+type Status
+    = Unseen
+    | Seen
+    | Dismissed
+
+
 type Area
     = Surface
     | Underground
@@ -216,14 +224,35 @@ getKeyItems { flags, warpGlitchUsed } (Location location) =
     keyItems + modifier
 
 
-isChecked : Location -> Bool
-isChecked (Location location) =
-    location.checked
+getStatus : Location -> Status
+getStatus (Location location) =
+    location.status
 
 
-toggleChecked : Location -> Location
-toggleChecked (Location location) =
-    Location { location | checked = not location.checked }
+toggleStatus : Status -> Location -> Location
+toggleStatus status (Location location) =
+    let
+        newStatus =
+            if location.status == status then
+                Unseen
+
+            else
+                status
+    in
+    Location { location | status = newStatus }
+
+
+statusToString : Status -> String
+statusToString status =
+    case status of
+        Unseen ->
+            "unseen"
+
+        Seen ->
+            "seen"
+
+        Dismissed ->
+            "dismissed"
 
 
 isClass : Class -> Location -> Bool
@@ -263,7 +292,7 @@ filterByContext class c (Locations locations) =
         undergroundAccess =
             c.flags.pushBToJump
                 || Set.member MagmaKey c.attainedRequirements
-                || (Dict.get UpperBabil locations |> Maybe.map isChecked |> Maybe.withDefault False)
+                || (Dict.get UpperBabil locations |> Maybe.map (getStatus >> (==) Dismissed) |> Maybe.withDefault False)
 
         attainedRequirements =
             if undergroundAccess then
@@ -302,8 +331,8 @@ filterByContext class c (Locations locations) =
             if not <| isClass class location then
                 False
 
-            else if l.checked then
-                -- always show checked items if showChecked is on, never if it's off
+            else if l.status == Dismissed then
+                -- always show dismissed items if showChecked is on, never if it's off
                 context.showChecked
 
             else
@@ -380,7 +409,7 @@ all =
             { key = l.key
             , name = l.name
             , area = area
-            , checked = False
+            , status = Unseen
             , requirements = Set.fromList l.requirements
             , characters = Nothing
             , bosses = 0
@@ -822,7 +851,7 @@ shops =
                 { key = l.key
                 , name = l.name
                 , area = l.area
-                , checked = False
+                , status = Unseen
                 , requirements = Set.fromList l.requirements
                 , characters = Nothing
                 , bosses = 0
