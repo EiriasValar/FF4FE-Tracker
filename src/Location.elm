@@ -1,5 +1,6 @@
 module Location exposing
-    ( Class(..)
+    ( Area
+    , Class(..)
     , Context
     , Key(..)
     , Location
@@ -7,13 +8,16 @@ module Location exposing
     , Requirement(..)
     , Status(..)
     , all
+    , areaToString
     , filterByContext
+    , getArea
     , getBosses
     , getCharacters
     , getKey
     , getKeyItems
     , getName
     , getStatus
+    , groupByArea
     , shops
     , statusToString
     , toggleStatus
@@ -25,6 +29,7 @@ import Array
 import AssocList as Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
+import List.Extra
 import Objective exposing (Objective)
 
 
@@ -78,6 +83,7 @@ type Key
     | LowerBabilCannon
     | LowerBabilTop
     | SylphCave
+    | FeymarchChest
     | FeymarchKing
     | FeymarchQueen
     | SealedCave
@@ -173,6 +179,11 @@ getName (Location location) =
     location.name
 
 
+getArea : Location -> Area
+getArea (Location location) =
+    location.area
+
+
 getCharacters : Context -> Location -> Int
 getCharacters { flags } (Location location) =
     case location.characters of
@@ -255,6 +266,19 @@ statusToString status =
             "dismissed"
 
 
+areaToString : Area -> String
+areaToString area =
+    case area of
+        Surface ->
+            "surface"
+
+        Underground ->
+            "underground"
+
+        Moon ->
+            "moon"
+
+
 isClass : Class -> Location -> Bool
 isClass class (Location location) =
     case ( class, location.key ) of
@@ -284,6 +308,15 @@ update : Key -> (Maybe Location -> Maybe Location) -> Locations -> Locations
 update key fn (Locations locations) =
     Locations <|
         Dict.update key fn locations
+
+
+groupByArea : Locations -> List ( Area, List Location )
+groupByArea =
+    values
+        -- gather into (loc1, [loc2, loc3, ...]) tuples by area
+        >> List.Extra.gatherEqualsBy getArea
+        -- convert the "key" into an Area, and put that location back into the list
+        >> List.map (\( loc, locs ) -> ( getArea loc, loc :: locs ))
 
 
 filterByContext : Class -> Context -> Locations -> Locations
@@ -684,6 +717,13 @@ underground =
       , requirements = [ Pan ]
       , value =
             [ KeyItem Summon
+            ]
+      }
+    , { key = FeymarchChest
+      , name = "Feymarch"
+      , requirements = []
+      , value =
+            [ KeyItem Main
             ]
       }
     , { key = FeymarchKing

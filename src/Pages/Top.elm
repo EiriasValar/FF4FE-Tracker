@@ -4,7 +4,7 @@ import Array exposing (Array)
 import Bootstrap.Dropdown as Dropdown exposing (DropdownItem)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags)
-import Html exposing (Html, div, h2, input, li, span, table, td, text, textarea, tr, ul)
+import Html exposing (Html, div, h2, h4, input, li, span, table, td, text, textarea, tr, ul)
 import Html.Attributes exposing (class, classList, id, type_)
 import Html.Events exposing (onClick, onInput)
 import Icons
@@ -14,6 +14,7 @@ import Objective exposing (Objective)
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
+import String.Extra
 
 
 type alias Set a =
@@ -379,11 +380,20 @@ viewLocations model locClass =
 
                 Unset _ ->
                     Nothing
+
+        viewArea : ( Location.Area, List Location ) -> Html Msg
+        viewArea ( area, locations ) =
+            div []
+                [ h4 []
+                    [ text <| String.Extra.toTitleCase <| Location.areaToString area ]
+                , div [] <|
+                    List.map (viewLocation context) locations
+                ]
     in
     model.locations
         |> Location.filterByContext locClass context
-        |> Location.values
-        |> List.map (viewLocation context)
+        |> Location.groupByArea
+        |> List.map viewArea
         |> div [ class "locations" ]
 
 

@@ -49,6 +49,13 @@ h2 {
   font-size: 1em;
 }
 
+h4 {
+  margin: 1em 0 0.5em 0;
+  text-decoration: underline;
+  font-weight: lighter;
+  font-size: smaller;
+}
+
 .flagstring {
   width: 100%;
 }
