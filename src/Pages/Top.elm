@@ -186,10 +186,7 @@ view model =
                     ]
                     [ text model.flagString ]
                 ]
-            , div [ id "objectives" ]
-                [ h2 [] [ text "Objectives" ]
-                , viewObjectives model
-                ]
+            , viewObjectives model
             , div [ id "key-items" ]
                 [ h2 [] [ text "Key Items" ]
                 , viewKeyItems model.flags model.attainedRequirements
@@ -198,6 +195,8 @@ view model =
                 [ h2 []
                     [ text "Locations"
                     , input
+                        -- TODO do this differently
+                        -- TODO allow hiding character-only checks
                         [ type_ "checkbox"
                         , onClick ToggleCheckedLocations
                         ]
@@ -217,6 +216,12 @@ view model =
 viewObjectives : Model -> Html Msg
 viewObjectives model =
     let
+        numCompleted =
+            Set.size model.completedObjectives
+
+        numRequired =
+            model.flags.requiredObjectives
+
         fixed =
             model.flags.objectives
                 |> Array.map (\o -> viewObjective o (Set.member o model.completedObjectives) Nothing)
@@ -227,9 +232,26 @@ viewObjectives model =
                 |> Array.indexedMap (\i o -> viewEditableObjective i o model.completedObjectives model.flags.randomObjectiveTypes)
                 |> Array.toList
     in
-    -- TODO show completed/needed and reward
-    ul [ class "objectives" ]
-        (fixed ++ random)
+    div [ id "objectives" ]
+        [ h2 []
+            [ text "Objectives"
+            , span
+                [ class "progress"
+                , classList [ ( "complete", numCompleted >= numRequired ) ]
+                ]
+                [ text <|
+                    "("
+                        ++ String.fromInt numCompleted
+                        ++ "/"
+                        ++ String.fromInt numRequired
+                        ++ " to "
+                        ++ Flags.rewardToString model.flags.objectiveReward
+                        ++ ")"
+                ]
+            ]
+        , ul [ class "objectives" ]
+            (fixed ++ random)
+        ]
 
 
 viewObjective : Objective -> Bool -> Maybe Int -> Html Msg
@@ -431,6 +453,8 @@ viewLocation context location =
         [ span
             [ class "name"
             , onClick <| ToggleLocationStatus key Dismissed
+
+            -- TODO do this without requiring right-clicks
             , onRightClick <| ToggleLocationStatus key Seen
             ]
             [ text <| Location.getName location ]

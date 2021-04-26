@@ -2,6 +2,7 @@ module Flags exposing
     ( Flags
     , KeyItemClass(..)
     , parse
+    , rewardToString
     )
 
 import Array exposing (Array)
@@ -38,6 +39,16 @@ type KeyItemClass
 type Reward
     = Crystal
     | Win
+
+
+rewardToString : Reward -> String
+rewardToString reward =
+    case reward of
+        Crystal ->
+            "crystal"
+
+        Win ->
+            "win"
 
 
 {-| Would this be cleaner with a Parser?

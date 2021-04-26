@@ -60,6 +60,16 @@ h4 {
   width: 100%;
 }
 
+#objectives .progress {
+  font-weight: normal;
+  font-size: smaller;
+  margin-left: 0.5em;
+}
+
+#objectives .progress.complete {
+  color: green;
+}
+
 .objectives {
   list-style: none;
   padding: 0;
