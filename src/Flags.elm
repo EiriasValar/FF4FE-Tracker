@@ -70,11 +70,24 @@ parse flagString =
 
             else
                 flags
+
+        -- if no number of required objectives was specified, assume all are required
+        fixupRequiredObjectives flags =
+            let
+                requiredObjectives =
+                    if flags.requiredObjectives == 0 then
+                        Array.length flags.objectives + flags.randomObjectives
+
+                    else
+                        flags.requiredObjectives
+            in
+            { flags | requiredObjectives = requiredObjectives }
     in
     flagString
         |> String.words
         |> List.foldl parseFlag default
         |> fixupObjectiveTypes
+        |> fixupRequiredObjectives
 
 
 parseFlag : String -> Flags -> Flags
@@ -152,12 +165,12 @@ parseO opts incomingFlags =
                 |> List.foldl parseRandom incomingFlags
 
         [ "req", count ] ->
-            -- TODO parse req:all, default correctly when there's no req at all
             case String.toInt count of
                 Just c ->
                     { incomingFlags | requiredObjectives = c }
 
                 Nothing ->
+                    -- ignoring req:all, as that's the default when no req is given
                     incomingFlags
 
         [ "win", reward ] ->
