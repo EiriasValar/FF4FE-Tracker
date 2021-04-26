@@ -25,7 +25,7 @@ type Objective
     = ClassicForge
     | ClassicGiant
     | Fiends
-    | DarkMatterHunt
+    | DarkMatterHunt -- TODO display information about chest locations/counts when we have this objective
     | GetCharacter CharacterObjective
     | DefeatBoss BossObjective
     | DoQuest QuestObjective

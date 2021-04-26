@@ -123,6 +123,8 @@ innerUpdate msg model =
             { model | randomObjectives = Array.set index (Set objective) model.randomObjectives }
 
         UnsetRandomObjective index ->
+            -- the UI doesn't allow unsetting an objective if it's completed, so we don't
+            -- have to worry about un-completing it here
             { model | randomObjectives = Array.set index (Unset Dropdown.initialState) model.randomObjectives }
 
         DropdownMsg index dropdown ->
@@ -153,7 +155,14 @@ innerUpdate msg model =
                 randomObjectives =
                     updateRandomObjectives flags model.randomObjectives
 
-                -- TODO uncomplete any removed objectives
+                -- uncomplete any objectives that no longer exist
+                completedObjectives =
+                    randomObjectives
+                        |> Array.toList
+                        |> List.filterMap randomObjectiveToMaybe
+                        |> List.append (Array.toList flags.objectives)
+                        |> Set.fromList
+                        |> Set.intersect model.completedObjectives
             in
             -- storing both flagString and the Flags derived from it isn't ideal, but we ignore
             -- flagString everywhere else; it only exists so we can prepopulate the flags textarea
@@ -161,6 +170,7 @@ innerUpdate msg model =
                 | flagString = flagString
                 , flags = flags
                 , randomObjectives = randomObjectives
+                , completedObjectives = completedObjectives
             }
 
 
@@ -218,8 +228,6 @@ viewObjectives model =
                 |> Array.toList
     in
     -- TODO show completed/needed and reward
-    -- note that the size of model.completedObjectives isn't necessarily accurate,
-    -- since we don't clean it up when dropping or unsetting random requirements
     ul [ class "objectives" ]
         (fixed ++ random)
 
@@ -417,7 +425,6 @@ viewLocation context location =
             Html.Events.preventDefaultOn "contextmenu" <| Json.Decode.succeed ( msg, True )
     in
     div
-        -- TODO style surface/underground/moon
         [ class "location"
         , class <| "status-" ++ (Location.statusToString <| Location.getStatus location)
         ]
@@ -452,6 +459,16 @@ updateRandomObjectives flags objectives =
 
     else
         objectives
+
+
+randomObjectiveToMaybe : RandomObjective -> Maybe Objective
+randomObjectiveToMaybe o =
+    case o of
+        Set objective ->
+            Just objective
+
+        Unset _ ->
+            Nothing
 
 
 memberOf : List a -> a -> Bool
