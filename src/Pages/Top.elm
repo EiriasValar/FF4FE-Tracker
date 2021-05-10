@@ -4,10 +4,9 @@ import Array exposing (Array)
 import Bootstrap.Dropdown as Dropdown exposing (DropdownItem)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags)
-import Html exposing (Html, div, h2, h4, input, li, span, table, td, text, textarea, tr, ul)
-import Html.Attributes exposing (class, classList, id, type_)
+import Html exposing (Html, div, h2, h4, img, input, li, span, table, td, text, textarea, tr, ul)
+import Html.Attributes exposing (class, classList, id, src, type_)
 import Html.Events exposing (onClick, onInput)
-import Icons
 import Json.Decode
 import Location exposing (Location, Locations, Requirement(..), Status(..))
 import Objective exposing (Objective)
@@ -50,8 +49,9 @@ type Msg
     | DropdownMsg Int Dropdown.State
     | ToggleRequirement Requirement
     | ToggleLocationStatus Location.Key Location.Status
+    | ToggleProperty Location.Key Int
+    | ToggleWarpGlitchUsed Location.Key Int
     | ToggleCheckedLocations
-    | ToggleWarpGlitchUsed
     | UpdateFlags String
 
 
@@ -69,7 +69,7 @@ init : Url Params -> ( Model, Cmd Msg )
 init url =
     let
         flagString =
-            "Kmain O1:char_kain/2:quest_antlionnest/random:3,char,boss/req:4"
+            "Kmain/summon/moon Gwarp Nkey O1:char_kain/2:quest_antlionnest/random:3,char,boss/req:4"
 
         flags =
             Flags.parse flagString
@@ -115,6 +115,10 @@ update msg model =
 
 innerUpdate : Msg -> Model -> Model
 innerUpdate msg model =
+    let
+        toggleProperty key index newModel =
+            { newModel | locations = Location.update key (Maybe.map <| Location.toggleProperty index) newModel.locations }
+    in
     case msg of
         ToggleObjective objective ->
             { model | completedObjectives = toggle objective model.completedObjectives }
@@ -141,11 +145,15 @@ innerUpdate msg model =
         ToggleLocationStatus key status ->
             { model | locations = Location.update key (Maybe.map <| Location.toggleStatus status) model.locations }
 
+        ToggleProperty key index ->
+            toggleProperty key index model
+
+        ToggleWarpGlitchUsed key index ->
+            toggleProperty key index <|
+                { model | warpGlitchUsed = not model.warpGlitchUsed }
+
         ToggleCheckedLocations ->
             { model | showCheckedLocations = not model.showCheckedLocations }
-
-        ToggleWarpGlitchUsed ->
-            { model | warpGlitchUsed = not model.warpGlitchUsed }
 
         UpdateFlags flagString ->
             let
@@ -433,18 +441,42 @@ viewLocation context location =
         key =
             Location.getKey location
 
-        warpItem =
-            -- assuming here that there's always an item to be had via the
-            -- warp glitch, regardless of K flags
-            if context.flags.warpGlitch && key == Location.DwarfCastleThrone then
-                [ Icons.keyItemClickable (not context.warpGlitchUsed) ToggleWarpGlitchUsed
-                ]
-
-            else
-                []
-
         onRightClick msg =
             Html.Events.preventDefaultOn "contextmenu" <| Json.Decode.succeed ( msg, True )
+
+        viewProperty ( index, status, value ) =
+            let
+                ( class_, src_ ) =
+                    case value of
+                        Location.Character _ ->
+                            ( "character", "/img/sprites/Mini1-Front.gif" )
+
+                        Location.Boss ->
+                            ( "boss", "/img/sprites/Monster3-Front.gif" )
+
+                        Location.KeyItem Flags.Warp ->
+                            ( "key-item warp", "/img/sprites/BrownChest1.gif" )
+
+                        Location.KeyItem _ ->
+                            ( "key-item", "/img/sprites/BrownChest1.gif" )
+
+                        _ ->
+                            ( "", "" )
+
+                msg =
+                    if value == Location.KeyItem Flags.Warp then
+                        ToggleWarpGlitchUsed
+
+                    else
+                        ToggleProperty
+            in
+            span
+                [ class "icon"
+                , class class_
+                , class <| Location.statusToString status
+                , onClick <| msg (Location.getKey location) index
+                ]
+                [ img [ src src_ ] [] ]
     in
     div
         [ class "location"
@@ -459,10 +491,7 @@ viewLocation context location =
             ]
             [ text <| Location.getName location ]
         , span [ class "icons" ] <|
-            List.repeat (Location.getCharacters context location) Icons.character
-                ++ List.repeat (Location.getBosses context location) Icons.boss
-                ++ List.repeat (Location.getKeyItems context location) Icons.keyItem
-                ++ warpItem
+            List.map viewProperty (Location.getProperties context location)
         ]
 
 

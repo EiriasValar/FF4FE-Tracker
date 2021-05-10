@@ -31,6 +31,7 @@ type alias Flags =
 
 type KeyItemClass
     = Main
+    | Warp
     | Summon
     | MoonBoss
     | Free
@@ -246,7 +247,10 @@ parseG : String -> Flags -> Flags
 parseG switch flags =
     case switch of
         "warp" ->
-            { flags | warpGlitch = True }
+            { flags
+                | warpGlitch = True
+                , keyItems = Set.insert Warp flags.keyItems
+            }
 
         _ ->
             flags

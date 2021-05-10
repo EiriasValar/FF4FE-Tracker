@@ -240,16 +240,29 @@ h4 {
 }
 
 .location .icon {
-  width: 16px;
-  height: 16px;
+  cursor: pointer;
   vertical-align: middle;
   padding: 0 1px;
+  position: relative;
 }
 
-.location .icon.clickable {
-  cursor: pointer;
+.location .icon.key-item.warp {
+  filter: opacity(50%);
 }
 
-.location .key-item.disabled {
-  filter: grayscale(100%) opacity(50%); 
+.location .icon.dismissed::after {
+  content: "✓";
+  color: green;
+  position: absolute;
+  top: -2px;
+  left: 3px;
+}
+
+.location .icon img {
+  width: 16px;
+  height: 16px;
+}
+
+.location .icon.dismissed img {
+  filter: opacity(25%); 
 }

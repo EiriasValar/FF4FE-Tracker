@@ -7,25 +7,25 @@ module Location exposing
     , Locations
     , Requirement(..)
     , Status(..)
+    , Value(..)
     , all
     , areaToString
     , filterByContext
     , getArea
-    , getBosses
-    , getCharacters
     , getKey
-    , getKeyItems
     , getName
+    , getProperties
     , getStatus
     , groupByArea
     , shops
     , statusToString
+    , toggleProperty
     , toggleStatus
     , update
     , values
     )
 
-import Array
+import Array exposing (Array)
 import AssocList as Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
@@ -45,12 +45,37 @@ type alias Data =
     { key : Key
     , name : String
     , area : Area
-    , status : Status
     , requirements : Set Requirement
-    , characters : Maybe CharacterCount
-    , bosses : Int
-    , keyItem : Maybe KeyItemClass
+    , status : Status
+    , properties : Array Property
     }
+
+
+type Status
+    = Unseen
+    | Seen
+    | Dismissed
+
+
+
+-- TODO some of these types and methods could live somewhere else? Location's feeling overloaded
+
+
+type Property
+    = Property Status Value
+
+
+type Value
+    = Character CharacterType
+    | Boss
+    | KeyItem KeyItemClass
+    | Chests Int
+    | TrappedChests Int
+
+
+type CharacterType
+    = Ungated
+    | Gated
 
 
 type Key
@@ -142,21 +167,10 @@ type Requirement
     | UndergroundAccess
 
 
-type Status
-    = Unseen
-    | Seen
-    | Dismissed
-
-
 type Area
     = Surface
     | Underground
     | Moon
-
-
-type CharacterCount
-    = Ungated Int
-    | Gated Int
 
 
 type alias Context =
@@ -184,55 +198,56 @@ getArea (Location location) =
     location.area
 
 
-getCharacters : Context -> Location -> Int
-getCharacters { flags } (Location location) =
-    case location.characters of
-        Just (Gated n) ->
-            if flags.classicGiantObjective && location.key == GiantBabil then
-                0
-
-            else
-                n
-
-        Just (Ungated n) ->
-            if flags.noFreeChars then
-                0
-
-            else
-                n
-
-        Nothing ->
-            0
-
-
-getBosses : Context -> Location -> Int
-getBosses _ (Location location) =
-    location.bosses
-
-
-getKeyItems : Context -> Location -> Int
-getKeyItems { flags, warpGlitchUsed } (Location location) =
+{-| Returns all the Location's properties that exist given the context,
+regardless of their Status. The Int is the index of the property within
+the location, for use with toggleProperty.
+-}
+getProperties : Context -> Location -> List ( Int, Status, Value )
+getProperties { flags, warpGlitchUsed } (Location location) =
     let
-        keyItems =
-            case location.keyItem of
-                Just itemClass ->
-                    if Set.member itemClass flags.keyItems then
-                        1
+        filterProperty index (Property status value) =
+            let
+                keep =
+                    Just ( index, status, value )
+            in
+            case value of
+                Character Ungated ->
+                    if flags.noFreeChars then
+                        Nothing
 
                     else
-                        0
+                        keep
 
-                _ ->
-                    0
+                Character Gated ->
+                    if flags.classicGiantObjective && location.key == GiantBabil then
+                        Nothing
 
-        modifier =
-            if warpGlitchUsed && location.key == SealedCave then
-                -1
+                    else
+                        keep
 
-            else
-                0
+                Boss ->
+                    keep
+
+                KeyItem itemClass ->
+                    if warpGlitchUsed && location.key == SealedCave then
+                        Nothing
+
+                    else if Set.member itemClass flags.keyItems then
+                        keep
+
+                    else
+                        Nothing
+
+                Chests _ ->
+                    keep
+
+                TrappedChests _ ->
+                    keep
     in
-    keyItems + modifier
+    location.properties
+        |> Array.indexedMap filterProperty
+        |> Array.toList
+        |> List.filterMap identity
 
 
 getStatus : Location -> Status
@@ -251,6 +266,24 @@ toggleStatus status (Location location) =
                 status
     in
     Location { location | status = newStatus }
+
+
+toggleProperty : Int -> Location -> Location
+toggleProperty index (Location location) =
+    case Array.get index location.properties of
+        Just (Property status value) ->
+            let
+                newStatus =
+                    if status == Dismissed then
+                        Unseen
+
+                    else
+                        Dismissed
+            in
+            Location { location | properties = Array.set index (Property newStatus value) location.properties }
+
+        Nothing ->
+            Location location
 
 
 statusToString : Status -> String
@@ -353,12 +386,28 @@ filterByContext class c (Locations locations) =
                 , UpperBabil
                 ]
 
+        propertiesHaveValue location =
+            getProperties context location
+                |> List.any
+                    (\( _, _, value ) ->
+                        case value of
+                            Character _ ->
+                                True
+
+                            Boss ->
+                                bossesRelevant
+
+                            KeyItem _ ->
+                                True
+
+                            _ ->
+                                False
+                    )
+
         hasValue ((Location l) as location) =
             isClass Shops location
                 || (l.key == UpperBabil && not undergroundAccess)
-                || (getCharacters context location > 0)
-                || (bossesRelevant && getBosses context location > 0)
-                || (getKeyItems context location > 0)
+                || propertiesHaveValue location
 
         isRelevant ((Location l) as location) =
             if not <| isClass class location then
@@ -442,25 +491,13 @@ all =
             { key = l.key
             , name = l.name
             , area = area
-            , status = Unseen
             , requirements = Set.fromList l.requirements
-            , characters = Nothing
-            , bosses = 0
-            , keyItem = Nothing
+            , status = Unseen
+            , properties =
+                l.value
+                    |> List.map (Property Unseen)
+                    |> Array.fromList
             }
-                |> foldInto addValue l.value
-
-        addValue : Value -> Data -> Data
-        addValue v d =
-            case v of
-                Characters c ->
-                    { d | characters = Just c }
-
-                Bosses n ->
-                    { d | bosses = n }
-
-                KeyItem k ->
-                    { d | keyItem = Just k }
     in
     List.map (finish Surface) surface
         ++ List.map (finish Underground) underground
@@ -484,27 +521,21 @@ type alias PartialData =
     }
 
 
-type Value
-    = Characters CharacterCount
-    | Bosses Int
-    | KeyItem KeyItemClass
-
-
 surface : List PartialData
 surface =
     [ { key = MistCave
       , name = "Mist Cave"
       , requirements = []
       , value =
-            [ Bosses 1
+            [ Boss
             ]
       }
     , { key = MistVillagePackage
       , name = "Mist Village - Package"
       , requirements = [ Package ]
       , value =
-            [ Characters <| Gated 1
-            , Bosses 1
+            [ Character Gated
+            , Boss
             ]
       }
     , { key = MistVillageMom
@@ -518,35 +549,35 @@ surface =
       , name = "Kaipo"
       , requirements = [ SandRuby ]
       , value =
-            [ Characters <| Gated 1
+            [ Character Gated
             ]
       }
     , { key = WateryPass
       , name = "Watery Pass"
       , requirements = []
       , value =
-            [ Characters <| Ungated 1
+            [ Character Ungated
             ]
       }
     , { key = Waterfall
       , name = "Waterfall"
       , requirements = []
       , value =
-            [ Bosses 1
+            [ Boss
             ]
       }
     , { key = Damcyan
       , name = "Damcyan"
       , requirements = []
       , value =
-            [ Characters <| Ungated 1
+            [ Character Ungated
             ]
       }
     , { key = AntlionCave
       , name = "Antlion Cave"
       , requirements = []
       , value =
-            [ Bosses 1
+            [ Boss
             , KeyItem Main
             ]
       }
@@ -554,15 +585,15 @@ surface =
       , name = "Mt. Hobs"
       , requirements = []
       , value =
-            [ Characters <| Gated 1
-            , Bosses 1
+            [ Boss
+            , Character Gated
             ]
       }
     , { key = FabulDefence
       , name = "Fabul Defence"
       , requirements = []
       , value =
-            [ Bosses 1
+            [ Boss
             , KeyItem Main
             ]
       }
@@ -591,24 +622,28 @@ surface =
       , name = "Mysidia"
       , requirements = []
       , value =
-            [ Characters <| Ungated 2
+            [ Character Ungated
+            , Character Ungated
             ]
       }
     , { key = MtOrdeals
       , name = "Mt. Ordeals"
       , requirements = []
       , value =
-            [ Characters <| Ungated 1
-            , Bosses 3
+            [ Character Ungated
+            , Boss
+            , Boss
             , KeyItem Main
+            , Boss
             ]
       }
     , { key = BaronInn
       , name = "Baron Inn"
       , requirements = []
       , value =
-            [ Characters <| Gated 1
-            , Bosses 2
+            [ Boss
+            , Boss
+            , Character Gated
             , KeyItem Main
             ]
       }
@@ -616,8 +651,9 @@ surface =
       , name = "Baron Castle"
       , requirements = [ BaronKey ]
       , value =
-            [ Characters <| Gated 1
-            , Bosses 2
+            [ Boss
+            , Boss
+            , Character Gated
             , KeyItem Main
             ]
       }
@@ -625,7 +661,7 @@ surface =
       , name = "Baron Castle Basement"
       , requirements = [ BaronKey ]
       , value =
-            [ Bosses 1
+            [ Boss
             , KeyItem Summon
             ]
       }
@@ -640,7 +676,7 @@ surface =
       , name = "Cave Magnes"
       , requirements = [ TwinHarp ]
       , value =
-            [ Bosses 1
+            [ Boss
             , KeyItem Main
             ]
       }
@@ -648,15 +684,16 @@ surface =
       , name = "Tower of Zot 1"
       , requirements = []
       , value =
-            [ Bosses 1
+            [ Boss
             ]
       }
     , { key = TowerZot2
       , name = "Tower of Zot 2"
       , requirements = [ EarthCrystal ]
       , value =
-            [ Characters <| Gated 2
-            , Bosses 1
+            [ Character Gated
+            , Character Gated
+            , Boss
             , KeyItem Main
             ]
       }
@@ -664,22 +701,24 @@ surface =
       , name = "Cave Eblan"
       , requirements = [ Hook ]
       , value =
-            [ Characters <| Gated 1
+            [ Character Gated
             ]
       }
     , { key = UpperBabil
       , name = "Upper Bab-il"
       , requirements = [ Hook ]
       , value =
-            [ Bosses 2
+            [ Boss
+            , Boss
             ]
       }
     , { key = GiantBabil
       , name = "Giant of Bab-il"
       , requirements = [ DarknessCrystal ]
       , value =
-            [ Characters <| Gated 1
-            , Bosses 2
+            [ Boss
+            , Boss
+            , Character Gated
             ]
       }
     ]
@@ -691,16 +730,18 @@ underground =
       , name = "Dwarf Castle"
       , requirements = []
       , value =
-            [ Characters <| Gated 1
-            , Bosses 2
+            [ Boss
+            , Character Gated
+            , Boss
             , KeyItem Main
+            , KeyItem Warp
             ]
       }
     , { key = LowerBabilCannon
       , name = "Lower Bab-il - Cannon"
       , requirements = [ TowerKey ]
       , value =
-            [ Bosses 1
+            [ Boss
             , KeyItem Main
             ]
       }
@@ -708,7 +749,7 @@ underground =
       , name = "Lower Bab-il - Top"
       , requirements = []
       , value =
-            [ Bosses 1
+            [ Boss
             , KeyItem Main
             ]
       }
@@ -730,7 +771,7 @@ underground =
       , name = "Feymarch - King"
       , requirements = []
       , value =
-            [ Bosses 1
+            [ Boss
             , KeyItem Summon
             ]
       }
@@ -738,7 +779,7 @@ underground =
       , name = "Feymarch - Queen"
       , requirements = []
       , value =
-            [ Bosses 1
+            [ Boss
             , KeyItem Summon
             ]
       }
@@ -746,8 +787,8 @@ underground =
       , name = "Sealed Cave"
       , requirements = [ LucaKey ]
       , value =
-            [ Bosses 1
-            , KeyItem Main
+            [ KeyItem Main
+            , Boss
             ]
       }
     ]
@@ -759,14 +800,14 @@ moon =
       , name = "Lunar Dais"
       , requirements = []
       , value =
-            [ Characters <| Gated 1
+            [ Character Gated
             ]
       }
     , { key = CaveBahamut
       , name = "Cave Bahamut"
       , requirements = []
       , value =
-            [ Bosses 1
+            [ Boss
             , KeyItem Summon
             ]
       }
@@ -774,7 +815,7 @@ moon =
       , name = "Murasame Altar"
       , requirements = []
       , value =
-            [ Bosses 1
+            [ Boss
             , KeyItem MoonBoss
             ]
       }
@@ -782,7 +823,7 @@ moon =
       , name = "Wyvern Altar"
       , requirements = []
       , value =
-            [ Bosses 1
+            [ Boss
             , KeyItem MoonBoss
             ]
       }
@@ -790,7 +831,7 @@ moon =
       , name = "White Spear Altar"
       , requirements = []
       , value =
-            [ Bosses 1
+            [ Boss
             , KeyItem MoonBoss
             ]
       }
@@ -798,7 +839,7 @@ moon =
       , name = "Ribbon Room"
       , requirements = []
       , value =
-            [ Bosses 1
+            [ Boss
             , KeyItem MoonBoss
             ]
       }
@@ -806,7 +847,7 @@ moon =
       , name = "Masamune Altar"
       , requirements = []
       , value =
-            [ Bosses 1
+            [ Boss
             , KeyItem MoonBoss
             ]
       }
@@ -891,18 +932,8 @@ shops =
                 { key = l.key
                 , name = l.name
                 , area = l.area
-                , status = Unseen
                 , requirements = Set.fromList l.requirements
-                , characters = Nothing
-                , bosses = 0
-                , keyItem = Nothing
+                , status = Unseen
+                , properties = Array.empty
                 }
             )
-
-
-{-| List.foldl but with the accumulator as the last argument,
-for ease of piping.
--}
-foldInto : (a -> b -> b) -> List a -> b -> b
-foldInto fn list acc =
-    List.foldl fn acc list
