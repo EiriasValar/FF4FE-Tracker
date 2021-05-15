@@ -225,12 +225,11 @@ h4 {
   line-height: 1.3;
 }
 
-.location.status-seen {
+.location.seen {
   color: green;
 }
 
-.location.status-dismissed {
-  color: green;
+.location.dismissed {
   text-decoration: line-through;
 }
 
@@ -246,8 +245,8 @@ h4 {
   position: relative;
 }
 
-.location .icon.key-item.warp {
-  filter: opacity(50%);
+.location .icon.key-item.warp.unseen {
+  filter: opacity(40%);
 }
 
 .location .icon.dismissed::after {
@@ -266,3 +265,13 @@ h4 {
 .location .icon.dismissed img {
   filter: opacity(25%); 
 }
+
+.location .icon.key-item img {
+  filter: invert(1) sepia(1);
+}
+  
+.location .icon.key-item.dismissed img {
+  filter: invert(1) sepia(1) opacity(25%);
+}
+
+  

@@ -455,10 +455,10 @@ viewLocation context location =
                             ( "boss", "/img/sprites/Monster3-Front.gif" )
 
                         Location.KeyItem Flags.Warp ->
-                            ( "key-item warp", "/img/sprites/BrownChest1.gif" )
+                            ( "key-item warp", "/img/sprites/Key.gif" )
 
                         Location.KeyItem _ ->
-                            ( "key-item", "/img/sprites/BrownChest1.gif" )
+                            ( "key-item", "/img/sprites/Key.gif" )
 
                         _ ->
                             ( "", "" )
@@ -480,7 +480,7 @@ viewLocation context location =
     in
     div
         [ class "location"
-        , class <| "status-" ++ (Location.statusToString <| Location.getStatus location)
+        , class <| Location.statusToString <| Location.getStatus location
         ]
         [ span
             [ class "name"
