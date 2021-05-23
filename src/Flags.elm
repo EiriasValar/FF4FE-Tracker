@@ -34,6 +34,7 @@ type KeyItemClass
     | Warp
     | Summon
     | MoonBoss
+    | Trapped
     | Free
 
 
@@ -223,8 +224,7 @@ parseK switch flags =
             { flags | keyItems = Set.insert MoonBoss flags.keyItems }
 
         "trap" ->
-            -- TODO
-            flags
+            { flags | keyItems = Set.insert Trapped flags.keyItems }
 
         _ ->
             flags

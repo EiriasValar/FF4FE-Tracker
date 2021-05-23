@@ -2,6 +2,8 @@ module Location exposing
     ( Area
     , Class(..)
     , Context
+    , Filter(..)
+    , FilterOverride(..)
     , Key(..)
     , Location
     , Locations
@@ -69,8 +71,22 @@ type Value
     = Character CharacterType
     | Boss
     | KeyItem KeyItemClass
-    | Chests Int
-    | TrappedChests Int
+    | Chest Int
+    | TrappedChest Int
+
+
+type Filter
+    = Characters
+    | Bosses
+    | KeyItems
+    | Chests
+    | TrappedChests
+    | Checked
+
+
+type FilterOverride
+    = Show Filter
+    | Hide Filter
 
 
 type CharacterType
@@ -179,7 +195,7 @@ type alias Context =
     , completedObjectives : Set Objective
     , attainedRequirements : Set Requirement
     , warpGlitchUsed : Bool
-    , showChecked : Bool
+    , filterOverrides : Set FilterOverride
     }
 
 
@@ -225,9 +241,6 @@ getProperties { flags, warpGlitchUsed } (Location location) =
                     else
                         keep
 
-                Boss ->
-                    keep
-
                 KeyItem itemClass ->
                     if warpGlitchUsed && location.key == SealedCave then
                         Nothing
@@ -238,15 +251,12 @@ getProperties { flags, warpGlitchUsed } (Location location) =
                     else
                         Nothing
 
-                Chests _ ->
-                    keep
-
-                TrappedChests _ ->
+                _ ->
                     keep
     in
     location.properties
-        |> Array.indexedMap filterProperty
         |> Array.toList
+        |> List.indexedMap filterProperty
         |> List.filterMap identity
 
 
@@ -370,10 +380,6 @@ filterByContext class c (Locations locations) =
         context =
             { c | attainedRequirements = attainedRequirements }
 
-        -- don't want to call this repeatedly for each location when it depends only on the context
-        bossesRelevant =
-            bossesHaveValue context
-
         -- locations that can be accessed regardless of requirements if we can jump
         jumpable =
             Set.fromList <|
@@ -386,22 +392,14 @@ filterByContext class c (Locations locations) =
                 , UpperBabil
                 ]
 
+        filters =
+            filtersFrom context
+
         propertiesHaveValue location =
             getProperties context location
                 |> List.any
                     (\( _, _, value ) ->
-                        case value of
-                            Character _ ->
-                                True
-
-                            Boss ->
-                                bossesRelevant
-
-                            KeyItem _ ->
-                                True
-
-                            _ ->
-                                False
+                        Set.member (valueToFilter value) filters
                     )
 
         hasValue ((Location l) as location) =
@@ -415,7 +413,7 @@ filterByContext class c (Locations locations) =
 
             else if l.status == Dismissed then
                 -- always show dismissed items if showChecked is on, never if it's off
-                context.showChecked
+                Set.member (Show Checked) context.filterOverrides
 
             else
                 hasValue location
@@ -427,41 +425,82 @@ filterByContext class c (Locations locations) =
         |> Locations
 
 
-{-| Returns True if, based on the given Context, bosses may be intrisically
-valuable. Namely, if there are Boss Hunt objectives to fullfil, or a D.Mist
-to find when the Nkey flag is on.
--}
-bossesHaveValue : Context -> Bool
-bossesHaveValue context =
+filtersFrom : Context -> Set Filter
+filtersFrom context =
+    Set.foldl
+        (\override ->
+            case override of
+                Show filter ->
+                    Set.insert filter
+
+                Hide filter ->
+                    Set.remove filter
+        )
+        (defaultFiltersFrom context)
+        context.filterOverrides
+
+
+defaultFiltersFrom : Context -> Set Filter
+defaultFiltersFrom context =
+    let
+        outstanding =
+            outstandingObjectives context
+
+        {- True if, based on the given Context, bosses may be intrisically
+           valuable. Namely, if there are Boss Hunt objectives to fullfil, or a D.Mist
+           to find when the Nkey flag is on.
+        -}
+        bossesHaveValue =
+            let
+                activeBossHunt =
+                    outstanding
+                        |> Set.filter Objective.isBoss
+                        |> Set.isEmpty
+                        |> not
+
+                -- Finding D.Mist is interesting if the Free key item is turned off and we
+                -- haven't already found it. Technically it may also stop being interesting
+                -- if we've already attained Go Mode without it, but at that point *most* of
+                -- what we track stops being interesting.
+                huntingDMist =
+                    (not <| Set.member Flags.Free context.flags.keyItems)
+                        && (not <| Set.member MistDragon context.attainedRequirements)
+            in
+            activeBossHunt || huntingDMist
+
+        onDarkMatterHunt =
+            (List.member Objective.DarkMatterHunt <| Array.toList context.flags.objectives)
+                && (not <| Set.member Objective.DarkMatterHunt context.completedObjectives)
+                && (not <| Set.isEmpty outstanding)
+
+        trappedKeyItems =
+            Set.member Trapped context.flags.keyItems
+    in
+    [ ( Characters, True )
+    , ( Bosses, bossesHaveValue )
+    , ( KeyItems, True )
+    , ( Chests, onDarkMatterHunt )
+    , ( TrappedChests, trappedKeyItems )
+    ]
+        |> List.filter Tuple.second
+        |> List.map Tuple.first
+        |> Set.fromList
+
+
+outstandingObjectives : Context -> Set Objective
+outstandingObjectives context =
     let
         combinedObjectives =
             context.flags.objectives
                 |> Array.toList
                 |> Set.fromList
                 |> Set.union context.randomObjectives
-
-        outstandingObjectives =
-            if Set.size context.completedObjectives >= context.flags.requiredObjectives then
-                Set.empty
-
-            else
-                Set.diff combinedObjectives context.completedObjectives
-
-        activeBossHunt =
-            outstandingObjectives
-                |> Set.filter Objective.isBoss
-                |> Set.isEmpty
-                |> not
-
-        -- Finding D.Mist is interesting if the Free key item is turned off and we
-        -- haven't already found it. Technically it may also stop being interesting
-        -- if we've already attained Go Mode without it, but at that point *most* of
-        -- what we track stops being interesting.
-        huntingDMist =
-            (not <| Set.member Flags.Free context.flags.keyItems)
-                && (not <| Set.member MistDragon context.attainedRequirements)
     in
-    activeBossHunt || huntingDMist
+    if Set.size context.completedObjectives >= context.flags.requiredObjectives then
+        Set.empty
+
+    else
+        Set.diff combinedObjectives context.completedObjectives
 
 
 areaAccessible : Set Requirement -> Location -> Bool
@@ -481,6 +520,26 @@ requirementsMet : Set Requirement -> Location -> Bool
 requirementsMet attained (Location location) =
     Set.diff location.requirements attained
         |> Set.isEmpty
+
+
+valueToFilter : Value -> Filter
+valueToFilter value =
+    -- This seems silly. Is this silly?
+    case value of
+        Character _ ->
+            Characters
+
+        Boss ->
+            Bosses
+
+        KeyItem _ ->
+            KeyItems
+
+        Chest _ ->
+            Chests
+
+        TrappedChest _ ->
+            TrappedChests
 
 
 all : Locations
@@ -528,6 +587,8 @@ surface =
       , requirements = []
       , value =
             [ Boss
+            , Chest 4
+            , TrappedChest 7
             ]
       }
     , { key = MistVillagePackage
@@ -557,6 +618,7 @@ surface =
       , requirements = []
       , value =
             [ Character Ungated
+            , Chest 19
             ]
       }
     , { key = Waterfall
@@ -564,6 +626,7 @@ surface =
       , requirements = []
       , value =
             [ Boss
+            , Chest 4
             ]
       }
     , { key = Damcyan
@@ -579,6 +642,7 @@ surface =
       , value =
             [ Boss
             , KeyItem Main
+            , Chest 13
             ]
       }
     , { key = MtHobs
@@ -587,6 +651,7 @@ surface =
       , value =
             [ Boss
             , Character Gated
+            , Chest 5
             ]
       }
     , { key = FabulDefence
@@ -635,6 +700,7 @@ surface =
             , Boss
             , KeyItem Main
             , Boss
+            , Chest 4
             ]
       }
     , { key = BaronInn
@@ -655,6 +721,7 @@ surface =
             , Boss
             , Character Gated
             , KeyItem Main
+            , Chest 20
             ]
       }
     , { key = BaronBasement
@@ -678,6 +745,7 @@ surface =
       , value =
             [ Boss
             , KeyItem Main
+            , Chest 10
             ]
       }
     , { key = TowerZot1
@@ -685,6 +753,8 @@ surface =
       , requirements = []
       , value =
             [ Boss
+            , Chest 6
+            , TrappedChest 1
             ]
       }
     , { key = TowerZot2
@@ -702,6 +772,8 @@ surface =
       , requirements = [ Hook ]
       , value =
             [ Character Gated
+            , Chest 22
+            , TrappedChest 1
             ]
       }
     , { key = UpperBabil
@@ -710,6 +782,8 @@ surface =
       , value =
             [ Boss
             , Boss
+            , Chest 8
+            , TrappedChest 1
             ]
       }
     , { key = GiantBabil
@@ -719,6 +793,8 @@ surface =
             [ Boss
             , Boss
             , Character Gated
+            , Chest 8
+            , TrappedChest 1
             ]
       }
     ]
@@ -751,6 +827,8 @@ underground =
       , value =
             [ Boss
             , KeyItem Main
+            , Chest 16
+            , TrappedChest 4
             ]
       }
     , { key = SylphCave
@@ -758,6 +836,8 @@ underground =
       , requirements = [ Pan ]
       , value =
             [ KeyItem Summon
+            , Chest 32
+            , TrappedChest 7
             ]
       }
     , { key = FeymarchChest
@@ -789,6 +869,7 @@ underground =
       , value =
             [ KeyItem Main
             , Boss
+            , Chest 19
             ]
       }
     ]

@@ -8,7 +8,7 @@ import Html exposing (Html, div, h2, h4, img, input, li, span, table, td, text, 
 import Html.Attributes exposing (class, classList, id, src, type_)
 import Html.Events exposing (onClick, onInput)
 import Json.Decode
-import Location exposing (Location, Locations, Requirement(..), Status(..))
+import Location exposing (Filter(..), FilterOverride(..), Location, Locations, Requirement(..), Status(..))
 import Objective exposing (Objective)
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
@@ -32,7 +32,7 @@ type alias Model =
     , completedObjectives : Set Objective
     , attainedRequirements : Set Requirement
     , locations : Locations
-    , showCheckedLocations : Bool
+    , filterOverrides : Set FilterOverride
     , warpGlitchUsed : Bool
     }
 
@@ -51,7 +51,6 @@ type Msg
     | ToggleLocationStatus Location.Key Location.Status
     | ToggleProperty Location.Key Int
     | ToggleWarpGlitchUsed Location.Key Int
-    | ToggleCheckedLocations
     | UpdateFlags String
 
 
@@ -84,7 +83,7 @@ init url =
     , completedObjectives = Set.empty
     , attainedRequirements = Set.empty
     , locations = Location.all
-    , showCheckedLocations = False
+    , filterOverrides = Set.empty
     , warpGlitchUsed = False
     }
         |> with Cmd.none
@@ -152,9 +151,6 @@ innerUpdate msg model =
             toggleProperty key index <|
                 { model | warpGlitchUsed = not model.warpGlitchUsed }
 
-        ToggleCheckedLocations ->
-            { model | showCheckedLocations = not model.showCheckedLocations }
-
         UpdateFlags flagString ->
             let
                 flags =
@@ -202,13 +198,6 @@ view model =
             , div [ id "checks" ]
                 [ h2 []
                     [ text "Locations"
-                    , input
-                        -- TODO do this differently
-                        -- TODO allow hiding character-only checks
-                        [ type_ "checkbox"
-                        , onClick ToggleCheckedLocations
-                        ]
-                        []
                     ]
                 , viewLocations model Location.Checks
                 ]
@@ -407,7 +396,7 @@ viewLocations model locClass =
             , completedObjectives = model.completedObjectives
             , attainedRequirements = model.attainedRequirements
             , warpGlitchUsed = model.warpGlitchUsed
-            , showChecked = model.showCheckedLocations
+            , filterOverrides = model.filterOverrides
             }
 
         toMaybe : RandomObjective -> Maybe Objective
@@ -460,8 +449,11 @@ viewLocation context location =
                         Location.KeyItem _ ->
                             ( "key-item", "/img/sprites/Key.gif" )
 
-                        _ ->
-                            ( "", "" )
+                        Location.Chest _ ->
+                            ( "chest countable", "/img/sprites/BlueChest1.gif" )
+
+                        Location.TrappedChest _ ->
+                            ( "trapped-chest countable", "/img/sprites/RedChest2.gif" )
 
                 msg =
                     if value == Location.KeyItem Flags.Warp then
@@ -476,7 +468,19 @@ viewLocation context location =
                 , class <| Location.statusToString status
                 , onClick <| msg (Location.getKey location) index
                 ]
-                [ img [ src src_ ] [] ]
+                [ img [ src src_ ] []
+                , span [ class "count" ]
+                    [ case value of
+                        Location.Chest count ->
+                            text <| String.fromInt count
+
+                        Location.TrappedChest count ->
+                            text <| String.fromInt count
+
+                        _ ->
+                            text ""
+                    ]
+                ]
     in
     div
         [ class "location"
