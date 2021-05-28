@@ -3,7 +3,7 @@ module Location exposing
     , Class(..)
     , Context
     , Filter(..)
-    , FilterOverride(..)
+    , FilterType(..)
     , Key(..)
     , Location
     , Locations
@@ -24,6 +24,7 @@ module Location exposing
     , toggleProperty
     , toggleStatus
     , update
+    , valueToFilter
     , values
     )
 
@@ -84,9 +85,9 @@ type Filter
     | Checked
 
 
-type FilterOverride
-    = Show Filter
-    | Hide Filter
+type FilterType
+    = Show
+    | Hide
 
 
 type CharacterType
@@ -195,7 +196,7 @@ type alias Context =
     , completedObjectives : Set Objective
     , attainedRequirements : Set Requirement
     , warpGlitchUsed : Bool
-    , filterOverrides : Set FilterOverride
+    , filterOverrides : Dict Filter FilterType
     }
 
 
@@ -215,49 +216,43 @@ getArea (Location location) =
 
 
 {-| Returns all the Location's properties that exist given the context,
-regardless of their Status. The Int is the index of the property within
-the location, for use with toggleProperty.
+regardless of their Status, minus any that have been filtered out. The Int
+is the index of the property within the location, for use with toggleProperty.
 -}
 getProperties : Context -> Location -> List ( Int, Status, Value )
-getProperties { flags, warpGlitchUsed } (Location location) =
+getProperties { flags, warpGlitchUsed, filterOverrides } (Location location) =
     let
-        filterProperty index (Property status value) =
-            let
-                keep =
-                    Just ( index, status, value )
-            in
+        -- certain values don't exist under certain flags
+        -- note the free key item from Edward has its own key item class rather than
+        -- being special-cased here
+        exists (Property _ value) =
             case value of
                 Character Ungated ->
-                    if flags.noFreeChars then
-                        Nothing
-
-                    else
-                        keep
+                    not flags.noFreeChars
 
                 Character Gated ->
-                    if flags.classicGiantObjective && location.key == GiantBabil then
-                        Nothing
-
-                    else
-                        keep
+                    not <| flags.classicGiantObjective && location.key == GiantBabil
 
                 KeyItem itemClass ->
-                    if warpGlitchUsed && location.key == SealedCave then
-                        Nothing
-
-                    else if Set.member itemClass flags.keyItems then
-                        keep
-
-                    else
-                        Nothing
+                    not (warpGlitchUsed && location.key == SealedCave)
+                        && Set.member itemClass flags.keyItems
 
                 _ ->
-                    keep
+                    True
+
+        notFilteredOut (Property _ value) =
+            Dict.get (valueToFilter value) filterOverrides
+                |> Maybe.withDefault Show
+                |> (/=) Hide
+
+        toTuple index (Property status value) =
+            ( index, status, value )
     in
     location.properties
         |> Array.toList
-        |> List.indexedMap filterProperty
-        |> List.filterMap identity
+        |> List.filter exists
+        |> List.filter notFilteredOut
+        |> List.indexedMap toTuple
 
 
 getStatus : Location -> Status
@@ -396,6 +391,11 @@ filterByContext class c (Locations locations) =
             filtersFrom context
 
         propertiesHaveValue location =
+            -- anything overridden to Show has value
+            -- anything overridden to Hide doesn't (and isn't returned
+            -- by getProperties)
+            -- otherwise, characters and key items have value
+            -- bosses and chests have value depending on flags
             getProperties context location
                 |> List.any
                     (\( _, _, value ) ->
@@ -412,8 +412,10 @@ filterByContext class c (Locations locations) =
                 False
 
             else if l.status == Dismissed then
-                -- always show dismissed items if showChecked is on, never if it's off
-                Set.member (Show Checked) context.filterOverrides
+                -- always show dismissed items if Sbow Checked is on, never otherwise
+                Dict.get Checked context.filterOverrides
+                    |> Maybe.withDefault Hide
+                    |> (==) Show
 
             else
                 hasValue location
@@ -427,13 +429,13 @@ filterByContext class c (Locations locations) =
 
 filtersFrom : Context -> Set Filter
 filtersFrom context =
-    Set.foldl
-        (\override ->
-            case override of
-                Show filter ->
+    Dict.foldl
+        (\filter type_ ->
+            case type_ of
+                Show ->
                     Set.insert filter
 
-                Hide filter ->
+                Hide ->
                     Set.remove filter
         )
         (defaultFiltersFrom context)

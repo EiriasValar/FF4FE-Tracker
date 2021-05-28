@@ -238,7 +238,12 @@ h4 {
   padding-right: 5px;
 }
 
-.location .icon {
+.filters {
+  margin-left: 1em;
+}
+
+.location .icon,
+.filter {
   cursor: pointer;
   vertical-align: middle;
   padding: 0 1px;
@@ -261,21 +266,39 @@ h4 {
   width: 100%;
 }
 
+.filter.unset img {
+  filter: opacity(25%);
+}
+
+.filter.hide::after {
+  content: "🚫";
+  position: absolute;
+  top: -9px;
+  left: -2px;
+  text-align: center;
+  text-shadow: 1px 1px 0px black;
+  font-size: larger;
+  width: 100%;
+  filter: opacity(80%);
+}
+
+.filter.show img {
+  filter: none;
+}
+
+
 .location .icon img {
   width: 20px;
   height: 20px;
 }
 
-.location .icon.dismissed img {
-  filter: opacity(25%); 
+.filter img {
+  width: 15px;
+  height: 15px;
 }
 
-.location .icon.key-item img {
-  filter: invert(1) sepia(1);
-}
-  
-.location .icon.key-item.dismissed img {
-  filter: invert(1) sepia(1) opacity(25%);
+.location .icon.dismissed img {
+  filter: opacity(25%); 
 }
 
 .location .icon .count {

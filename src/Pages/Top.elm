@@ -1,6 +1,7 @@
 module Pages.Top exposing (Model, Msg, Params, page)
 
 import Array exposing (Array)
+import AssocList as Dict exposing (Dict)
 import Bootstrap.Dropdown as Dropdown exposing (DropdownItem)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags)
@@ -8,7 +9,7 @@ import Html exposing (Html, div, h2, h4, img, input, li, span, table, td, text, 
 import Html.Attributes exposing (class, classList, id, src, type_)
 import Html.Events exposing (onClick, onInput)
 import Json.Decode
-import Location exposing (Filter(..), FilterOverride(..), Location, Locations, Requirement(..), Status(..))
+import Location exposing (Filter(..), FilterType(..), Location, Locations, Requirement(..), Status(..))
 import Objective exposing (Objective)
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
@@ -32,7 +33,7 @@ type alias Model =
     , completedObjectives : Set Objective
     , attainedRequirements : Set Requirement
     , locations : Locations
-    , filterOverrides : Set FilterOverride
+    , filterOverrides : Dict Filter FilterType
     , warpGlitchUsed : Bool
     }
 
@@ -48,6 +49,7 @@ type Msg
     | UnsetRandomObjective Int
     | DropdownMsg Int Dropdown.State
     | ToggleRequirement Requirement
+    | ToggleFilter Filter
     | ToggleLocationStatus Location.Key Location.Status
     | ToggleProperty Location.Key Int
     | ToggleWarpGlitchUsed Location.Key Int
@@ -83,7 +85,7 @@ init url =
     , completedObjectives = Set.empty
     , attainedRequirements = Set.empty
     , locations = Location.all
-    , filterOverrides = Set.empty
+    , filterOverrides = Dict.empty
     , warpGlitchUsed = False
     }
         |> with Cmd.none
@@ -140,6 +142,29 @@ innerUpdate msg model =
 
         ToggleRequirement requirement ->
             { model | attainedRequirements = toggle requirement model.attainedRequirements }
+
+        ToggleFilter filter ->
+            { model
+                | filterOverrides =
+                    Dict.update filter
+                        (\state ->
+                            case state of
+                                Nothing ->
+                                    Just Show
+
+                                Just Show ->
+                                    if filter == Checked then
+                                        -- skip the Hide state for Checked, as that's the default
+                                        Nothing
+
+                                    else
+                                        Just Hide
+
+                                Just Hide ->
+                                    Nothing
+                        )
+                        model.filterOverrides
+            }
 
         ToggleLocationStatus key status ->
             { model | locations = Location.update key (Maybe.map <| Location.toggleStatus status) model.locations }
@@ -198,6 +223,7 @@ view model =
             , div [ id "checks" ]
                 [ h2 []
                     [ text "Locations"
+                    , viewFilters model
                     ]
                 , viewLocations model Location.Checks
                 ]
@@ -386,6 +412,54 @@ viewKeyItems flags attained =
         ]
 
 
+viewFilters : Model -> Html Msg
+viewFilters model =
+    let
+        viewFilter filter =
+            let
+                stateClass =
+                    case Dict.get filter model.filterOverrides of
+                        Just Show ->
+                            "show"
+
+                        Just Hide ->
+                            "hide"
+
+                        Nothing ->
+                            "unset"
+
+                ( class_, src_ ) =
+                    case filter of
+                        Characters ->
+                            ( "character", "/img/sprites/Mini1-Front.gif" )
+
+                        Bosses ->
+                            ( "boss", "/img/sprites/Monster3-Front.gif" )
+
+                        KeyItems ->
+                            ( "key-item", "/img/sprites/Key-edit.gif" )
+
+                        Chests ->
+                            ( "chest", "/img/sprites/BlueChest1.gif" )
+
+                        TrappedChests ->
+                            ( "trapped-chest", "/img/sprites/RedChest2.gif" )
+
+                        Checked ->
+                            ( "checked", "/img/sprites/SecurityEye.gif" )
+            in
+            span
+                [ class "filter"
+                , class stateClass
+                , class class_
+                , onClick <| ToggleFilter filter
+                ]
+                [ img [ src src_ ] [] ]
+    in
+    span [ class "filters" ] <|
+        List.map viewFilter [ Characters, Bosses, KeyItems, Chests, TrappedChests, Checked ]
+
+
 viewLocations : Model -> Location.Class -> Html Msg
 viewLocations model locClass =
     let
@@ -444,10 +518,10 @@ viewLocation context location =
                             ( "boss", "/img/sprites/Monster3-Front.gif" )
 
                         Location.KeyItem Flags.Warp ->
-                            ( "key-item warp", "/img/sprites/Key.gif" )
+                            ( "key-item warp", "/img/sprites/Key-edit.gif" )
 
                         Location.KeyItem _ ->
-                            ( "key-item", "/img/sprites/Key.gif" )
+                            ( "key-item", "/img/sprites/Key-edit.gif" )
 
                         Location.Chest _ ->
                             ( "chest countable", "/img/sprites/BlueChest1.gif" )
