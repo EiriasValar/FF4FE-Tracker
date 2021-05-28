@@ -4,12 +4,13 @@ import Array exposing (Array)
 import AssocList as Dict exposing (Dict)
 import Bootstrap.Dropdown as Dropdown exposing (DropdownItem)
 import EverySet as Set exposing (EverySet)
-import Flags exposing (Flags)
+import Flags exposing (Flags, KeyItemClass(..))
 import Html exposing (Html, div, h2, h4, img, input, li, span, table, td, text, textarea, tr, ul)
 import Html.Attributes exposing (class, classList, id, src, type_)
 import Html.Events exposing (onClick, onInput)
+import Icon
 import Json.Decode
-import Location exposing (Filter(..), FilterType(..), Location, Locations, Requirement(..), Status(..))
+import Location exposing (Filter(..), FilterType(..), Location, Locations, Requirement(..), Status(..), Value(..))
 import Objective exposing (Objective)
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
@@ -428,33 +429,16 @@ viewFilters model =
                         Nothing ->
                             "unset"
 
-                ( class_, src_ ) =
-                    case filter of
-                        Characters ->
-                            ( "character", "/img/sprites/Mini1-Front.gif" )
-
-                        Bosses ->
-                            ( "boss", "/img/sprites/Monster3-Front.gif" )
-
-                        KeyItems ->
-                            ( "key-item", "/img/sprites/Key-edit.gif" )
-
-                        Chests ->
-                            ( "chest", "/img/sprites/BlueChest1.gif" )
-
-                        TrappedChests ->
-                            ( "trapped-chest", "/img/sprites/RedChest2.gif" )
-
-                        Checked ->
-                            ( "checked", "/img/sprites/SecurityEye.gif" )
+                icon =
+                    Icon.fromFilter filter
             in
             span
                 [ class "filter"
                 , class stateClass
-                , class class_
+                , class icon.class
                 , onClick <| ToggleFilter filter
                 ]
-                [ img [ src src_ ] [] ]
+                [ icon.img |> Html.map never ]
     in
     span [ class "filters" ] <|
         List.map viewFilter [ Characters, Bosses, KeyItems, Chests, TrappedChests, Checked ]
@@ -509,25 +493,22 @@ viewLocation context location =
 
         viewProperty ( index, status, value ) =
             let
-                ( class_, src_ ) =
+                icon =
+                    Icon.fromValue value
+
+                extraClass =
                     case value of
-                        Location.Character _ ->
-                            ( "character", "/img/sprites/Mini1-Front.gif" )
+                        KeyItem Warp ->
+                            "warp"
 
-                        Location.Boss ->
-                            ( "boss", "/img/sprites/Monster3-Front.gif" )
+                        Chest _ ->
+                            "countable"
 
-                        Location.KeyItem Flags.Warp ->
-                            ( "key-item warp", "/img/sprites/Key-edit.gif" )
+                        TrappedChest _ ->
+                            "countable"
 
-                        Location.KeyItem _ ->
-                            ( "key-item", "/img/sprites/Key-edit.gif" )
-
-                        Location.Chest _ ->
-                            ( "chest countable", "/img/sprites/BlueChest1.gif" )
-
-                        Location.TrappedChest _ ->
-                            ( "trapped-chest countable", "/img/sprites/RedChest2.gif" )
+                        _ ->
+                            ""
 
                 msg =
                     if value == Location.KeyItem Flags.Warp then
@@ -538,11 +519,12 @@ viewLocation context location =
             in
             span
                 [ class "icon"
-                , class class_
+                , class icon.class
+                , class extraClass
                 , class <| Location.statusToString status
                 , onClick <| msg (Location.getKey location) index
                 ]
-                [ img [ src src_ ] []
+                [ icon.img |> Html.map never
                 , span [ class "count" ]
                     [ case value of
                         Location.Chest count ->
