@@ -86,7 +86,11 @@ init url =
     , completedObjectives = Set.empty
     , attainedRequirements = Set.empty
     , locations = Location.all
-    , filterOverrides = Dict.empty
+    , filterOverrides =
+        Dict.fromList
+            [ ( Characters, Show )
+            , ( KeyItems, Show )
+            ]
     , warpGlitchUsed = False
     }
         |> with Cmd.none
@@ -119,6 +123,7 @@ innerUpdate : Msg -> Model -> Model
 innerUpdate msg model =
     let
         toggleProperty key index newModel =
+            -- TODO decrement countables (chests and trapped chests) rather than toggling
             { newModel | locations = Location.update key (Maybe.map <| Location.toggleProperty index) newModel.locations }
     in
     case msg of
@@ -162,7 +167,13 @@ innerUpdate msg model =
                                         Just Hide
 
                                 Just Hide ->
-                                    Nothing
+                                    if List.member filter [ Characters, KeyItems ] then
+                                        -- skip the Nothing state for these filters, as they always
+                                        -- default to Show (so Nothing is redundant)
+                                        Just Show
+
+                                    else
+                                        Nothing
                         )
                         model.filterOverrides
             }
@@ -230,6 +241,8 @@ view model =
                 ]
             , div [ id "shops" ]
                 [ h2 [] [ text "Shops" ]
+
+                -- TODO add item types as values to shops, make them toggleable
                 , viewLocations model Location.Shops
                 ]
             ]
@@ -441,7 +454,7 @@ viewFilters model =
                 [ icon.img |> Html.map never ]
     in
     span [ class "filters" ] <|
-        List.map viewFilter [ Characters, Bosses, KeyItems, Chests, TrappedChests, Checked ]
+        List.map viewFilter [ Characters, KeyItems, Bosses, Chests, TrappedChests, Checked ]
 
 
 viewLocations : Model -> Location.Class -> Html Msg
