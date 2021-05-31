@@ -7,7 +7,7 @@ module Flags exposing
 
 import Array exposing (Array)
 import EverySet as Set exposing (EverySet)
-import Objective exposing (Objective)
+import Objective exposing (BossObjective(..), Objective(..))
 
 
 type alias Set a =
@@ -95,12 +95,34 @@ parse flagString =
                         flags.requiredObjectives
             in
             { flags | requiredObjectives = requiredObjectives }
+
+        -- when the Fiends mode objective is on, the game treats it as six separate objectives
+        fixupFiends flags =
+            let
+                objectives =
+                    if flags.objectives |> Array.toList |> List.member Fiends then
+                        [ DefeatBoss Milon
+                        , DefeatBoss MilonZ
+                        , DefeatBoss Kainazzo
+                        , DefeatBoss Valvalis
+                        , DefeatBoss Rubicant
+                        , DefeatBoss Elements
+                        ]
+                            |> Array.fromList
+                            |> Array.append flags.objectives
+                            |> Array.filter ((/=) Fiends)
+
+                    else
+                        flags.objectives
+            in
+            { flags | objectives = objectives }
     in
     flagString
         |> String.words
         |> List.foldl parseFlag default
         |> fixupObjectiveTypes
         |> fixupRequiredObjectives
+        |> fixupFiends
 
 
 parseFlag : String -> Flags -> Flags
@@ -140,7 +162,7 @@ parseO opts incomingFlags =
             case Objective.fromString mode of
                 Just objective ->
                     { flags
-                        | classicGiantObjective = objective == Objective.ClassicGiant
+                        | classicGiantObjective = objective == ClassicGiant
                         , objectives = Array.push objective flags.objectives
                     }
 
