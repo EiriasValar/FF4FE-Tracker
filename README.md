@@ -4,7 +4,7 @@
 
 The [Free Enterprise Resources](https://docs.google.com/spreadsheets/d/1Dpdq74HZ-KipaSnSqRuMMXjJdn-uSP2C-UvKYyS3-wY/edit#gid=0) document has links to a number of other trackers, all of which have provided some inspiration for this one. In particular the high-level UI is heavily based on [BigDunka's tracker](https://fftracker.dunka.net/index.html).
 
-The Key Item icons (except for the Mist Dragon) are the property of [SchalaKitty](http://schala-kitty.net/ff4fe-tracker/), used with permission. **TODO get permission so this is true!**
+The Key Item icons (except for the Mist Dragon) are the property of [SchalaKitty](http://schala-kitty.net/ff4fe-tracker/), used with permission.
 
 Other icons are all sprites from the game, taken from [videogamesprites.net](http://www.videogamesprites.net/).
 
@@ -39,4 +39,4 @@ It very trivially uses [elm-spa](https://elm-spa.dev): as development progressed
 - Consistent icon handling, alt tags
 - Keyboard navigation?
 - Don't require right-clicks for anything
-
+- Hide treasures by default when Tempty is on
