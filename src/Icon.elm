@@ -33,9 +33,9 @@ fromFilter filter =
             visible
 
 
-fromValue : Value -> Icon
+fromValue : Value -> Maybe Icon
 fromValue =
-    Location.valueToFilter >> fromFilter
+    Location.valueToFilter >> Maybe.map fromFilter
 
 
 character : Icon

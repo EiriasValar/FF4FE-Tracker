@@ -506,9 +506,6 @@ viewLocation context location =
 
         viewProperty ( index, status, value ) =
             let
-                icon =
-                    Icon.fromValue value
-
                 extraClass =
                     case value of
                         KeyItem Warp ->
@@ -530,26 +527,31 @@ viewLocation context location =
                     else
                         ToggleProperty
             in
-            span
-                [ class "icon"
-                , class icon.class
-                , class extraClass
-                , class <| Location.statusToString status
-                , onClick <| msg (Location.getKey location) index
-                ]
-                [ icon.img |> Html.map never
-                , span [ class "count" ]
-                    [ case value of
-                        Location.Chest count ->
-                            text <| String.fromInt count
+            case Icon.fromValue value of
+                Just icon ->
+                    span
+                        [ class "icon"
+                        , class icon.class
+                        , class extraClass
+                        , class <| Location.statusToString status
+                        , onClick <| msg (Location.getKey location) index
+                        ]
+                        [ icon.img |> Html.map never
+                        , span [ class "count" ]
+                            [ case value of
+                                Location.Chest count ->
+                                    text <| String.fromInt count
 
-                        Location.TrappedChest count ->
-                            text <| String.fromInt count
+                                Location.TrappedChest count ->
+                                    text <| String.fromInt count
 
-                        _ ->
-                            text ""
-                    ]
-                ]
+                                _ ->
+                                    text ""
+                            ]
+                        ]
+
+                Nothing ->
+                    text ""
     in
     div
         [ class "location"

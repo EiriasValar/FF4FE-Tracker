@@ -19,7 +19,6 @@ module Location exposing
     , getProperties
     , getStatus
     , groupByArea
-    , shops
     , statusToString
     , toggleProperty
     , toggleStatus
@@ -48,6 +47,7 @@ type alias Data =
     { key : Key
     , name : String
     , area : Area
+    , isShop : Bool
     , requirements : Set Requirement
     , status : Status
     , properties : Array Property
@@ -72,8 +72,9 @@ type Value
     = Character CharacterType
     | Boss
     | KeyItem KeyItemClass
-    | Chest Int
+    | Chest Int -- excluding trapped chests
     | TrappedChest Int
+    | Shop -- dummy, for now; TODO values per interesting shop item type?
 
 
 type Filter
@@ -97,63 +98,71 @@ type CharacterType
 
 type Key
     = MistCave
+    | MistVillage
+    | MistVillageShops
     | MistVillagePackage
     | MistVillageMom
+    | Kaipo
+    | KaipoShops
     | KaipoBed
     | WateryPass
     | Waterfall
     | Damcyan
     | AntlionCave
     | MtHobs
+    | FabulShops
     | FabulDefence
-    | Sheila
-    | SheilaPan
-    | AdamantGrotto
-    | MysidiaElder
+    | Sheila1
+    | Sheila2
+    | Mysidia
+    | MysidiaShops
     | MtOrdeals
-    | BaronInn
+    | Baron
+    | BaronItemShop
+    | BaronWeaponShop
+    | BaronSewer
     | BaronCastle
     | BaronBasement
-    | ToroiaBed
+    | Toroia
+    | ToroiaShops
+    | ToroiaCastle
+    | ToroiaTreasury
     | CaveMagnes
-    | TowerZot1
-    | TowerZot2
+    | Zot1
+    | Zot2
+    | Agart
+    | AgartShops
+    | Silvera
+    | SilveraShops
+    | AdamantGrotto
+    | CastleEblan
     | CaveEblan
+    | CaveEblanShops
     | UpperBabil
-    | GiantBabil
-    | DwarfCastleThrone
+    | Giant
+    | DwarfCastle
+    | DwarfCastleShops
+    | LowerBabil
     | LowerBabilCannon
-    | LowerBabilTop
     | SylphCave
-    | FeymarchChest
+    | Feymarch
+    | FeymarchShops
     | FeymarchKing
     | FeymarchQueen
+    | Tomra
+    | TomraShops
     | SealedCave
-    | LunarDais
+    | Kokkol
+    | KokkolShop
+    | Hummingway
     | CaveBahamut
+    | LunarPath
+    | LunarSubterrane
     | MurasameAltar
     | WyvernAltar
     | WhiteSpearAltar
     | RibbonRoom
     | MasamuneAltar
-    | Shop Shop
-
-
-type Shop
-    = Baron
-    | MistVillage
-    | Kaipo
-    | Fabul
-    | Mysidia
-    | Toroia
-    | Agart
-    | Silvera
-    | Eblan
-    | DwarfCastle
-    | Tomra
-    | Feymarch
-    | Kokkol
-    | Hummingway
 
 
 type Class
@@ -231,7 +240,7 @@ getProperties { flags, warpGlitchUsed, filterOverrides } (Location location) =
                     not flags.noFreeChars
 
                 Character Gated ->
-                    not <| flags.classicGiantObjective && location.key == GiantBabil
+                    not <| flags.classicGiantObjective && location.key == Giant
 
                 KeyItem itemClass ->
                     not (warpGlitchUsed && location.key == SealedCave)
@@ -241,7 +250,8 @@ getProperties { flags, warpGlitchUsed, filterOverrides } (Location location) =
                     True
 
         notFilteredOut (Property _ value) =
-            Dict.get (valueToFilter value) filterOverrides
+            valueToFilter value
+                |> Maybe.andThen (\filter -> Dict.get filter filterOverrides)
                 |> Maybe.withDefault Show
                 |> (/=) Hide
 
@@ -319,18 +329,7 @@ areaToString area =
 
 isClass : Class -> Location -> Bool
 isClass class (Location location) =
-    case ( class, location.key ) of
-        ( Shops, Shop _ ) ->
-            True
-
-        ( Shops, _ ) ->
-            False
-
-        ( Checks, Shop _ ) ->
-            False
-
-        ( Checks, _ ) ->
-            True
+    (class == Shops) == location.isShop
 
 
 type Locations
@@ -378,12 +377,13 @@ filterByContext class c (Locations locations) =
         -- locations that can be accessed regardless of requirements if we can jump
         jumpable =
             Set.fromList <|
-                [ BaronCastle
+                [ BaronSewer
+                , BaronCastle
                 , BaronBasement
                 , CaveMagnes
-                , TowerZot2
-                , Shop Eblan
+                , Zot2
                 , CaveEblan
+                , CaveEblanShops
                 , UpperBabil
                 ]
 
@@ -399,7 +399,12 @@ filterByContext class c (Locations locations) =
             getProperties context location
                 |> List.any
                     (\( _, _, value ) ->
-                        Set.member (valueToFilter value) filters
+                        case valueToFilter value of
+                            Just filter ->
+                                Set.member filter filters
+
+                            Nothing ->
+                                False
                     )
 
         hasValue ((Location l) as location) =
@@ -524,24 +529,27 @@ requirementsMet attained (Location location) =
         |> Set.isEmpty
 
 
-valueToFilter : Value -> Filter
+valueToFilter : Value -> Maybe Filter
 valueToFilter value =
     -- This seems silly. Is this silly?
     case value of
         Character _ ->
-            Characters
+            Just Characters
 
         Boss ->
-            Bosses
+            Just Bosses
 
         KeyItem _ ->
-            KeyItems
+            Just KeyItems
 
         Chest _ ->
-            Chests
+            Just Chests
 
         TrappedChest _ ->
-            TrappedChests
+            Just TrappedChests
+
+        Shop ->
+            Nothing
 
 
 all : Locations
@@ -552,6 +560,7 @@ all =
             { key = l.key
             , name = l.name
             , area = area
+            , isShop = List.member Shop l.value
             , requirements = Set.fromList l.requirements
             , status = Unseen
             , properties =
@@ -563,7 +572,6 @@ all =
     List.map (finish Surface) surface
         ++ List.map (finish Underground) underground
         ++ List.map (finish Moon) moon
-        ++ shops
         |> List.map
             (\l ->
                 ( l.key, Location l )
@@ -590,7 +598,20 @@ surface =
       , value =
             [ Boss
             , Chest 4
-            , TrappedChest 7
+            ]
+      }
+    , { key = MistVillage
+      , name = "Mist Village"
+      , requirements = []
+      , value =
+            [ Chest 7
+            ]
+      }
+    , { key = MistVillageShops
+      , name = "Mist Village"
+      , requirements = []
+      , value =
+            [ Shop
             ]
       }
     , { key = MistVillagePackage
@@ -606,6 +627,20 @@ surface =
       , requirements = [ MistDragon ]
       , value =
             [ KeyItem Main
+            ]
+      }
+    , { key = Kaipo
+      , name = "Kaipo"
+      , requirements = []
+      , value =
+            [ Chest 1
+            ]
+      }
+    , { key = KaipoShops
+      , name = "Kaipo"
+      , requirements = []
+      , value =
+            [ Shop
             ]
       }
     , { key = KaipoBed
@@ -636,6 +671,7 @@ surface =
       , requirements = []
       , value =
             [ Character Ungated
+            , Chest 13
             ]
       }
     , { key = AntlionCave
@@ -656,41 +692,49 @@ surface =
             , Chest 5
             ]
       }
+    , { key = FabulShops
+      , name = "Fabul"
+      , requirements = []
+      , value =
+            [ Shop
+            ]
+      }
     , { key = FabulDefence
       , name = "Fabul Defence"
       , requirements = []
       , value =
             [ Boss
             , KeyItem Main
+            , Chest 10
             ]
       }
-    , { key = Sheila
-      , name = "Sheila"
+    , { key = Sheila1
+      , name = "Sheila 1"
       , requirements = [ UndergroundAccess ]
       , value =
             [ KeyItem Main
             ]
       }
-    , { key = SheilaPan
-      , name = "Sheila - Pan"
+    , { key = Sheila2
+      , name = "Sheila 2"
       , requirements = [ UndergroundAccess, Pan ]
       , value =
             [ KeyItem Main
             ]
       }
-    , { key = AdamantGrotto
-      , name = "Adamant Grotto"
-      , requirements = [ Hook, RatTail ]
-      , value =
-            [ KeyItem Main
-            ]
-      }
-    , { key = MysidiaElder
+    , { key = Mysidia
       , name = "Mysidia"
       , requirements = []
       , value =
             [ Character Ungated
             , Character Ungated
+            ]
+      }
+    , { key = MysidiaShops
+      , name = "Mysidia"
+      , requirements = []
+      , value =
+            [ Shop
             ]
       }
     , { key = MtOrdeals
@@ -705,7 +749,7 @@ surface =
             , Chest 4
             ]
       }
-    , { key = BaronInn
+    , { key = Baron
       , name = "Baron Inn"
       , requirements = []
       , value =
@@ -713,6 +757,29 @@ surface =
             , Boss
             , Character Gated
             , KeyItem Main
+            , Chest 13
+            ]
+      }
+    , { key = BaronItemShop
+      , name = "Baron"
+      , requirements = []
+      , value =
+            [ Shop
+            ]
+      }
+    , { key = BaronWeaponShop
+      , name = "Baron Weapon"
+      , requirements = [ BaronKey ]
+      , value =
+            [ Chest 2
+            , Shop
+            ]
+      }
+    , { key = BaronSewer
+      , name = "Baron Sewer"
+      , requirements = [ BaronKey ]
+      , value =
+            [ Chest 9
             ]
       }
     , { key = BaronCastle
@@ -734,11 +801,33 @@ surface =
             , KeyItem Summon
             ]
       }
-    , { key = ToroiaBed
-      , name = "Edward in Toroia"
+    , { key = Toroia
+      , name = "Toroia"
+      , requirements = []
+      , value =
+            [ Chest 4
+            ]
+      }
+    , { key = ToroiaShops
+      , name = "Toroia"
+      , requirements = []
+      , value =
+            [ Shop
+            ]
+      }
+    , { key = ToroiaCastle
+      , name = "Toroia Castle"
       , requirements = []
       , value =
             [ KeyItem Free
+            , Chest 9
+            ]
+      }
+    , { key = ToroiaTreasury
+      , name = "Toroia Treasury"
+      , requirements = [ EarthCrystal ]
+      , value =
+            [ Chest 18
             ]
       }
     , { key = CaveMagnes
@@ -747,19 +836,21 @@ surface =
       , value =
             [ Boss
             , KeyItem Main
+
+            -- TODO these chests aren't gated by the TwinHarp
             , Chest 10
             ]
       }
-    , { key = TowerZot1
+    , { key = Zot1
       , name = "Tower of Zot 1"
       , requirements = []
       , value =
             [ Boss
-            , Chest 6
+            , Chest 5
             , TrappedChest 1
             ]
       }
-    , { key = TowerZot2
+    , { key = Zot2
       , name = "Tower of Zot 2"
       , requirements = [ EarthCrystal ]
       , value =
@@ -769,13 +860,63 @@ surface =
             , KeyItem Main
             ]
       }
+    , { key = Agart
+      , name = "Agart"
+      , requirements = []
+      , value =
+            [ Chest 1
+            ]
+      }
+    , { key = AgartShops
+      , name = "Agart"
+      , requirements = []
+      , value =
+            [ Shop
+            ]
+      }
+    , { key = Silvera
+      , name = "Silvera"
+      , requirements = []
+      , value =
+            [ Chest 3
+            ]
+      }
+    , { key = SilveraShops
+      , name = "Silvera"
+      , requirements = []
+      , value =
+            [ Shop
+            ]
+      }
+    , { key = AdamantGrotto
+      , name = "Adamant Grotto"
+      , requirements = [ Hook, RatTail ]
+      , value =
+            [ KeyItem Main
+            ]
+      }
+    , { key = CastleEblan
+      , name = "Castle Eblan"
+      , requirements = []
+      , value =
+            [ Chest 19
+            , TrappedChest 3
+            ]
+      }
     , { key = CaveEblan
       , name = "Cave Eblan"
       , requirements = [ Hook ]
       , value =
             [ Character Gated
-            , Chest 22
+            , Chest 21
             , TrappedChest 1
+            ]
+      }
+    , { key = CaveEblanShops
+      , name = "Cave Eblan"
+      , requirements = [ Hook ]
+      , value =
+            [ Shop
             ]
       }
     , { key = UpperBabil
@@ -784,18 +925,18 @@ surface =
       , value =
             [ Boss
             , Boss
-            , Chest 8
+            , Chest 7
             , TrappedChest 1
             ]
       }
-    , { key = GiantBabil
+    , { key = Giant
       , name = "Giant of Bab-il"
       , requirements = [ DarknessCrystal ]
       , value =
             [ Boss
             , Boss
             , Character Gated
-            , Chest 8
+            , Chest 7
             , TrappedChest 1
             ]
       }
@@ -804,7 +945,7 @@ surface =
 
 underground : List PartialData
 underground =
-    [ { key = DwarfCastleThrone
+    [ { key = DwarfCastle
       , name = "Dwarf Castle"
       , requirements = []
       , value =
@@ -813,6 +954,24 @@ underground =
             , Boss
             , KeyItem Main
             , KeyItem Warp
+            , Chest 18
+            ]
+      }
+    , { key = DwarfCastleShops
+      , name = "Dwarf Castle"
+      , requirements = []
+      , value =
+            [ Shop
+            ]
+      }
+    , { key = LowerBabil
+      , name = "Lower Bab-il"
+      , requirements = []
+      , value =
+            [ Boss
+            , KeyItem Main
+            , Chest 12
+            , TrappedChest 4
             ]
       }
     , { key = LowerBabilCannon
@@ -823,30 +982,31 @@ underground =
             , KeyItem Main
             ]
       }
-    , { key = LowerBabilTop
-      , name = "Lower Bab-il - Top"
-      , requirements = []
-      , value =
-            [ Boss
-            , KeyItem Main
-            , Chest 16
-            , TrappedChest 4
-            ]
-      }
     , { key = SylphCave
       , name = "Sylph Cave"
       , requirements = [ Pan ]
       , value =
             [ KeyItem Summon
-            , Chest 32
+
+            -- TODO these chests aren't gated by the Pan
+            , Chest 25
             , TrappedChest 7
             ]
       }
-    , { key = FeymarchChest
+    , { key = Feymarch
       , name = "Feymarch"
       , requirements = []
       , value =
             [ KeyItem Main
+            , Chest 20
+            , TrappedChest 1
+            ]
+      }
+    , { key = FeymarchShops
+      , name = "Feymarch"
+      , requirements = []
+      , value =
+            [ Shop
             ]
       }
     , { key = FeymarchKing
@@ -865,6 +1025,20 @@ underground =
             , KeyItem Summon
             ]
       }
+    , { key = Tomra
+      , name = "Tomra"
+      , requirements = []
+      , value =
+            [ Chest 6
+            ]
+      }
+    , { key = TomraShops
+      , name = "Tomra"
+      , requirements = []
+      , value =
+            [ Shop
+            ]
+      }
     , { key = SealedCave
       , name = "Sealed Cave"
       , requirements = [ LucaKey ]
@@ -874,16 +1048,30 @@ underground =
             , Chest 19
             ]
       }
+    , { key = Kokkol
+      , name = "Kokkol's Forge"
+      , requirements = []
+      , value =
+            [ Chest 4
+            ]
+      }
+    , { key = KokkolShop
+      , name = "Kokkol's Forge"
+      , requirements = [ LegendSword, Adamant ]
+      , value =
+            [ Shop
+            ]
+      }
     ]
 
 
 moon : List PartialData
 moon =
-    [ { key = LunarDais
-      , name = "Lunar Dais"
+    [ { key = Hummingway
+      , name = "Hummingway"
       , requirements = []
       , value =
-            [ Character Gated
+            [ Shop
             ]
       }
     , { key = CaveBahamut
@@ -892,6 +1080,24 @@ moon =
       , value =
             [ Boss
             , KeyItem Summon
+            , Chest 4
+            ]
+      }
+    , { key = LunarPath
+      , name = "Lunar Path"
+      , requirements = []
+      , value =
+            [ Chest 2
+            , TrappedChest 1
+            ]
+      }
+    , { key = LunarSubterrane
+      , name = "Lunar Dais"
+      , requirements = []
+      , value =
+            [ Character Gated
+            , Chest 21
+            , TrappedChest 9
             ]
       }
     , { key = MurasameAltar
@@ -935,88 +1141,3 @@ moon =
             ]
       }
     ]
-
-
-shops : List Data
-shops =
-    [ { key = Shop Baron
-      , name = "Baron"
-      , area = Surface
-      , requirements = []
-      }
-    , { key = Shop MistVillage
-      , name = "Mist Village"
-      , area = Surface
-      , requirements = []
-      }
-    , { key = Shop Kaipo
-      , name = "Kaipo"
-      , area = Surface
-      , requirements = []
-      }
-    , { key = Shop Fabul
-      , name = "Fabul"
-      , area = Surface
-      , requirements = []
-      }
-    , { key = Shop Mysidia
-      , name = "Mysidia"
-      , area = Surface
-      , requirements = []
-      }
-    , { key = Shop Toroia
-      , name = "Toroia"
-      , area = Surface
-      , requirements = []
-      }
-    , { key = Shop Agart
-      , name = "Agart"
-      , area = Surface
-      , requirements = []
-      }
-    , { key = Shop Silvera
-      , name = "Silvera"
-      , area = Surface
-      , requirements = []
-      }
-    , { key = Shop Eblan
-      , name = "Eblan"
-      , area = Surface
-      , requirements = [ Hook ]
-      }
-    , { key = Shop DwarfCastle
-      , name = "Dwarf Castle"
-      , area = Underground
-      , requirements = []
-      }
-    , { key = Shop Tomra
-      , name = "Tomra"
-      , area = Underground
-      , requirements = []
-      }
-    , { key = Shop Feymarch
-      , name = "Feymarch"
-      , area = Underground
-      , requirements = []
-      }
-    , { key = Shop Kokkol
-      , name = "Kokkol's Forge"
-      , area = Underground
-      , requirements = [ LegendSword, Adamant ]
-      }
-    , { key = Shop Hummingway
-      , name = "Hummingway"
-      , area = Moon
-      , requirements = []
-      }
-    ]
-        |> List.map
-            (\l ->
-                { key = l.key
-                , name = l.name
-                , area = l.area
-                , requirements = Set.fromList l.requirements
-                , status = Unseen
-                , properties = Array.empty
-                }
-            )
