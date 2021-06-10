@@ -22,6 +22,7 @@ type alias Flags =
     , objectiveReward : Reward
     , keyItems : Set KeyItemClass
     , classicGiantObjective : Bool
+    , passIsKeyItem : Bool
     , noFreeChars : Bool
     , warpGlitch : Bool
     , keyExpBonus : Bool
@@ -36,6 +37,7 @@ type KeyItemClass
     | MoonBoss
     | Trapped
     | Free
+    | Vanilla
 
 
 type Reward
@@ -67,6 +69,7 @@ parse flagString =
             , objectiveReward = Win
             , keyItems = Set.singleton Free
             , classicGiantObjective = False
+            , passIsKeyItem = False
             , noFreeChars = False
             , warpGlitch = False
             , keyExpBonus = True
@@ -116,6 +119,21 @@ parse flagString =
                         flags.objectives
             in
             { flags | objectives = objectives }
+
+        -- Kvanilla excludes Kmain/summon/moon, and Kmain must be on
+        -- if Kvanilla isn't
+        fixupKeyItems flags =
+            let
+                keyItems =
+                    if Set.member Vanilla flags.keyItems then
+                        [ Main, Summon, MoonBoss ]
+                            |> Set.fromList
+                            |> Set.diff flags.keyItems
+
+                    else
+                        Set.insert Main flags.keyItems
+            in
+            { flags | keyItems = keyItems }
     in
     flagString
         |> String.words
@@ -123,6 +141,7 @@ parse flagString =
         |> fixupObjectiveTypes
         |> fixupRequiredObjectives
         |> fixupFiends
+        |> fixupKeyItems
 
 
 parseFlag : String -> Flags -> Flags
@@ -137,6 +156,11 @@ parseFlag flag flags =
             opts
                 |> String.split "/"
                 |> List.foldl parseK flags
+
+        Just ( 'P', opts ) ->
+            opts
+                |> String.split "/"
+                |> List.foldl parseP flags
 
         Just ( 'N', opts ) ->
             opts
@@ -236,6 +260,9 @@ parseO opts incomingFlags =
 parseK : String -> Flags -> Flags
 parseK switch flags =
     case switch of
+        "vanilla" ->
+            { flags | keyItems = Set.insert Vanilla flags.keyItems }
+
         "main" ->
             { flags | keyItems = Set.insert Main flags.keyItems }
 
@@ -247,6 +274,16 @@ parseK switch flags =
 
         "trap" ->
             { flags | keyItems = Set.insert Trapped flags.keyItems }
+
+        _ ->
+            flags
+
+
+parseP : String -> Flags -> Flags
+parseP switch flags =
+    case switch of
+        "key" ->
+            { flags | passIsKeyItem = True }
 
         _ ->
             flags

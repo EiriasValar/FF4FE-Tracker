@@ -404,14 +404,12 @@ viewKeyItems flags attained =
             , req Spoon "spoon"
             ]
         , tr []
-            [ if not <| Set.member Flags.Free flags.keyItems then
+            [ displayCellIf (not <| Set.member Flags.Free flags.keyItems) <|
                 req MistDragon "mist-dragon"
-
-              else
-                td [] []
             , req RatTail "rat-tail"
-            , req PinkTail "pink-tail"
-            , displayIf flags.keyExpBonus <|
+            , displayCellIf (not <| Set.member Vanilla flags.keyItems) <|
+                req PinkTail "pink-tail"
+            , displayCellIf flags.keyExpBonus <|
                 td
                     [ classList
                         [ ( "requirement total", True )
@@ -620,6 +618,15 @@ displayIf predicate html =
 
     else
         text ""
+
+
+displayCellIf : Bool -> Html msg -> Html msg
+displayCellIf predicate html =
+    if predicate then
+        html
+
+    else
+        td [] []
 
 
 with : b -> a -> ( a, b )

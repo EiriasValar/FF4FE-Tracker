@@ -244,6 +244,8 @@ getProperties { flags, warpGlitchUsed, filterOverrides } (Location location) =
 
                 KeyItem itemClass ->
                     not (warpGlitchUsed && location.key == SealedCave)
+                        -- under Kvanilla, Baron Castle only has a key item if it's the Pass
+                        && not (location.key == BaronCastle && itemClass == Vanilla && not flags.passIsKeyItem)
                         && Set.member itemClass flags.keyItems
 
                 _ ->
@@ -627,6 +629,7 @@ surface =
       , requirements = [ MistDragon ]
       , value =
             [ KeyItem Main
+            , KeyItem Vanilla
             ]
       }
     , { key = Kaipo
@@ -680,6 +683,7 @@ surface =
       , value =
             [ Boss
             , KeyItem Main
+            , KeyItem Vanilla
             , Chest 13
             ]
       }
@@ -713,6 +717,7 @@ surface =
       , requirements = [ UndergroundAccess ]
       , value =
             [ KeyItem Main
+            , KeyItem Vanilla
             ]
       }
     , { key = Sheila2
@@ -720,6 +725,7 @@ surface =
       , requirements = [ UndergroundAccess, Pan ]
       , value =
             [ KeyItem Main
+            , KeyItem Vanilla
             ]
       }
     , { key = Mysidia
@@ -745,6 +751,7 @@ surface =
             , Boss
             , Boss
             , KeyItem Main
+            , KeyItem Vanilla
             , Boss
             , Chest 4
             ]
@@ -757,6 +764,7 @@ surface =
             , Boss
             , Character Gated
             , KeyItem Main
+            , KeyItem Vanilla
             , Chest 13
             ]
       }
@@ -790,6 +798,7 @@ surface =
             , Boss
             , Character Gated
             , KeyItem Main
+            , KeyItem Vanilla
             , Chest 20
             ]
       }
@@ -819,7 +828,7 @@ surface =
       , name = "Toroia Castle"
       , requirements = []
       , value =
-            [ KeyItem Free
+            [ KeyItem Free -- also Vanilla
             , Chest 9
             ]
       }
@@ -836,6 +845,7 @@ surface =
       , value =
             [ Boss
             , KeyItem Main
+            , KeyItem Vanilla
 
             -- TODO these chests aren't gated by the TwinHarp
             , Chest 10
@@ -858,6 +868,7 @@ surface =
             , Character Gated
             , Boss
             , KeyItem Main
+            , KeyItem Vanilla
             ]
       }
     , { key = Agart
@@ -893,6 +904,7 @@ surface =
       , requirements = [ Hook, RatTail ]
       , value =
             [ KeyItem Main
+            , KeyItem Vanilla
             ]
       }
     , { key = CastleEblan
@@ -953,7 +965,8 @@ underground =
             , Character Gated
             , Boss
             , KeyItem Main
-            , KeyItem Warp
+            , KeyItem Vanilla
+            , KeyItem Warp -- also Vanilla
             , Chest 18
             ]
       }
@@ -970,6 +983,7 @@ underground =
       , value =
             [ Boss
             , KeyItem Main
+            , KeyItem Vanilla
             , Chest 12
             , TrappedChest 4
             ]
@@ -980,6 +994,7 @@ underground =
       , value =
             [ Boss
             , KeyItem Main
+            , KeyItem Vanilla
             ]
       }
     , { key = SylphCave
@@ -998,6 +1013,7 @@ underground =
       , requirements = []
       , value =
             [ KeyItem Main
+            , KeyItem Vanilla
             , Chest 20
             , TrappedChest 1
             ]
@@ -1044,6 +1060,7 @@ underground =
       , requirements = [ LucaKey ]
       , value =
             [ KeyItem Main
+            , KeyItem Vanilla
             , Boss
             , Chest 19
             ]
