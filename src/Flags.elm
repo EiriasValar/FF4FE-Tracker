@@ -22,6 +22,7 @@ type alias Flags =
     , objectiveReward : Reward
     , keyItems : Set KeyItemClass
     , classicGiantObjective : Bool
+    , passExists : Bool
     , passIsKeyItem : Bool
     , noTreasures : Bool
     , noFreeChars : Bool
@@ -70,6 +71,7 @@ parse flagString =
             , objectiveReward = Win
             , keyItems = Set.singleton Free
             , classicGiantObjective = False
+            , passExists = False
             , passIsKeyItem = False
             , noTreasures = False
             , noFreeChars = False
@@ -289,8 +291,14 @@ parseK switch flags =
 parseP : String -> Flags -> Flags
 parseP switch flags =
     case switch of
+        "shop" ->
+            { flags | passExists = True }
+
         "key" ->
-            { flags | passIsKeyItem = True }
+            { flags | passExists = True, passIsKeyItem = True }
+
+        "chests" ->
+            { flags | passExists = True }
 
         _ ->
             flags

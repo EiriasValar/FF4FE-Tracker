@@ -391,7 +391,8 @@ viewKeyItems flags attained =
     table [ class "requirements" ]
         [ tr []
             [ req Crystal "crystal"
-            , req Pass "pass"
+            , displayCellIf flags.passExists <|
+                req Pass "pass"
             , req Hook "hook"
             , req DarknessCrystal "darkness-crystal"
             ]
