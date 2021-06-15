@@ -42,4 +42,3 @@ It very trivially uses [elm-spa](https://elm-spa.dev): as development progressed
 - Possibly de-value characters when the flags make them irrelevant (e.g. Cparty:1)
 - Reconcile requirements applying to whole Locations when they really only apply to "completion" e.g. Cave Magnes, Sylph Cave
 - Hide the Pass when no P flags are on
-- Don't show Sheila 2 until Sylph Cave is done

@@ -361,10 +361,15 @@ groupByArea =
 filterByContext : Class -> Context -> Locations -> Locations
 filterByContext class c (Locations locations) =
     let
+        isChecked key =
+            Dict.get key locations
+                |> Maybe.map (getStatus >> (==) Dismissed)
+                |> Maybe.withDefault False
+
         undergroundAccess =
             c.flags.pushBToJump
                 || Set.member MagmaKey c.attainedRequirements
-                || (Dict.get UpperBabil locations |> Maybe.map (getStatus >> (==) Dismissed) |> Maybe.withDefault False)
+                || isChecked UpperBabil
 
         attainedRequirements =
             if undergroundAccess then
@@ -414,6 +419,9 @@ filterByContext class c (Locations locations) =
                 || (l.key == UpperBabil && not undergroundAccess)
                 || propertiesHaveValue location
 
+        hasNoValue (Location l) =
+            l.key == Sheila2 && (not <| isChecked SylphCave)
+
         isRelevant ((Location l) as location) =
             if not <| isClass class location then
                 False
@@ -426,6 +434,7 @@ filterByContext class c (Locations locations) =
 
             else
                 hasValue location
+                    && (not <| hasNoValue location)
                     && areaAccessible attainedRequirements location
                     && (context.flags.pushBToJump && Set.member l.key jumpable || requirementsMet attainedRequirements location)
     in
