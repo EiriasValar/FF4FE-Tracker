@@ -23,6 +23,7 @@ type alias Flags =
     , keyItems : Set KeyItemClass
     , classicGiantObjective : Bool
     , passIsKeyItem : Bool
+    , noTreasures : Bool
     , noFreeChars : Bool
     , warpGlitch : Bool
     , keyExpBonus : Bool
@@ -70,6 +71,7 @@ parse flagString =
             , keyItems = Set.singleton Free
             , classicGiantObjective = False
             , passIsKeyItem = False
+            , noTreasures = False
             , noFreeChars = False
             , warpGlitch = False
             , keyExpBonus = True
@@ -161,6 +163,11 @@ parseFlag flag flags =
             opts
                 |> String.split "/"
                 |> List.foldl parseP flags
+
+        Just ( 'T', opts ) ->
+            opts
+                |> String.split "/"
+                |> List.foldl parseT flags
 
         Just ( 'N', opts ) ->
             opts
@@ -284,6 +291,16 @@ parseP switch flags =
     case switch of
         "key" ->
             { flags | passIsKeyItem = True }
+
+        _ ->
+            flags
+
+
+parseT : String -> Flags -> Flags
+parseT switch flags =
+    case switch of
+        "empty" ->
+            { flags | noTreasures = True }
 
         _ ->
             flags

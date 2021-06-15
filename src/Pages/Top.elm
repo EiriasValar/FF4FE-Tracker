@@ -204,6 +204,15 @@ innerUpdate msg model =
                         |> List.append (Array.toList flags.objectives)
                         |> Set.fromList
                         |> Set.intersect model.completedObjectives
+
+                -- filter out chests when they're all empty, unless they've explicitly
+                -- been enabled
+                filterOverrides =
+                    if flags.noTreasures && Dict.get Chests model.filterOverrides /= Just Show then
+                        Dict.insert Chests Hide model.filterOverrides
+
+                    else
+                        model.filterOverrides
             in
             -- storing both flagString and the Flags derived from it isn't ideal, but we ignore
             -- flagString everywhere else; it only exists so we can prepopulate the flags textarea
@@ -212,6 +221,7 @@ innerUpdate msg model =
                 , flags = flags
                 , randomObjectives = randomObjectives
                 , completedObjectives = completedObjectives
+                , filterOverrides = filterOverrides
             }
 
 
