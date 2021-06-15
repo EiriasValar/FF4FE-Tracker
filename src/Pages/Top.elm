@@ -90,6 +90,7 @@ init url =
         Dict.fromList
             [ ( Characters, Show )
             , ( KeyItems, Show )
+            , ( Chests, Hide )
             ]
     , warpGlitchUsed = False
     }
