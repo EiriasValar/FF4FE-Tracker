@@ -53,6 +53,7 @@ type Msg
     | ToggleFilter Filter
     | ToggleLocationStatus Location.Key Location.Status
     | ToggleProperty Location.Key Int
+    | HardToggleProperty Location.Key Int
     | ToggleWarpGlitchUsed Location.Key Int
     | UpdateFlags String
 
@@ -123,9 +124,8 @@ update msg model =
 innerUpdate : Msg -> Model -> Model
 innerUpdate msg model =
     let
-        toggleProperty key index newModel =
-            -- TODO decrement countables (chests and trapped chests) rather than toggling
-            { newModel | locations = Location.update key (Maybe.map <| Location.toggleProperty index) newModel.locations }
+        toggleProperty key index hard newModel =
+            { newModel | locations = Location.update key (Maybe.map <| Location.toggleProperty index hard) newModel.locations }
     in
     case msg of
         ToggleObjective objective ->
@@ -183,10 +183,13 @@ innerUpdate msg model =
             { model | locations = Location.update key (Maybe.map <| Location.toggleStatus status) model.locations }
 
         ToggleProperty key index ->
-            toggleProperty key index model
+            toggleProperty key index False model
+
+        HardToggleProperty key index ->
+            toggleProperty key index True model
 
         ToggleWarpGlitchUsed key index ->
-            toggleProperty key index <|
+            toggleProperty key index False <|
                 { model | warpGlitchUsed = not model.warpGlitchUsed }
 
         UpdateFlags flagString ->
@@ -545,15 +548,16 @@ viewLocation context location =
                         , class extraClass
                         , class <| Location.statusToString status
                         , onClick <| msg (Location.getKey location) index
+                        , onRightClick <| HardToggleProperty (Location.getKey location) index
                         ]
                         [ icon.img |> Html.map never
                         , span [ class "count" ]
-                            [ case value of
-                                Location.Chest count ->
-                                    text <| String.fromInt count
+                            [ case ( Location.countable value, status ) of
+                                ( Just total, SeenSome seen ) ->
+                                    text <| String.fromInt <| total - seen
 
-                                Location.TrappedChest count ->
-                                    text <| String.fromInt count
+                                ( Just total, _ ) ->
+                                    text <| String.fromInt total
 
                                 _ ->
                                     text ""

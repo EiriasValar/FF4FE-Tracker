@@ -12,6 +12,7 @@ module Location exposing
     , Value(..)
     , all
     , areaToString
+    , countable
     , filterByContext
     , getArea
     , getKey
@@ -57,6 +58,7 @@ type alias Data =
 type Status
     = Unseen
     | Seen
+    | SeenSome Int
     | Dismissed
 
 
@@ -288,17 +290,44 @@ toggleStatus status (Location location) =
     Location { location | status = newStatus }
 
 
-toggleProperty : Int -> Location -> Location
-toggleProperty index (Location location) =
+{-| Advance the given property of the given location to its next logical
+state.
+
+For countable properties, the Status progression is:
+Unseen -> SeenSome 1 -> SeenSome 2 -> ... -> SeenSome x-1 -> Dismissed -> Unseen
+For other properties, or if the `hard` flag is True, it's simply:
+Unseen -> Dismissed -> Unseen
+as we have no use for the Seen state for properties.
+
+-}
+toggleProperty : Int -> Bool -> Location -> Location
+toggleProperty index hard (Location location) =
     case Array.get index location.properties of
         Just (Property status value) ->
             let
                 newStatus =
-                    if status == Dismissed then
-                        Unseen
+                    case ( hard, countable value, status ) of
+                        ( False, Just total, Unseen ) ->
+                            if total > 1 then
+                                SeenSome 1
 
-                    else
-                        Dismissed
+                            else
+                                -- if there's only 1 of the thing, we skip
+                                -- SeenSome and go straight to Dismissed
+                                Dismissed
+
+                        ( False, Just total, SeenSome seen ) ->
+                            if seen + 1 < total then
+                                SeenSome <| seen + 1
+
+                            else
+                                Dismissed
+
+                        ( _, _, Dismissed ) ->
+                            Unseen
+
+                        _ ->
+                            Dismissed
             in
             Location { location | properties = Array.set index (Property newStatus value) location.properties }
 
@@ -314,6 +343,9 @@ statusToString status =
 
         Seen ->
             "seen"
+
+        SeenSome _ ->
+            "seen-some"
 
         Dismissed ->
             "dismissed"
@@ -572,6 +604,19 @@ valueToFilter value =
             Just TrappedChests
 
         Shop ->
+            Nothing
+
+
+countable : Value -> Maybe Int
+countable value =
+    case value of
+        Chest c ->
+            Just c
+
+        TrappedChest c ->
+            Just c
+
+        _ ->
             Nothing
 
 
