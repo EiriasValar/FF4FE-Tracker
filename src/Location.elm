@@ -259,14 +259,15 @@ getProperties { flags, warpGlitchUsed, filterOverrides } (Location location) =
                 |> Maybe.withDefault Show
                 |> (/=) Hide
 
-        toTuple index (Property status value) =
+        toTuple ( index, Property status value ) =
             ( index, status, value )
     in
     location.properties
-        |> Array.toList
-        |> List.filter exists
-        |> List.filter notFilteredOut
-        |> List.indexedMap toTuple
+        -- extract indices before doing any filtering so they're accurate
+        |> Array.toIndexedList
+        |> List.filter (Tuple.second >> exists)
+        |> List.filter (Tuple.second >> notFilteredOut)
+        |> List.map toTuple
 
 
 getStatus : Location -> Status
