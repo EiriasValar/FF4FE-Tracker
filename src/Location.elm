@@ -127,6 +127,7 @@ type Key
     | ToroiaShops
     | ToroiaCastle
     | ToroiaTreasury
+    | CaveMagnesChests
     | CaveMagnes
     | Zot1
     | Zot2
@@ -144,6 +145,7 @@ type Key
     | DwarfCastleShops
     | LowerBabil
     | LowerBabilCannon
+    | SylphCaveChests
     | SylphCave
     | Feymarch
     | FeymarchShops
@@ -366,6 +368,11 @@ filterByContext class c (Locations locations) =
                 |> Maybe.map (getStatus >> (==) Dismissed)
                 |> Maybe.withDefault False
 
+        requirementsMetFor key =
+            Dict.get key locations
+                |> Maybe.map (requirementsMet attainedRequirements)
+                |> Maybe.withDefault False
+
         undergroundAccess =
             c.flags.pushBToJump
                 || Set.member MagmaKey c.attainedRequirements
@@ -420,7 +427,11 @@ filterByContext class c (Locations locations) =
                 || propertiesHaveValue location
 
         hasNoValue (Location l) =
-            l.key == Sheila2 && (not <| isChecked SylphCave)
+            (l.key == Sheila2 && (not <| isChecked SylphCave))
+                -- hide the chests-only pseudo-locations once their
+                -- full-value counterparts are unlocked
+                || (l.key == CaveMagnesChests && requirementsMetFor CaveMagnes)
+                || (l.key == SylphCaveChests && requirementsMetFor SylphCave)
 
         isRelevant ((Location l) as location) =
             if not <| isClass class location then
@@ -848,6 +859,13 @@ surface =
             [ Chest 18
             ]
       }
+    , { key = CaveMagnesChests
+      , name = "Cave Magnes"
+      , requirements = []
+      , value =
+            [ Chest 10
+            ]
+      }
     , { key = CaveMagnes
       , name = "Cave Magnes"
       , requirements = [ TwinHarp ]
@@ -855,8 +873,6 @@ surface =
             [ Boss
             , KeyItem Main
             , KeyItem Vanilla
-
-            -- TODO these chests aren't gated by the TwinHarp
             , Chest 10
             ]
       }
@@ -1006,13 +1022,19 @@ underground =
             , KeyItem Vanilla
             ]
       }
+    , { key = SylphCaveChests
+      , name = "Sylph Cave"
+      , requirements = []
+      , value =
+            [ Chest 25
+            , TrappedChest 7
+            ]
+      }
     , { key = SylphCave
       , name = "Sylph Cave"
       , requirements = [ Pan ]
       , value =
             [ KeyItem Summon
-
-            -- TODO these chests aren't gated by the Pan
             , Chest 25
             , TrappedChest 7
             ]
