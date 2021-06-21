@@ -38,5 +38,4 @@ It very trivially uses [elm-spa](https://elm-spa.dev): as development progressed
 - Don't require right-clicks for anything
 - Possibly de-value characters when the flags make them irrelevant (e.g. Cparty:1)
 - Type-to-filter random objective selection
-- Hide shops section when Scabins or Sempty is on, unless Pshop is also on
-- Suppress Toroia pass shop under Svanilla and !Pshop
+- Text entry and display for Shop Other

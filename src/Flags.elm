@@ -24,7 +24,9 @@ type alias Flags =
     , classicGiantObjective : Bool
     , passExists : Bool
     , passIsKeyItem : Bool
+    , passInShop : Bool
     , noTreasures : Bool
+    , noShops : Bool
     , noFreeChars : Bool
     , warpGlitch : Bool
     , keyExpBonus : Bool
@@ -73,7 +75,9 @@ parse flagString =
             , classicGiantObjective = False
             , passExists = False
             , passIsKeyItem = False
+            , passInShop = False
             , noTreasures = False
+            , noShops = False
             , noFreeChars = False
             , warpGlitch = False
             , keyExpBonus = True
@@ -170,6 +174,11 @@ parseFlag flag flags =
             opts
                 |> String.split "/"
                 |> List.foldl parseT flags
+
+        Just ( 'S', opts ) ->
+            opts
+                |> String.split "/"
+                |> List.foldl parseS flags
 
         Just ( 'N', opts ) ->
             opts
@@ -292,7 +301,7 @@ parseP : String -> Flags -> Flags
 parseP switch flags =
     case switch of
         "shop" ->
-            { flags | passExists = True }
+            { flags | passExists = True, passInShop = True }
 
         "key" ->
             { flags | passExists = True, passIsKeyItem = True }
@@ -309,6 +318,19 @@ parseT switch flags =
     case switch of
         "empty" ->
             { flags | noTreasures = True }
+
+        _ ->
+            flags
+
+
+parseS : String -> Flags -> Flags
+parseS switch flags =
+    case switch of
+        "cabins" ->
+            { flags | noShops = True }
+
+        "empty" ->
+            { flags | noShops = True }
 
         _ ->
             flags

@@ -253,10 +253,11 @@ view model =
                     ]
                 , viewLocations model Location.Checks
                 ]
-            , div [ id "shops" ]
-                [ h2 [] [ text "Shops" ]
-                , viewLocations model Location.Shops
-                ]
+            , displayIf (not model.flags.noShops || model.flags.passInShop) <|
+                div [ id "shops" ]
+                    [ h2 [] [ text "Shops" ]
+                    , viewLocations model Location.Shops
+                    ]
             ]
         ]
     }
