@@ -8,6 +8,7 @@ module Location exposing
     , Location
     , Locations
     , Requirement(..)
+    , ShopValue(..)
     , Status(..)
     , Value(..)
     , all
@@ -76,7 +77,18 @@ type Value
     | KeyItem KeyItemClass
     | Chest Int -- excluding trapped chests
     | TrappedChest Int
-    | Shop -- dummy, for now; TODO values per interesting shop item type?
+    | Shop ShopValue
+
+
+type ShopValue
+    = Weapon
+    | Armour -- also expands into Accessory
+    | Item -- pseudo-value for Location definition; gets expanded into Healing/Camping/JItem
+    | Accessory
+    | Healing
+    | Camping
+    | JItem
+    | Other String
 
 
 type Filter
@@ -603,7 +615,7 @@ valueToFilter value =
         TrappedChest _ ->
             Just TrappedChests
 
-        Shop ->
+        Shop _ ->
             Nothing
 
 
@@ -623,16 +635,44 @@ countable value =
 all : Locations
 all =
     let
+        isShop value =
+            case value of
+                Shop _ ->
+                    True
+
+                _ ->
+                    False
+
+        expandShop value =
+            case value of
+                Shop Armour ->
+                    [ Shop Armour, Shop Accessory ]
+
+                Shop Item ->
+                    [ Shop Healing, Shop Camping, Shop JItem ]
+
+                _ ->
+                    [ value ]
+
+        addOther vals =
+            if List.any isShop vals then
+                vals ++ [ Shop <| Other "" ]
+
+            else
+                vals
+
         finish : Area -> PartialData -> Data
         finish area l =
             { key = l.key
             , name = l.name
             , area = area
-            , isShop = List.member Shop l.value
+            , isShop = List.any isShop l.value
             , requirements = Set.fromList l.requirements
             , status = Unseen
             , properties =
                 l.value
+                    |> List.concatMap expandShop
+                    |> addOther
                     |> List.map (Property Unseen)
                     |> Array.fromList
             }
@@ -679,7 +719,8 @@ surface =
       , name = "Mist Village"
       , requirements = []
       , value =
-            [ Shop
+            [ Shop Weapon
+            , Shop Armour
             ]
       }
     , { key = MistVillagePackage
@@ -709,7 +750,9 @@ surface =
       , name = "Kaipo"
       , requirements = []
       , value =
-            [ Shop
+            [ Shop Weapon
+            , Shop Armour
+            , Shop Item
             ]
       }
     , { key = KaipoBed
@@ -766,7 +809,9 @@ surface =
       , name = "Fabul"
       , requirements = []
       , value =
-            [ Shop
+            [ Shop Weapon
+            , Shop Armour
+            , Shop Item
             ]
       }
     , { key = FabulDefence
@@ -806,7 +851,9 @@ surface =
       , name = "Mysidia"
       , requirements = []
       , value =
-            [ Shop
+            [ Shop Weapon
+            , Shop Armour
+            , Shop Item
             ]
       }
     , { key = MtOrdeals
@@ -838,7 +885,7 @@ surface =
       , name = "Baron"
       , requirements = []
       , value =
-            [ Shop
+            [ Shop Item
             ]
       }
     , { key = BaronWeaponShop
@@ -846,7 +893,8 @@ surface =
       , requirements = [ BaronKey ]
       , value =
             [ Chest 2
-            , Shop
+            , Shop Weapon
+            , Shop Armour
             ]
       }
     , { key = BaronSewer
@@ -887,7 +935,9 @@ surface =
       , name = "Toroia"
       , requirements = []
       , value =
-            [ Shop
+            [ Shop Weapon
+            , Shop Armour
+            , Shop Item
             ]
       }
     , { key = ToroiaCastle
@@ -953,7 +1003,9 @@ surface =
       , name = "Agart"
       , requirements = []
       , value =
-            [ Shop
+            [ Shop Weapon
+            , Shop Armour
+            , Shop Item
             ]
       }
     , { key = Silvera
@@ -967,7 +1019,9 @@ surface =
       , name = "Silvera"
       , requirements = []
       , value =
-            [ Shop
+            [ Shop Weapon
+            , Shop Armour
+            , Shop Item
             ]
       }
     , { key = AdamantGrotto
@@ -999,7 +1053,9 @@ surface =
       , name = "Cave Eblan"
       , requirements = [ Hook ]
       , value =
-            [ Shop
+            [ Shop Weapon
+            , Shop Armour
+            , Shop Item
             ]
       }
     , { key = UpperBabil
@@ -1045,7 +1101,9 @@ underground =
       , name = "Dwarf Castle"
       , requirements = []
       , value =
-            [ Shop
+            [ Shop Weapon
+            , Shop Armour
+            , Shop Item
             ]
       }
     , { key = LowerBabil
@@ -1099,7 +1157,9 @@ underground =
       , name = "Feymarch"
       , requirements = []
       , value =
-            [ Shop
+            [ Shop Weapon
+            , Shop Armour
+            , Shop Item
             ]
       }
     , { key = FeymarchKing
@@ -1129,7 +1189,9 @@ underground =
       , name = "Tomra"
       , requirements = []
       , value =
-            [ Shop
+            [ Shop Weapon
+            , Shop Armour
+            , Shop Item
             ]
       }
     , { key = SealedCave
@@ -1153,7 +1215,9 @@ underground =
       , name = "Kokkol's Forge"
       , requirements = [ LegendSword, Adamant ]
       , value =
-            [ Shop
+            [ Shop Weapon
+            , Shop Armour
+            , Shop Item
             ]
       }
     ]
@@ -1165,7 +1229,7 @@ moon =
       , name = "Hummingway"
       , requirements = []
       , value =
-            [ Shop
+            [ Shop Item
             ]
       }
     , { key = CaveBahamut

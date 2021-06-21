@@ -255,8 +255,6 @@ view model =
                 ]
             , div [ id "shops" ]
                 [ h2 [] [ text "Shops" ]
-
-                -- TODO add item types as values to shops, make them toggleable
                 , viewLocations model Location.Shops
                 ]
             ]
@@ -539,6 +537,17 @@ viewLocation context location =
 
                     else
                         ToggleProperty
+
+                count =
+                    case ( Location.countable value, status ) of
+                        ( Just total, SeenSome seen ) ->
+                            total - seen
+
+                        ( Just total, _ ) ->
+                            total
+
+                        _ ->
+                            0
             in
             case Icon.fromValue value of
                 Just icon ->
@@ -551,17 +560,8 @@ viewLocation context location =
                         , onRightClick <| HardToggleProperty (Location.getKey location) index
                         ]
                         [ icon.img |> Html.map never
-                        , span [ class "count" ]
-                            [ case ( Location.countable value, status ) of
-                                ( Just total, SeenSome seen ) ->
-                                    text <| String.fromInt <| total - seen
-
-                                ( Just total, _ ) ->
-                                    text <| String.fromInt total
-
-                                _ ->
-                                    text ""
-                            ]
+                        , displayIf (count > 0) <|
+                            span [ class "count" ] [ text <| String.fromInt count ]
                         ]
 
                 Nothing ->

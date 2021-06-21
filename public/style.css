@@ -286,7 +286,6 @@ h4 {
   filter: none;
 }
 
-
 .location .icon img {
   width: 20px;
   height: 20px;
@@ -309,4 +308,13 @@ h4 {
     text-align: center;
     color: white;
     text-shadow: 1px 1px 0px black;
+}
+
+#shops .location .icon {
+    margin-right: 2px;
+}
+
+#shops .location .icon img {
+    width: 18px;
+    height: 18px;
 }
