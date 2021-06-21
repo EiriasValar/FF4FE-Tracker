@@ -121,28 +121,28 @@ visible =
 weapon : Icon
 weapon =
     { class = "weapon"
-    , img = img "/img/sprites/KnightSword-edit.gif"
+    , img = img "/img/sprites/KnightSword.gif"
     }
 
 
 armour : Icon
 armour =
     { class = "armour"
-    , img = img "/img/sprites/Armor-edit.gif"
+    , img = img "/img/sprites/Armor.gif"
     }
 
 
 accessory : Icon
 accessory =
     { class = "accessory"
-    , img = img "/img/sprites/Ring-edit.gif"
+    , img = img "/img/sprites/Ring.gif"
     }
 
 
 healing : Icon
 healing =
     { class = "healing"
-    , img = img "/img/sprites/RecoveryItem-edit.gif"
+    , img = img "/img/sprites/RecoveryItem.gif"
     }
 
 
@@ -156,7 +156,7 @@ camping =
 jItem : Icon
 jItem =
     { class = "jItem"
-    , img = img "/img/sprites/Hourglass-edit.gif"
+    , img = img "/img/sprites/Hourglass.gif"
     }
 
 

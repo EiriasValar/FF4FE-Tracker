@@ -250,26 +250,19 @@ h4 {
   position: relative;
 }
 
-.location .icon.key-item.warp.unseen {
-  filter: opacity(40%);
+.filter img {
+    width: 15px;
+    height: 15px;
 }
-
-.location .icon.dismissed::after {
-  content: "✓";
-  color: green;
-  position: absolute;
-  top: -9px;
-  left: 0px;
-  text-align: center;
-  text-shadow: 1px 1px 0px black;
-  font-size: larger;
-  width: 100%;
-}
-
+  
 .filter.unset img {
   filter: opacity(25%);
 }
 
+.filter.show img {
+  filter: none;
+}
+  
 .filter.hide::after {
   content: "🚫";
   position: absolute;
@@ -282,21 +275,28 @@ h4 {
   filter: opacity(80%);
 }
 
-.filter.show img {
-  filter: none;
+.location .icon.key-item.warp.unseen {
+    filter: opacity(40%);
 }
-
-.location .icon img {
+  
+#checks .location .icon.dismissed::after {
+    content: "✓";
+    color: green;
+    position: absolute;
+    top: -9px;
+    left: 0px;
+    text-align: center;
+    text-shadow: 1px 1px 0px black;
+    font-size: larger;
+    width: 100%;
+}
+  
+#checks .location .icon img {
   width: 20px;
   height: 20px;
 }
 
-.filter img {
-  width: 15px;
-  height: 15px;
-}
-
-.location .icon.dismissed img {
+#checks .location .icon.dismissed img {
   filter: opacity(25%); 
 }
 
@@ -310,11 +310,25 @@ h4 {
     text-shadow: 1px 1px 0px black;
 }
 
+#shops .location {
+    margin: 4px 0;
+}
+
+#shops .location .icons {
+    background-color: rgb(0,0,175);
+    border-style: double;
+    border-color: white;
+}
+
 #shops .location .icon {
     margin-right: 2px;
 }
 
 #shops .location .icon img {
     width: 18px;
-    height: 18px;
+    height: 13px;
+}
+
+#shops .location .icon.unseen img {
+    filter: opacity(50%);
 }

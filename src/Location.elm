@@ -889,7 +889,7 @@ surface =
             ]
       }
     , { key = BaronWeaponShop
-      , name = "Baron Weapon"
+      , name = "Baron"
       , requirements = [ BaronKey ]
       , value =
             [ Chest 2
