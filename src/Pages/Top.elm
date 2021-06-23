@@ -496,8 +496,8 @@ viewLocations model locClass =
             div []
                 [ h4 []
                     [ text <| String.Extra.toTitleCase <| Location.areaToString area ]
-                , div [] <|
-                    List.map (viewLocation context) locations
+                , div [ class "area-locations" ] <|
+                    List.concatMap (viewLocation context) locations
                 ]
     in
     model.locations
@@ -507,7 +507,7 @@ viewLocations model locClass =
         |> div [ class "locations" ]
 
 
-viewLocation : Location.Context -> Location -> Html Msg
+viewLocation : Location.Context -> Location -> List (Html Msg)
 viewLocation context location =
     let
         key =
@@ -568,21 +568,18 @@ viewLocation context location =
                 Nothing ->
                     text ""
     in
-    div
-        [ class "location"
+    [ span
+        [ class "name"
         , class <| Location.statusToString <| Location.getStatus location
+        , onClick <| ToggleLocationStatus key Dismissed
+        , onRightClick <| ToggleLocationStatus key Seen
         ]
-        [ span
-            [ class "name"
-            , onClick <| ToggleLocationStatus key Dismissed
-
-            -- TODO do this without requiring right-clicks
-            , onRightClick <| ToggleLocationStatus key Seen
-            ]
-            [ text <| Location.getName location ]
-        , span [ class "icons" ] <|
+        [ text <| Location.getName location ]
+    , span [ class "icons-container" ]
+        [ span [ class "icons" ] <|
             List.map viewProperty (Location.getProperties context location)
         ]
+    ]
 
 
 updateRandomObjectives : Flags -> Array RandomObjective -> Array RandomObjective

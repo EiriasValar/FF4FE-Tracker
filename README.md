@@ -39,3 +39,4 @@ It very trivially uses [elm-spa](https://elm-spa.dev): as development progressed
 - Possibly de-value characters when the flags make them irrelevant (e.g. Cparty:1)
 - Type-to-filter random objective selection
 - Text entry and display for Shop Other
+- Wacky flags!

@@ -724,7 +724,7 @@ surface =
             ]
       }
     , { key = MistVillagePackage
-      , name = "Mist Village - Package"
+      , name = "Mist - Package"
       , requirements = [ Package ]
       , value =
             [ Character Gated
@@ -892,9 +892,11 @@ surface =
       , name = "Baron"
       , requirements = [ BaronKey ]
       , value =
-            [ Chest 2
-            , Shop Weapon
+            [ Shop Weapon
             , Shop Armour
+
+            -- not worth the hassle!
+            -- , Chest 2
             ]
       }
     , { key = BaronSewer
@@ -917,7 +919,7 @@ surface =
             ]
       }
     , { key = BaronBasement
-      , name = "Baron Castle Basement"
+      , name = "Baron Basement"
       , requirements = [ BaronKey ]
       , value =
             [ Boss
@@ -1050,7 +1052,7 @@ surface =
             ]
       }
     , { key = CaveEblanShops
-      , name = "Cave Eblan"
+      , name = "Eblan"
       , requirements = [ Hook ]
       , value =
             [ Shop Weapon
@@ -1118,7 +1120,7 @@ underground =
             ]
       }
     , { key = LowerBabilCannon
-      , name = "Lower Bab-il - Cannon"
+      , name = "Super Cannon"
       , requirements = [ TowerKey ]
       , value =
             [ Boss
@@ -1163,7 +1165,7 @@ underground =
             ]
       }
     , { key = FeymarchKing
-      , name = "Feymarch - King"
+      , name = "Feymarch King"
       , requirements = []
       , value =
             [ Boss
@@ -1171,7 +1173,7 @@ underground =
             ]
       }
     , { key = FeymarchQueen
-      , name = "Feymarch - Queen"
+      , name = "Feymarch Queen"
       , requirements = []
       , value =
             [ Boss
@@ -1205,14 +1207,14 @@ underground =
             ]
       }
     , { key = Kokkol
-      , name = "Kokkol's Forge"
+      , name = "Kokkol"
       , requirements = []
       , value =
             [ Chest 4
             ]
       }
     , { key = KokkolShop
-      , name = "Kokkol's Forge"
+      , name = "Kokkol"
       , requirements = [ LegendSword, Adamant ]
       , value =
             [ Shop Weapon
