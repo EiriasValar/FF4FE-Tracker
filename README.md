@@ -40,3 +40,4 @@ It very trivially uses [elm-spa](https://elm-spa.dev): as development progressed
 - Type-to-filter random objective selection
 - Text entry and display for Shop Other
 - Wacky flags!
+- Handle Sylph Cave -> Sheila dependencies better/more completely

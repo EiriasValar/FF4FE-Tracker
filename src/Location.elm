@@ -413,10 +413,8 @@ filterByContext class c (Locations locations) =
                 |> Maybe.map (getStatus >> (==) Dismissed)
                 |> Maybe.withDefault False
 
-        requirementsMetFor key =
-            Dict.get key locations
-                |> Maybe.map (requirementsMet attainedRequirements)
-                |> Maybe.withDefault False
+        notChecked =
+            not << isChecked
 
         undergroundAccess =
             c.flags.pushBToJump
@@ -432,6 +430,11 @@ filterByContext class c (Locations locations) =
 
         context =
             { c | attainedRequirements = attainedRequirements }
+
+        requirementsMetFor key =
+            Dict.get key locations
+                |> Maybe.map (requirementsMet attainedRequirements)
+                |> Maybe.withDefault False
 
         -- locations that can be accessed regardless of requirements if we can jump
         jumpable =
@@ -469,10 +472,12 @@ filterByContext class c (Locations locations) =
         hasValue ((Location l) as location) =
             isClass Shops location
                 || (l.key == UpperBabil && not undergroundAccess)
+                -- this assumes Sheila2 always has value
+                || (l.key == SylphCave && notChecked Sheila2)
                 || propertiesHaveValue location
 
         hasNoValue (Location l) =
-            (l.key == Sheila2 && (not <| isChecked SylphCave))
+            (l.key == Sheila2 && notChecked SylphCave)
                 -- hide the chests-only pseudo-locations once their
                 -- full-value counterparts are unlocked
                 || (l.key == CaveMagnesChests && requirementsMetFor CaveMagnes)
@@ -483,7 +488,7 @@ filterByContext class c (Locations locations) =
                 False
 
             else if l.status == Dismissed then
-                -- always show dismissed items if Sbow Checked is on, never otherwise
+                -- always show Dismissed items if that filter is set to Show
                 Dict.get Checked context.filterOverrides
                     |> Maybe.withDefault Hide
                     |> (==) Show
@@ -649,7 +654,7 @@ all =
                     [ Shop Armour, Shop Accessory ]
 
                 Shop Item ->
-                    [ Shop Healing, Shop Camping, Shop JItem ]
+                    [ Shop Healing, Shop JItem ]
 
                 _ ->
                     [ value ]
