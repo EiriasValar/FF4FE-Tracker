@@ -5,8 +5,8 @@ import AssocList as Dict exposing (Dict)
 import Bootstrap.Dropdown as Dropdown exposing (DropdownItem)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
-import Html exposing (Html, div, h2, h4, img, input, li, span, table, td, text, textarea, tr, ul)
-import Html.Attributes exposing (class, classList, id, src, type_)
+import Html exposing (Html, div, h2, h4, li, span, table, td, text, textarea, tr, ul)
+import Html.Attributes exposing (class, classList, id)
 import Html.Events exposing (onClick, onInput)
 import Icon
 import Json.Decode
@@ -51,7 +51,7 @@ type Msg
     | DropdownMsg Int Dropdown.State
     | ToggleRequirement Requirement
     | ToggleFilter Filter
-    | ToggleLocationStatus Location.Key Location.Status
+    | ToggleLocationStatus Location Location.Status
     | ToggleProperty Location.Key Int
     | HardToggleProperty Location.Key Int
     | ToggleWarpGlitchUsed Location.Key Int
@@ -179,8 +179,40 @@ innerUpdate msg model =
                         model.filterOverrides
             }
 
-        ToggleLocationStatus key status ->
-            { model | locations = Location.update key (Maybe.map <| Location.toggleStatus status) model.locations }
+        ToggleLocationStatus location status ->
+            let
+                newLocation =
+                    Location.toggleStatus status location
+
+                requirements =
+                    newLocation
+                        |> Location.getProperties (getContext model)
+                        |> List.filterMap
+                            (\( _, _, value ) ->
+                                case value of
+                                    Requirement req ->
+                                        Just req
+
+                                    _ ->
+                                        Nothing
+                            )
+                        |> Set.fromList
+
+                attainedRequirements =
+                    case Location.getStatus newLocation of
+                        Unseen ->
+                            Set.diff model.attainedRequirements requirements
+
+                        Dismissed ->
+                            Set.union model.attainedRequirements requirements
+
+                        _ ->
+                            model.attainedRequirements
+            in
+            { model
+                | locations = Location.insert newLocation model.locations
+                , attainedRequirements = attainedRequirements
+            }
 
         ToggleProperty key index ->
             toggleProperty key index False model
@@ -474,22 +506,7 @@ viewLocations model locClass =
     let
         context : Location.Context
         context =
-            { flags = model.flags
-            , randomObjectives = model.randomObjectives |> Array.toList |> List.filterMap toMaybe |> Set.fromList
-            , completedObjectives = model.completedObjectives
-            , attainedRequirements = model.attainedRequirements
-            , warpGlitchUsed = model.warpGlitchUsed
-            , filterOverrides = model.filterOverrides
-            }
-
-        toMaybe : RandomObjective -> Maybe Objective
-        toMaybe randomObjective =
-            case randomObjective of
-                Set objective ->
-                    Just objective
-
-                Unset _ ->
-                    Nothing
+            getContext model
 
         viewArea : ( Location.Area, List Location ) -> Html Msg
         viewArea ( area, locations ) =
@@ -510,9 +527,6 @@ viewLocations model locClass =
 viewLocation : Location.Context -> Location -> List (Html Msg)
 viewLocation context location =
     let
-        key =
-            Location.getKey location
-
         onRightClick msg =
             Html.Events.preventDefaultOn "contextmenu" <| Json.Decode.succeed ( msg, True )
 
@@ -571,8 +585,8 @@ viewLocation context location =
     [ span
         [ class "name"
         , class <| Location.statusToString <| Location.getStatus location
-        , onClick <| ToggleLocationStatus key Dismissed
-        , onRightClick <| ToggleLocationStatus key Seen
+        , onClick <| ToggleLocationStatus location Dismissed
+        , onRightClick <| ToggleLocationStatus location Seen
         ]
         [ text <| Location.getName location ]
     , span [ class "icons-container" ]
@@ -609,6 +623,27 @@ randomObjectiveToMaybe o =
 
         Unset _ ->
             Nothing
+
+
+getContext : Model -> Location.Context
+getContext model =
+    let
+        toMaybe : RandomObjective -> Maybe Objective
+        toMaybe randomObjective =
+            case randomObjective of
+                Set objective ->
+                    Just objective
+
+                Unset _ ->
+                    Nothing
+    in
+    { flags = model.flags
+    , randomObjectives = model.randomObjectives |> Array.toList |> List.filterMap toMaybe |> Set.fromList
+    , completedObjectives = model.completedObjectives
+    , attainedRequirements = model.attainedRequirements
+    , warpGlitchUsed = model.warpGlitchUsed
+    , filterOverrides = model.filterOverrides
+    }
 
 
 memberOf : List a -> a -> Bool

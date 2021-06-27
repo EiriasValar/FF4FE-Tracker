@@ -21,6 +21,7 @@ module Location exposing
     , getProperties
     , getStatus
     , groupByArea
+    , insert
     , statusToString
     , toggleProperty
     , toggleStatus
@@ -78,6 +79,7 @@ type Value
     | Chest Int -- excluding trapped chests
     | TrappedChest Int
     | Shop ShopValue
+    | Requirement Requirement
 
 
 type ShopValue
@@ -159,8 +161,8 @@ type Key
     | DwarfCastleShops
     | LowerBabil
     | LowerBabilCannon
-    | SylphCaveChests
-    | SylphCave
+    | SylphCave1
+    | SylphCave2
     | Feymarch
     | FeymarchShops
     | FeymarchKing
@@ -207,6 +209,8 @@ type Requirement
     | Pass
     | MistDragon
     | UndergroundAccess
+    | YangTalk
+    | YangBonk
 
 
 type Area
@@ -390,6 +394,12 @@ values (Locations locations) =
     Dict.values locations
 
 
+insert : Location -> Locations -> Locations
+insert location locations =
+    -- use Dict.update rather than Dict.insert so the order is preserved
+    update (getKey location) (always <| Just location) locations
+
+
 update : Key -> (Maybe Location -> Maybe Location) -> Locations -> Locations
 update key fn (Locations locations) =
     Locations <|
@@ -412,9 +422,6 @@ filterByContext class c (Locations locations) =
             Dict.get key locations
                 |> Maybe.map (getStatus >> (==) Dismissed)
                 |> Maybe.withDefault False
-
-        notChecked =
-            not << isChecked
 
         undergroundAccess =
             c.flags.pushBToJump
@@ -453,38 +460,41 @@ filterByContext class c (Locations locations) =
             filtersFrom context
 
         propertiesHaveValue location =
-            -- anything overridden to Show has value
-            -- anything overridden to Hide doesn't (and isn't returned
-            -- by getProperties)
-            -- otherwise, characters and key items have value
-            -- bosses and chests have value depending on flags
+            -- getProperties and filtersFrom have done all the heavy lifting:
+            -- anything that's in the set of positive filters at this point
+            -- has value by definition (and Requirement values are always
+            -- valuable)
             getProperties context location
                 |> List.any
                     (\( _, _, value ) ->
-                        case valueToFilter value of
-                            Just filter ->
+                        case ( value, valueToFilter value ) of
+                            ( Requirement _, _ ) ->
+                                True
+
+                            ( _, Just filter ) ->
                                 Set.member filter filters
 
-                            Nothing ->
+                            _ ->
                                 False
                     )
 
         hasValue ((Location l) as location) =
             isClass Shops location
                 || (l.key == UpperBabil && not undergroundAccess)
-                -- this assumes Sheila2 always has value
-                || (l.key == SylphCave && notChecked Sheila2)
                 || propertiesHaveValue location
 
         hasNoValue (Location l) =
-            (l.key == Sheila2 && notChecked SylphCave)
-                -- hide the chests-only pseudo-locations once their
-                -- full-value counterparts are unlocked
-                || (l.key == CaveMagnesChests && requirementsMetFor CaveMagnes)
-                || (l.key == SylphCaveChests && requirementsMetFor SylphCave)
+            -- hide the chests-only pseudo-location once its
+            -- full-value counterpart is  unlocked
+            l.key == CaveMagnesChests && requirementsMetFor CaveMagnes
 
         isRelevant ((Location l) as location) =
             if not <| isClass class location then
+                False
+
+            else if l.key == SylphCave1 && requirementsMetFor SylphCave2 then
+                -- always hide the first "version" of Sylph Cave once the
+                -- second one is visible (even when viewing Checked locations)
                 False
 
             else if l.status == Dismissed then
@@ -621,6 +631,9 @@ valueToFilter value =
             Just TrappedChests
 
         Shop _ ->
+            Nothing
+
+        Requirement _ ->
             Nothing
 
 
@@ -830,7 +843,7 @@ surface =
       }
     , { key = Sheila1
       , name = "Sheila 1"
-      , requirements = [ UndergroundAccess ]
+      , requirements = [ YangTalk ]
       , value =
             [ KeyItem Main
             , KeyItem Vanilla
@@ -838,7 +851,7 @@ surface =
       }
     , { key = Sheila2
       , name = "Sheila 2"
-      , requirements = [ UndergroundAccess, Pan ]
+      , requirements = [ YangBonk ]
       , value =
             [ KeyItem Main
             , KeyItem Vanilla
@@ -1133,19 +1146,22 @@ underground =
             , KeyItem Vanilla
             ]
       }
-    , { key = SylphCaveChests
+    , { key = SylphCave1
       , name = "Sylph Cave"
       , requirements = []
       , value =
-            [ Chest 25
+            [ Requirement YangTalk
+            , Chest 25
             , TrappedChest 7
             ]
       }
-    , { key = SylphCave
+    , { key = SylphCave2
       , name = "Sylph Cave"
       , requirements = [ Pan ]
       , value =
             [ KeyItem Summon
+            , Requirement YangTalk
+            , Requirement YangBonk
             , Chest 25
             , TrappedChest 7
             ]
