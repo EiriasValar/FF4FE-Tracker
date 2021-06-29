@@ -636,7 +636,7 @@ bossFromString boss =
         "waterhag" ->
             Just Waterhag
 
-        "mombom" ->
+        "mombomb" ->
             Just MomBomb
 
         "fabulgauntlet" ->

@@ -1273,7 +1273,7 @@ moon =
             ]
       }
     , { key = LunarSubterrane
-      , name = "Lunar Dais"
+      , name = "Lunar Palace"
       , requirements = []
       , value =
             [ Character Gated
