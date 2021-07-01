@@ -646,11 +646,6 @@ getContext model =
     }
 
 
-memberOf : List a -> a -> Bool
-memberOf xs x =
-    List.member x xs
-
-
 toggle : a -> Set a -> Set a
 toggle item set =
     if Set.member item set then

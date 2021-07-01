@@ -217,6 +217,7 @@ type PseudoRequirement
     | UndergroundAccess
     | YangTalk
     | YangBonk
+    | Falcon
 
 
 type Area
@@ -424,15 +425,10 @@ groupByArea =
 filterByContext : Class -> Context -> Locations -> Locations
 filterByContext class c (Locations locations) =
     let
-        isChecked key =
-            Dict.get key locations
-                |> Maybe.map (getStatus >> (==) Dismissed)
-                |> Maybe.withDefault False
-
         undergroundAccess =
             c.flags.pushBToJump
                 || Set.member MagmaKey c.attainedRequirements
-                || isChecked UpperBabil
+                || Set.member (Pseudo Falcon) c.attainedRequirements
 
         attainedRequirements =
             if undergroundAccess then
@@ -474,6 +470,11 @@ filterByContext class c (Locations locations) =
                 |> List.any
                     (\( _, _, value ) ->
                         case ( value, valueToFilter value ) of
+                            ( Requirement (Pseudo Falcon), _ ) ->
+                                -- the Falcon only has value if we don't have a
+                                -- way underground yet
+                                not undergroundAccess
+
                             ( Requirement _, _ ) ->
                                 True
 
@@ -484,9 +485,8 @@ filterByContext class c (Locations locations) =
                                 False
                     )
 
-        hasValue ((Location l) as location) =
+        hasValue location =
             isClass Shops location
-                || (l.key == UpperBabil && not undergroundAccess)
                 || propertiesHaveValue location
 
         hasNoValue (Location l) =
@@ -1102,6 +1102,7 @@ surface =
             , Boss
             , Chest 7
             , TrappedChest 1
+            , Requirement <| Pseudo Falcon
             ]
       }
     , { key = Giant
