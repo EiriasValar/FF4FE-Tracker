@@ -10,7 +10,7 @@ import Html.Attributes exposing (class, classList, id)
 import Html.Events exposing (onClick, onInput)
 import Icon
 import Json.Decode
-import Location exposing (Filter(..), FilterType(..), Location, Locations, Requirement(..), Status(..), Value(..))
+import Location exposing (Filter(..), FilterType(..), Location, Locations, PseudoRequirement(..), Requirement(..), Status(..), Value(..))
 import Objective exposing (Objective)
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
@@ -420,14 +420,14 @@ viewKeyItems flags attained =
             -- we care about this number for the 10 key items experience bonus, so
             -- don't count the MistDragon or Pass, which aren't real key items
             attained
-                |> Set.filter (not << memberOf [ MistDragon, Pass ])
+                |> Set.filter (not << Location.isPseudo)
                 |> Set.size
     in
     table [ class "requirements" ]
         [ tr []
             [ req Crystal "crystal"
             , displayCellIf flags.passExists <|
-                req Pass "pass"
+                req (Pseudo Pass) "pass"
             , req Hook "hook"
             , req DarknessCrystal "darkness-crystal"
             ]
@@ -451,7 +451,7 @@ viewKeyItems flags attained =
             ]
         , tr []
             [ displayCellIf (not <| Set.member Flags.Free flags.keyItems) <|
-                req MistDragon "mist-dragon"
+                req (Pseudo MistDragon) "mist-dragon"
             , req RatTail "rat-tail"
             , displayCellIf (not <| Set.member Vanilla flags.keyItems) <|
                 req PinkTail "pink-tail"

@@ -41,3 +41,4 @@ It very trivially uses [elm-spa](https://elm-spa.dev): as development progressed
 - Text entry and display for Shop Other
 - Wacky flags!
 - Preserve chest counts between CaveMagnes and SylphCave variants
+- Un-special-case Upper Babil->Underground access

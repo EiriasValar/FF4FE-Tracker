@@ -7,6 +7,7 @@ module Location exposing
     , Key(..)
     , Location
     , Locations
+    , PseudoRequirement(..)
     , Requirement(..)
     , ShopValue(..)
     , Status(..)
@@ -22,6 +23,7 @@ module Location exposing
     , getStatus
     , groupByArea
     , insert
+    , isPseudo
     , statusToString
     , toggleProperty
     , toggleStatus
@@ -206,7 +208,11 @@ type Requirement
     | LegendSword
     | Spoon
     | PinkTail
-    | Pass
+    | Pseudo PseudoRequirement
+
+
+type PseudoRequirement
+    = Pass
     | MistDragon
     | UndergroundAccess
     | YangTalk
@@ -430,7 +436,7 @@ filterByContext class c (Locations locations) =
 
         attainedRequirements =
             if undergroundAccess then
-                Set.insert UndergroundAccess c.attainedRequirements
+                Set.insert (Pseudo UndergroundAccess) c.attainedRequirements
 
             else
                 c.attainedRequirements
@@ -553,7 +559,7 @@ defaultFiltersFrom context =
                 -- what we track stops being interesting.
                 huntingDMist =
                     (not <| Set.member Flags.Free context.flags.keyItems)
-                        && (not <| Set.member MistDragon context.attainedRequirements)
+                        && (not <| Set.member (Pseudo MistDragon) context.attainedRequirements)
             in
             activeBossHunt || huntingDMist
 
@@ -599,7 +605,7 @@ areaAccessible attained (Location location) =
             True
 
         Underground ->
-            Set.member UndergroundAccess attained
+            Set.member (Pseudo UndergroundAccess) attained
 
         Moon ->
             Set.member DarknessCrystal attained
@@ -609,6 +615,16 @@ requirementsMet : Set Requirement -> Location -> Bool
 requirementsMet attained (Location location) =
     Set.diff location.requirements attained
         |> Set.isEmpty
+
+
+isPseudo : Requirement -> Bool
+isPseudo requirement =
+    case requirement of
+        Pseudo _ ->
+            True
+
+        _ ->
+            False
 
 
 valueToFilter : Value -> Maybe Filter
@@ -751,7 +767,7 @@ surface =
       }
     , { key = MistVillageMom
       , name = "Mist Village - Mom"
-      , requirements = [ MistDragon ]
+      , requirements = [ Pseudo MistDragon ]
       , value =
             [ KeyItem Main
             , KeyItem Vanilla
@@ -843,7 +859,7 @@ surface =
       }
     , { key = Sheila1
       , name = "Sheila 1"
-      , requirements = [ YangTalk ]
+      , requirements = [ Pseudo YangTalk ]
       , value =
             [ KeyItem Main
             , KeyItem Vanilla
@@ -851,7 +867,7 @@ surface =
       }
     , { key = Sheila2
       , name = "Sheila 2"
-      , requirements = [ YangBonk ]
+      , requirements = [ Pseudo YangBonk ]
       , value =
             [ KeyItem Main
             , KeyItem Vanilla
@@ -1150,7 +1166,7 @@ underground =
       , name = "Sylph Cave"
       , requirements = []
       , value =
-            [ Requirement YangTalk
+            [ Requirement <| Pseudo YangTalk
             , Chest 25
             , TrappedChest 7
             ]
@@ -1160,8 +1176,8 @@ underground =
       , requirements = [ Pan ]
       , value =
             [ KeyItem Summon
-            , Requirement YangTalk
-            , Requirement YangBonk
+            , Requirement <| Pseudo YangTalk
+            , Requirement <| Pseudo YangBonk
             , Chest 25
             , TrappedChest 7
             ]
