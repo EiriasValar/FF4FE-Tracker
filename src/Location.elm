@@ -59,19 +59,15 @@ type alias Data =
     }
 
 
+type Property
+    = Property Status Value
+
+
 type Status
     = Unseen
     | Seen
     | SeenSome Int
     | Dismissed
-
-
-
--- TODO some of these types and methods could live somewhere else? Location's feeling overloaded
-
-
-type Property
-    = Property Status Value
 
 
 type Value
@@ -82,6 +78,11 @@ type Value
     | TrappedChest Int
     | Shop ShopValue
     | Requirement Requirement
+
+
+type CharacterType
+    = Ungated
+    | Gated
 
 
 type ShopValue
@@ -107,11 +108,6 @@ type Filter
 type FilterType
     = Show
     | Hide
-
-
-type CharacterType
-    = Ungated
-    | Gated
 
 
 type Key

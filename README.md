@@ -32,13 +32,26 @@ It very trivially uses [elm-spa](https://elm-spa.dev): as development progressed
 [Elm Bootstrap](http://elm-bootstrap.info/) is used just for the Dropdown module, to allow for dropdown options with non-string values (used when setting a random objective). The "bootstrap" stylesheet is a heavily-gutted version to handle just the dropdown elements, with nothing particularly Bootstrap-y about them. This dependency could be entirely ripped out with a bit of work to recreate the Dropdown element.
 
 # TODOs
-- Pull some types out of Location.elm, it's getting overloaded
 - Consistent icon handling, alt tags
-- Keyboard navigation?
 - Don't require right-clicks for anything
 - Possibly de-value characters when the flags make them irrelevant (e.g. Cparty:1)
 - Type-to-filter random objective selection
 - Text entry and display for Shop Other
+- More shop granularity with minimal UI, somehow
+- If shop granularity includes specific items, respect relevant S flags
 - Wacky flags!
+    - Afflicted - no heal potions in shops (not currently relevant)
+    - Kleptomania - nothing of value in weapon and armour shops (but maybe accessories?)
+    - Mystery Juice - consumable item tracking?
+    - Night Mode - most overworld shops are closed
 - Preserve chest counts between CaveMagnes and SylphCave variants
 - Treat locations as having value when we have quest objectives for completing them
+
+# TOMAYBEDOs
+- Pull some types out of Location.elm, it's getting overloaded. Though they're
+  all pretty interdependent. Don't want a bunch of 20-line modules per type;
+  also don't want a meaningless Types.elm. Not seeing any obvious delineations.
+  Tried moving Locations and its methods into their own module, but that winds
+  up doubling the surface area of Location.
+- Keyboard navigation?
+- Remove elm-bootstrap
