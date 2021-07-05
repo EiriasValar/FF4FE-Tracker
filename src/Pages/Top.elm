@@ -526,62 +526,6 @@ viewLocations model locClass =
 
 viewLocation : Location.Context -> Location -> List (Html Msg)
 viewLocation context location =
-    let
-        onRightClick msg =
-            Html.Events.preventDefaultOn "contextmenu" <| Json.Decode.succeed ( msg, True )
-
-        viewProperty ( index, status, value ) =
-            let
-                extraClass =
-                    case value of
-                        KeyItem Warp ->
-                            "warp"
-
-                        Chest _ ->
-                            "countable"
-
-                        TrappedChest _ ->
-                            "countable"
-
-                        _ ->
-                            ""
-
-                msg =
-                    if value == Location.KeyItem Flags.Warp then
-                        ToggleWarpGlitchUsed
-
-                    else
-                        ToggleProperty
-
-                count =
-                    case ( Location.countable value, status ) of
-                        ( Just total, SeenSome seen ) ->
-                            total - seen
-
-                        ( Just total, _ ) ->
-                            total
-
-                        _ ->
-                            0
-            in
-            case Icon.fromValue value of
-                Just icon ->
-                    span
-                        [ class "icon"
-                        , class icon.class
-                        , class extraClass
-                        , class <| Location.statusToString status
-                        , onClick <| msg (Location.getKey location) index
-                        , onRightClick <| HardToggleProperty (Location.getKey location) index
-                        ]
-                        [ icon.img |> Html.map never
-                        , displayIf (count > 0) <|
-                            span [ class "count" ] [ text <| String.fromInt count ]
-                        ]
-
-                Nothing ->
-                    text ""
-    in
     [ span
         [ class "name"
         , class <| Location.statusToString <| Location.getStatus location
@@ -591,9 +535,63 @@ viewLocation context location =
         [ text <| Location.getName location ]
     , span [ class "icons-container" ]
         [ span [ class "icons" ] <|
-            List.map viewProperty (Location.getProperties context location)
+            List.map (viewProperty location) (Location.getProperties context location)
         ]
     ]
+
+
+viewProperty : Location -> ( Int, Status, Value ) -> Html Msg
+viewProperty location ( index, status, value ) =
+    let
+        extraClass =
+            case value of
+                KeyItem Warp ->
+                    "warp"
+
+                Chest _ ->
+                    "countable"
+
+                TrappedChest _ ->
+                    "countable"
+
+                _ ->
+                    ""
+
+        msg =
+            if value == Location.KeyItem Flags.Warp then
+                ToggleWarpGlitchUsed
+
+            else
+                ToggleProperty
+
+        count =
+            case ( Location.countable value, status ) of
+                ( Just total, SeenSome seen ) ->
+                    total - seen
+
+                ( Just total, _ ) ->
+                    total
+
+                _ ->
+                    0
+    in
+    case Icon.fromValue value of
+        Just icon ->
+            span
+                [ class "icon"
+                , class icon.class
+                , class extraClass
+                , class <| Location.statusToString status
+                , onClick <| msg (Location.getKey location) index
+                , onRightClick <| HardToggleProperty (Location.getKey location) index
+                ]
+                [ icon.img |> Html.map never
+                , displayIf (count > 0) <|
+                    span [ class "count" ] [ text <| String.fromInt count ]
+                ]
+
+        Nothing ->
+            text ""
 
 
 updateRandomObjectives : Flags -> Array RandomObjective -> Array RandomObjective
@@ -676,3 +674,8 @@ displayCellIf predicate html =
 with : b -> a -> ( a, b )
 with b a =
     ( a, b )
+
+
+onRightClick : msg -> Html.Attribute msg
+onRightClick msg =
+    Html.Events.preventDefaultOn "contextmenu" <| Json.Decode.succeed ( msg, True )
