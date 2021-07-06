@@ -87,13 +87,19 @@ type CharacterType
 
 type ShopValue
     = Weapon
-    | Armour -- also expands into Accessory
-    | Item -- pseudo-value for Location definition; gets expanded into Healing/Camping/JItem
-    | Accessory
-    | Healing
-    | Camping
-    | JItem
+    | Armour
+    | LowHPZ
+    | Item -- pseudo-value for Location definition; gets expanded into Healing/JItem
+    | Healing (Array ConsumableItem)
+    | JItem (Array ConsumableItem)
     | Other String
+
+
+type alias ConsumableItem =
+    { name : String
+    , tier : Int
+    , status : Status
+    }
 
 
 type Filter
@@ -675,11 +681,8 @@ all =
 
         expandShop value =
             case value of
-                Shop Armour ->
-                    [ Shop Armour, Shop Accessory ]
-
                 Shop Item ->
-                    [ Shop Healing, Shop JItem ]
+                    [ Shop <| Healing healingItems, Shop <| JItem jItems ]
 
                 _ ->
                     [ value ]
@@ -1335,3 +1338,59 @@ moon =
             ]
       }
     ]
+
+
+healingItems : Array ConsumableItem
+healingItems =
+    [ { name = "Cure2"
+      , tier = 3
+      }
+    , { name = "Cure3"
+      , tier = 4
+      }
+    , { name = "Life"
+      , tier = 2
+      }
+    , { name = "Ether1/2"
+      , tier = 3
+      }
+    ]
+        |> List.map
+            (\{ name, tier } ->
+                { name = name
+                , tier = tier
+                , status = Unseen
+                }
+            )
+        |> Array.fromList
+
+
+jItems : Array ConsumableItem
+jItems =
+    [ { name = "Siren"
+      , tier = 5
+      }
+    , { name = "Hourglass"
+      , tier = 5
+      }
+    , { name = "Starveil"
+      , tier = 2
+      }
+    , { name = "Moonveil"
+      , tier = 6
+      }
+    , { name = "Bacchus"
+      , tier = 5
+      }
+    , { name = "Coffin"
+      , tier = 5
+      }
+    ]
+        |> List.map
+            (\{ name, tier } ->
+                { name = name
+                , tier = tier
+                , status = Unseen
+                }
+            )
+        |> Array.fromList

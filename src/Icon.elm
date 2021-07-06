@@ -57,16 +57,10 @@ fromValue value =
         Shop Armour ->
             Just armour
 
-        Shop Accessory ->
-            Just accessory
-
-        Shop Healing ->
+        Shop (Healing _) ->
             Just healing
 
-        Shop Camping ->
-            Just camping
-
-        Shop JItem ->
+        Shop (JItem _) ->
             Just jItem
 
         Shop (Other _) ->
@@ -132,24 +126,10 @@ armour =
     }
 
 
-accessory : Icon
-accessory =
-    { class = "accessory"
-    , img = img "/img/sprites/Ring.gif"
-    }
-
-
 healing : Icon
 healing =
     { class = "healing"
     , img = img "/img/sprites/RecoveryItem.gif"
-    }
-
-
-camping : Icon
-camping =
-    { class = "camping"
-    , img = img "/img/sprites/Tent-edit.gif"
     }
 
 
