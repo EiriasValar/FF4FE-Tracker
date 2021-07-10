@@ -1,8 +1,16 @@
-module Pages.Top exposing (Model, Msg, Params, page)
+module App exposing
+    ( Model
+    , Msg
+    , init
+    , subscriptions
+    , update
+    , view
+    )
 
 import Array exposing (Array)
 import AssocList as Dict exposing (Dict)
 import Bootstrap.Dropdown as Dropdown exposing (DropdownItem)
+import Browser
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
 import Html exposing (Html, div, h2, h4, li, span, table, td, text, textarea, tr, ul)
@@ -12,9 +20,6 @@ import Icon
 import Json.Decode
 import Location exposing (Filter(..), FilterType(..), Location, Locations, PseudoRequirement(..), Requirement(..), Status(..), Value(..))
 import Objective exposing (Objective)
-import Spa.Document exposing (Document)
-import Spa.Page as Page exposing (Page)
-import Spa.Url exposing (Url)
 import String.Extra
 
 
@@ -22,13 +27,8 @@ type alias Set a =
     EverySet a
 
 
-type alias Params =
-    ()
-
-
 type alias Model =
-    { url : Url Params
-    , flagString : String
+    { flagString : String
     , flags : Flags
     , randomObjectives : Array RandomObjective
     , completedObjectives : Set Objective
@@ -58,18 +58,8 @@ type Msg
     | UpdateFlags String
 
 
-page : Page Params Model Msg
-page =
-    Page.element
-        { init = init
-        , update = update
-        , view = view
-        , subscriptions = subscriptions
-        }
-
-
-init : Url Params -> ( Model, Cmd Msg )
-init url =
+init : () -> ( Model, Cmd Msg )
+init _ =
     let
         flagString =
             "Kmain/summon/moon Gwarp Nkey O1:char_kain/2:quest_antlionnest/random:3,char,boss/req:4"
@@ -80,8 +70,7 @@ init url =
         randomObjectives =
             updateRandomObjectives flags Array.empty
     in
-    { url = url
-    , flagString = flagString
+    { flagString = flagString
     , flags = flags
     , randomObjectives = randomObjectives
     , completedObjectives = Set.empty
@@ -261,7 +250,7 @@ innerUpdate msg model =
             }
 
 
-view : Model -> Document Msg
+view : Model -> Browser.Document Msg
 view model =
     { title = "FFIV Free Enterprise Tracker"
     , body =
