@@ -1,5 +1,7 @@
 # Yet Another Web Tracker for Final Fantasy IV: Free Enterprise!
 
+Try it [here](https://eiriasvalar.github.io/FF4FE-Tracker/public/)!
+
 [Free Enterprise](http://ff4fe.com/) is a randomizer for Final Fantasy IV. A tracker is a piece of software that helps a randomizer player keep track of the things they have and haven't yet done or seen as they play the game.
 
 The [Free Enterprise Resources](https://docs.google.com/spreadsheets/d/1Dpdq74HZ-KipaSnSqRuMMXjJdn-uSP2C-UvKYyS3-wY/edit#gid=0) document has links to a number of other trackers, all of which have provided some inspiration for this one. In particular the high-level UI is heavily based on [BigDunka's tracker](https://fftracker.dunka.net/index.html).
@@ -11,7 +13,7 @@ Other icons are all sprites from the game, taken from [videogamesprites.net](htt
 
 # Using it
 
-`npm start` will get the tracker running locally.
+`npm start` will get the tracker running locally. It should also be running publicly on [GitHub Pages](https://eiriasvalar.github.io/FF4FE-Tracker/public/).
 
 Pasting the flag string used to generate your seed into the provided text area will allow the tracker to only show things relevant to your seed (e.g. hiding free character locations when `Nchars` is on, showing a potential second key item in Dwarf Castle when `Gwarp` is on, etc).
 
