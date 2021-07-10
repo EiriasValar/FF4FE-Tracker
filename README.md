@@ -25,9 +25,8 @@ The tracker tries to only show you locations that are potentially valuable to yo
 
 # Development
 
-The tracker is written in [Elm](https://elm-lang.org/), compiled to JavaScript.
-
-It very trivially uses [elm-spa](https://elm-spa.dev): as development progressed it became clear that the tracker would only ever be a single logical page.
+The tracker is written in [Elm](https://elm-lang.org/), compiled to JavaScript. As there's only a single logical page,
+no navigation infrastructure is implemented (anymore).
 
 [Elm Bootstrap](http://elm-bootstrap.info/) is used just for the Dropdown module, to allow for dropdown options with non-string values (used when setting a random objective). The "bootstrap" stylesheet is a heavily-gutted version to handle just the dropdown elements, with nothing particularly Bootstrap-y about them. This dependency could be entirely ripped out with a bit of work to recreate the Dropdown element.
 
