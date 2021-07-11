@@ -37,14 +37,15 @@ no navigation infrastructure is implemented (anymore).
 - Don't require right-clicks for anything
 - Possibly de-value characters when the flags make them irrelevant (e.g. Cparty:1)
 - Type-to-filter random objective selection
-- Text entry and display for Shop Other
-- More shop granularity with minimal UI, somehow
-- If shop granularity includes specific items, respect relevant S flags
+- Shops:
+    - Text entry and display for Other
+    - More shop granularity with minimal UI, somehow
+    - If shop granularity includes specific items, respect relevant S flags
+    - Suppress J-Item shop values when Sno:j is on
 - Wacky flags!
     - Afflicted - no heal potions in shops (not currently relevant)
     - Kleptomania - nothing of value in weapon and armour shops (but maybe accessories?)
     - Mystery Juice - consumable item tracking?
-    - Night Mode - most overworld shops are closed
 - Preserve chest counts between CaveMagnes and SylphCave variants
 - Treat locations as having value when we have quest objectives for completing them
 

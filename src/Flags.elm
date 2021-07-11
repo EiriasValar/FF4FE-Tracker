@@ -31,6 +31,7 @@ type alias Flags =
     , warpGlitch : Bool
     , keyExpBonus : Bool
     , pushBToJump : Bool
+    , nightMode : Bool
     }
 
 
@@ -82,6 +83,7 @@ parse flagString =
             , warpGlitch = False
             , keyExpBonus = True
             , pushBToJump = False
+            , nightMode = False
             }
 
         -- Random objective types aren't additive flags: if none are given, all are enabled;
@@ -370,6 +372,9 @@ parseOther switch flags =
 
         "pushbtojump" ->
             { flags | pushBToJump = True }
+
+        "wacky:nightmode" ->
+            { flags | nightMode = True }
 
         _ ->
             flags

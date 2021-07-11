@@ -277,6 +277,13 @@ getProperties { flags, warpGlitchUsed, filterOverrides } (Location location) =
                         && not (location.key == BaronCastle && itemClass == Vanilla && not flags.passIsKeyItem)
                         && Set.member itemClass flags.keyItems
 
+                Shop shopValue ->
+                    not flags.nightMode
+                        || (location.area /= Surface)
+                        || (location.key == BaronWeaponShop)
+                        || (location.key == CaveEblanShops)
+                        || (location.key == ToroiaShops && (not <| List.member shopValue [ Weapon, Armour ]))
+
                 _ ->
                     True
 
@@ -480,16 +487,15 @@ filterByContext class c (Locations locations) =
                             ( Requirement _, _ ) ->
                                 True
 
+                            ( Shop _, _ ) ->
+                                True
+
                             ( _, Just filter ) ->
                                 Set.member filter filters
 
                             _ ->
                                 False
                     )
-
-        hasValue location =
-            isClass Shops location
-                || propertiesHaveValue location
 
         hasNoValue (Location l) =
             -- hide the chests-only pseudo-location once its
@@ -512,7 +518,7 @@ filterByContext class c (Locations locations) =
                     |> (==) Show
 
             else
-                hasValue location
+                propertiesHaveValue location
                     && (not <| hasNoValue location)
                     && areaAccessible attainedRequirements location
                     && (context.flags.pushBToJump && Set.member l.key jumpable || requirementsMet attainedRequirements location)

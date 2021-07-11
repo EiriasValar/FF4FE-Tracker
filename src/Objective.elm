@@ -505,7 +505,7 @@ questToString quest =
             "Cure the fever with the SandRuby"
 
         UnlockSewer ->
-            "Unlock the swere with the Baron Key"
+            "Unlock the sewer with the Baron Key"
 
         TwinHarp ->
             "Break the Dark Elf's spell with the TwinHarp"
