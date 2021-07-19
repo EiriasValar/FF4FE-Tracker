@@ -13,12 +13,25 @@ import Bootstrap.Dropdown as Dropdown exposing (DropdownItem)
 import Browser
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
-import Html exposing (Html, div, h2, h4, li, span, table, td, text, textarea, tr, ul)
-import Html.Attributes exposing (class, classList, id)
+import Html exposing (Html, div, h2, h4, input, li, span, table, td, text, textarea, tr, ul)
+import Html.Attributes exposing (checked, class, classList, id, type_)
 import Html.Events exposing (onClick, onInput)
 import Icon
 import Json.Decode
-import Location exposing (Filter(..), FilterType(..), Location, Locations, PseudoRequirement(..), Requirement(..), Status(..), Value(..))
+import Location
+    exposing
+        ( ConsumableItem
+        , Filter(..)
+        , FilterType(..)
+        , Location
+        , Locations
+        , PseudoRequirement(..)
+        , Requirement(..)
+        , ShopValue(..)
+        , Status(..)
+        , Value(..)
+        )
+import Maybe.Extra
 import Objective exposing (Objective)
 import String.Extra
 
@@ -36,12 +49,20 @@ type alias Model =
     , locations : Locations
     , filterOverrides : Dict Filter FilterType
     , warpGlitchUsed : Bool
+    , shopMenu : Maybe ShopMenu
     }
 
 
 type RandomObjective
     = Set Objective
     | Unset Dropdown.State
+
+
+type alias ShopMenu =
+    { key : Location.Key
+    , index : Int
+    , items : List ( Int, ConsumableItem )
+    }
 
 
 type Msg
@@ -55,6 +76,8 @@ type Msg
     | ToggleProperty Location.Key Int
     | HardToggleProperty Location.Key Int
     | ToggleWarpGlitchUsed Location.Key Int
+    | ToggleShopMenu (List ( Int, ConsumableItem )) Location.Key Int
+    | ToggleShopItem ShopMenu Int
     | UpdateFlags String
 
 
@@ -83,6 +106,7 @@ init _ =
             , ( Chests, Hide )
             ]
     , warpGlitchUsed = False
+    , shopMenu = Nothing
     }
         |> with Cmd.none
 
@@ -105,7 +129,8 @@ subscriptions model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    -- just using Page.element for the subscriptions, don't have any Cmds to send
+    -- we don't have any Cmds to send (we're just using Browser.document for
+    -- subscriptions)
     innerUpdate msg model
         |> with Cmd.none
 
@@ -212,6 +237,47 @@ innerUpdate msg model =
         ToggleWarpGlitchUsed key index ->
             toggleProperty key index False <|
                 { model | warpGlitchUsed = not model.warpGlitchUsed }
+
+        ToggleShopMenu items key index ->
+            let
+                newShop =
+                    { key = key
+                    , index = index
+                    , items = items
+                    }
+
+                shopMenu =
+                    case model.shopMenu of
+                        Just existingShop ->
+                            if existingShop.key == newShop.key && existingShop.index == newShop.index then
+                                Nothing
+
+                            else
+                                Just newShop
+
+                        Nothing ->
+                            Just newShop
+            in
+            { model | shopMenu = shopMenu }
+
+        ToggleShopItem menu itemIndex ->
+            let
+                locations =
+                    Location.update menu.key (Maybe.map <| Location.toggleItem menu.index itemIndex) model.locations
+
+                shopMenu =
+                    locations
+                        |> Location.get menu.key
+                        |> Maybe.map (Location.getItems (getContext model) menu.index)
+                        |> Maybe.map
+                            (\items ->
+                                { menu | items = items }
+                            )
+            in
+            { model
+                | locations = locations
+                , shopMenu = shopMenu
+            }
 
         UpdateFlags flagString ->
             let
@@ -503,7 +569,7 @@ viewLocations model locClass =
                 [ h4 []
                     [ text <| String.Extra.toTitleCase <| Location.areaToString area ]
                 , div [ class "area-locations" ] <|
-                    List.concatMap (viewLocation context) locations
+                    List.concatMap (viewLocation model.shopMenu context) locations
                 ]
     in
     model.locations
@@ -513,8 +579,8 @@ viewLocations model locClass =
         |> div [ class "locations" ]
 
 
-viewLocation : Location.Context -> Location -> List (Html Msg)
-viewLocation context location =
+viewLocation : Maybe ShopMenu -> Location.Context -> Location -> List (Html Msg)
+viewLocation shopMenu context location =
     [ span
         [ class "name"
         , class <| Location.statusToString <| Location.getStatus location
@@ -524,13 +590,37 @@ viewLocation context location =
         [ text <| Location.getName location ]
     , span [ class "icons-container" ]
         [ span [ class "icons" ] <|
-            List.map (viewProperty location) (Location.getProperties context location)
+            List.map (viewProperty context location) (Location.getProperties context location)
+        , shopMenu
+            |> Maybe.Extra.filter (.key >> (==) (Location.getKey location))
+            |> Maybe.map viewMenu
+            |> Maybe.withDefault (text "")
         ]
     ]
 
 
-viewProperty : Location -> ( Int, Status, Value ) -> Html Msg
-viewProperty location ( index, status, value ) =
+viewMenu : ShopMenu -> Html Msg
+viewMenu menu =
+    let
+        viewItem ( itemIndex, item ) =
+            div
+                [ class "shop-item"
+                , onClick <| ToggleShopItem menu itemIndex
+                ]
+                [ input
+                    [ type_ "checkbox"
+                    , checked <| item.status == Dismissed
+                    ]
+                    []
+                , span [] [ text item.name ]
+                ]
+    in
+    div [ class "shop-menu" ] <|
+        List.map viewItem menu.items
+
+
+viewProperty : Location.Context -> Location -> ( Int, Status, Value ) -> Html Msg
+viewProperty context location ( index, status, value ) =
     let
         extraClass =
             case value of
@@ -546,12 +636,25 @@ viewProperty location ( index, status, value ) =
                 _ ->
                     ""
 
-        msg =
-            if value == Location.KeyItem Flags.Warp then
-                ToggleWarpGlitchUsed
+        -- we're awkwardly forced to get the items from the Location, rather
+        -- than from the value we already have, so that filtering can be
+        -- enforced
+        shopItems () =
+            Location.getItems context index location
 
-            else
-                ToggleProperty
+        msg =
+            case value of
+                KeyItem Warp ->
+                    ToggleWarpGlitchUsed
+
+                Shop (Healing _) ->
+                    ToggleShopMenu <| shopItems ()
+
+                Shop (JItem _) ->
+                    ToggleShopMenu <| shopItems ()
+
+                _ ->
+                    ToggleProperty
 
         count =
             case ( Location.countable value, status ) of

@@ -42,12 +42,17 @@ no navigation infrastructure is implemented (anymore).
     - More shop granularity with minimal UI, somehow
     - If shop granularity includes specific items, respect relevant S flags
     - Suppress J-Item shop values when Sno:j is on
+    - Dismiss menu on click outside it
 - Wacky flags!
     - Afflicted - no heal potions in shops (not currently relevant)
     - Kleptomania - nothing of value in weapon and armour shops (but maybe accessories?)
     - Mystery Juice - consumable item tracking?
 - Preserve chest counts between CaveMagnes and SylphCave variants
 - Treat locations as having value when we have quest objectives for completing them
+- Ktrap and Sylph Cave/Sheila don't play nice; surface the Yang value so it can be
+  marked as obtained without clearing the location (and thus hiding the unchecked
+  trapped chests)?
+- Make Statuses more intuitive; Dismissed meaning On for shops and items is weird
 
 # TOMAYBEDOs
 - Pull some types out of Location.elm, it's getting overloaded. Though they're
