@@ -85,7 +85,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         flagString =
-            "Kmain/summon/moon Gwarp Nkey O1:char_kain/2:quest_antlionnest/random:3,char,boss/req:4"
+            "Kmain/summon/moon Sstandard Gwarp Nkey O1:char_kain/2:quest_antlionnest/random:3,char,boss/req:4"
 
         flags =
             Flags.parse flagString
@@ -313,6 +313,7 @@ innerUpdate msg model =
                 , randomObjectives = randomObjectives
                 , completedObjectives = completedObjectives
                 , filterOverrides = filterOverrides
+                , shopMenu = Nothing
             }
 
 
@@ -340,7 +341,7 @@ view model =
                     ]
                 , viewLocations model Location.Checks
                 ]
-            , displayIf (not model.flags.noShops || model.flags.passInShop) <|
+            , displayIf (not <| List.member model.flags.shopRandomization [ Flags.Cabins, Flags.Empty ] || model.flags.passInShop) <|
                 div [ id "shops" ]
                     [ h2 [] [ text "Shops" ]
                     , viewLocations model Location.Shops

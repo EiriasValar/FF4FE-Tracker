@@ -1,6 +1,7 @@
 module Flags exposing
     ( Flags
     , KeyItemClass(..)
+    , ShopRandomization(..)
     , parse
     , rewardToString
     )
@@ -26,7 +27,10 @@ type alias Flags =
     , passIsKeyItem : Bool
     , passInShop : Bool
     , noTreasures : Bool
-    , noShops : Bool
+    , shopRandomization : ShopRandomization
+    , noJItems : Bool
+    , noSirens : Bool
+    , noLifePots : Bool
     , noFreeChars : Bool
     , warpGlitch : Bool
     , keyExpBonus : Bool
@@ -48,6 +52,16 @@ type KeyItemClass
 type Reward
     = Crystal
     | Win
+
+
+type ShopRandomization
+    = None
+    | Shuffle
+    | Standard
+    | Pro
+    | Wild
+    | Cabins
+    | Empty
 
 
 rewardToString : Reward -> String
@@ -78,7 +92,10 @@ parse flagString =
             , passIsKeyItem = False
             , passInShop = False
             , noTreasures = False
-            , noShops = False
+            , shopRandomization = None
+            , noJItems = False
+            , noSirens = False
+            , noLifePots = False
             , noFreeChars = False
             , warpGlitch = False
             , keyExpBonus = True
@@ -326,13 +343,48 @@ parseT switch flags =
 
 
 parseS : String -> Flags -> Flags
-parseS switch flags =
-    case switch of
-        "cabins" ->
-            { flags | noShops = True }
+parseS opts flags =
+    let
+        parseNo no newFlags =
+            case no of
+                "j" ->
+                    { newFlags | noJItems = True }
 
-        "empty" ->
-            { flags | noShops = True }
+                "sirens" ->
+                    { newFlags | noSirens = True }
+
+                "life" ->
+                    { newFlags | noLifePots = True }
+
+                _ ->
+                    newFlags
+    in
+    case String.split ":" opts of
+        [ "vanilla" ] ->
+            { flags | shopRandomization = None }
+
+        [ "shuffle" ] ->
+            { flags | shopRandomization = Shuffle }
+
+        [ "standard" ] ->
+            { flags | shopRandomization = Standard }
+
+        [ "pro" ] ->
+            { flags | shopRandomization = Pro }
+
+        [ "wild" ] ->
+            { flags | shopRandomization = Wild }
+
+        [ "cabins" ] ->
+            { flags | shopRandomization = Cabins }
+
+        [ "empty" ] ->
+            { flags | shopRandomization = Empty }
+
+        [ "no", subopts ] ->
+            subopts
+                |> String.split ","
+                |> List.foldl parseNo flags
 
         _ ->
             flags

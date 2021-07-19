@@ -39,9 +39,9 @@ no navigation infrastructure is implemented (anymore).
 - Type-to-filter random objective selection
 - Shops:
     - Text entry and display for Other
-    - More shop granularity with minimal UI, somehow
-    - If shop granularity includes specific items, respect relevant S flags
-    - Suppress J-Item shop values when Sno:j is on
+    - Shop menu styling
+    - Proper shop item lists for Svanilla and Sshuffle
+    - Hide Healing/JItem icons when their lists are empty
     - Dismiss menu on click outside it
 - Wacky flags!
     - Afflicted - no heal potions in shops (not currently relevant)

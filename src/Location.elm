@@ -288,11 +288,23 @@ getProperties { flags, warpGlitchUsed, filterOverrides } (Location location) =
                         && Set.member itemClass flags.keyItems
 
                 Shop shopValue ->
-                    not flags.nightMode
-                        || (location.area /= Surface)
-                        || (location.key == BaronWeaponShop)
-                        || (location.key == CaveEblanShops)
-                        || (location.key == ToroiaShops && (not <| List.member shopValue [ Weapon, Armour ]))
+                    let
+                        passesNightMode =
+                            not flags.nightMode
+                                || (location.area /= Surface)
+                                || (location.key == BaronWeaponShop)
+                                || (location.key == CaveEblanShops)
+                                || (location.key == ToroiaShops && (not <| List.member shopValue [ Weapon, Armour ]))
+
+                        passesJItems =
+                            case shopValue of
+                                JItem _ ->
+                                    not flags.noJItems
+
+                                _ ->
+                                    True
+                    in
+                    passesNightMode && passesJItems
 
                 _ ->
                     True
@@ -314,6 +326,12 @@ getProperties { flags, warpGlitchUsed, filterOverrides } (Location location) =
         |> List.map toTuple
 
 
+type ShopType
+    = UngatedShop
+    | GatedShop
+    | SmithyShop
+
+
 {-| For the given property index, returns a list – filtered by the given Context
 – of all the ConsumableItems in that property's value, if any. The returned Ints
 are the indices of the items within the property, for use with toggleItem.
@@ -323,9 +341,45 @@ getItems { flags } valueIndex (Location location) =
     let
         filterItems (ConsumableItems items) =
             let
+                shopType =
+                    if location.key == KokkolShop then
+                        SmithyShop
+
+                    else if Set.isEmpty location.requirements && location.area == Surface then
+                        UngatedShop
+
+                    else
+                        GatedShop
+
                 exists item =
-                    -- TODO filter items by location, flags, item tier
-                    True
+                    if item.name == "Life" && flags.noLifePots then
+                        False
+
+                    else if item.name == "Siren" && flags.noSirens then
+                        False
+
+                    else
+                        case ( flags.shopRandomization, shopType ) of
+                            ( Flags.Standard, UngatedShop ) ->
+                                item.tier <= 4
+
+                            ( Flags.Standard, GatedShop ) ->
+                                item.tier <= 5
+
+                            ( Flags.Standard, SmithyShop ) ->
+                                item.tier == 6
+
+                            ( Flags.Pro, UngatedShop ) ->
+                                item.tier <= 3
+
+                            ( Flags.Pro, GatedShop ) ->
+                                item.tier <= 4
+
+                            ( Flags.Pro, SmithyShop ) ->
+                                List.member item.tier [ 5, 6 ]
+
+                            _ ->
+                                True
             in
             items
                 |> Array.toIndexedList
