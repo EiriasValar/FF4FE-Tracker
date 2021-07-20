@@ -1,6 +1,7 @@
 module Location exposing
     ( Area
     , Class(..)
+    , ConsumableItem
     , Context
     , Filter(..)
     , FilterType(..)
@@ -16,7 +17,10 @@ module Location exposing
     , areaToString
     , countable
     , filterByContext
+    , filterItems
+    , get
     , getArea
+    , getItems
     , getKey
     , getName
     , getProperties
@@ -25,6 +29,7 @@ module Location exposing
     , insert
     , isPseudo
     , statusToString
+    , toggleItem
     , toggleProperty
     , toggleStatus
     , update
@@ -33,6 +38,7 @@ module Location exposing
     )
 
 import Array exposing (Array)
+import Array.Extra
 import AssocList as Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
@@ -88,16 +94,22 @@ type CharacterType
 type ShopValue
     = Weapon
     | Armour
-    | LowHPZ
     | Item -- pseudo-value for Location definition; gets expanded into Healing/JItem
-    | Healing (Array ConsumableItem)
-    | JItem (Array ConsumableItem)
+    | Healing ConsumableItems
+    | JItem ConsumableItems
     | Other String
+
+
+{-| Opaque so we can enforce filtering
+-}
+type ConsumableItems
+    = ConsumableItems (Array ConsumableItem)
 
 
 type alias ConsumableItem =
     { name : String
     , tier : Int
+    , isJItem : Bool
     , status : Status
     }
 
@@ -258,7 +270,7 @@ regardless of their Status, minus any that have been filtered out. The Int
 is the index of the property within the location, for use with toggleProperty.
 -}
 getProperties : Context -> Location -> List ( Int, Status, Value )
-getProperties { flags, warpGlitchUsed, filterOverrides } (Location location) =
+getProperties ({ flags, warpGlitchUsed, filterOverrides } as context) (Location location) =
     let
         -- certain values don't exist under certain flags
         -- note the free key item from Edward has its own key item class rather than
@@ -276,6 +288,28 @@ getProperties { flags, warpGlitchUsed, filterOverrides } (Location location) =
                         -- under Kvanilla, Baron Castle only has a key item if it's the Pass
                         && not (location.key == BaronCastle && itemClass == Vanilla && not flags.passIsKeyItem)
                         && Set.member itemClass flags.keyItems
+
+                Shop shopValue ->
+                    let
+                        passesNightMode =
+                            not flags.nightMode
+                                || (location.area /= Surface)
+                                || (location.key == BaronWeaponShop)
+                                || (location.key == CaveEblanShops)
+                                || (location.key == ToroiaShops && (not <| List.member shopValue [ Weapon, Armour ]))
+
+                        hasValue =
+                            case shopValue of
+                                Healing items ->
+                                    not <| List.isEmpty <| filterItems context (Location location) items
+
+                                JItem items ->
+                                    not <| List.isEmpty <| filterItems context (Location location) items
+
+                                _ ->
+                                    True
+                    in
+                    passesNightMode && hasValue
 
                 _ ->
                     True
@@ -297,6 +331,83 @@ getProperties { flags, warpGlitchUsed, filterOverrides } (Location location) =
         |> List.map toTuple
 
 
+{-| For the given property index, returns a list – filtered by the given Context
+– of all the ConsumableItems in that property's value, if any. The returned Ints
+are the indices of the items within the property, for use with toggleItem.
+-}
+getItems : Context -> Int -> Location -> List ( Int, ConsumableItem )
+getItems context valueIndex (Location location) =
+    case Array.get valueIndex location.properties of
+        Just (Property _ (Shop (Healing items))) ->
+            filterItems context (Location location) items
+
+        Just (Property _ (Shop (JItem items))) ->
+            filterItems context (Location location) items
+
+        _ ->
+            []
+
+
+type ShopType
+    = UngatedShop
+    | GatedShop
+    | SmithyShop
+
+
+{-| Filters the ConsumableItems to just those that exist, given the Context and
+Location.
+-}
+filterItems : Context -> Location -> ConsumableItems -> List ( Int, ConsumableItem )
+filterItems { flags } (Location location) (ConsumableItems items) =
+    let
+        shopType =
+            if location.key == KokkolShop then
+                SmithyShop
+
+            else if Set.isEmpty location.requirements && location.area == Surface then
+                UngatedShop
+
+            else
+                GatedShop
+
+        exists item =
+            if item.name == "Life" && flags.noLifePots then
+                False
+
+            else if item.name == "Siren" && flags.noSirens then
+                False
+
+            else if item.isJItem && flags.noJItems then
+                False
+
+            else
+                case ( flags.shopRandomization, shopType ) of
+                    ( Flags.Standard, UngatedShop ) ->
+                        item.tier <= 4
+
+                    ( Flags.Standard, GatedShop ) ->
+                        item.tier <= 5
+
+                    ( Flags.Standard, SmithyShop ) ->
+                        item.tier == 6
+
+                    ( Flags.Pro, UngatedShop ) ->
+                        item.tier <= 3
+
+                    ( Flags.Pro, GatedShop ) ->
+                        item.tier <= 4
+
+                    ( Flags.Pro, SmithyShop ) ->
+                        List.member item.tier [ 5, 6 ]
+
+                    _ ->
+                        True
+    in
+    items
+        |> Array.toIndexedList
+        |> List.filter (Tuple.second >> exists)
+
+
 getStatus : Location -> Status
 getStatus (Location location) =
     location.status
@@ -304,15 +415,7 @@ getStatus (Location location) =
 
 toggleStatus : Status -> Location -> Location
 toggleStatus status (Location location) =
-    let
-        newStatus =
-            if location.status == status then
-                Unseen
-
-            else
-                status
-    in
-    Location { location | status = newStatus }
+    Location { location | status = toggleStatus_ status location.status }
 
 
 {-| Advance the given property of the given location to its next logical
@@ -360,6 +463,52 @@ toggleProperty index hard (Location location) =
             Location location
 
 
+{-| Toggle the status of the given shop value's given item; also update the
+status of the shop value itself, to Dismissed if any of its items are, or Unseen
+if none of them are.
+-}
+toggleItem : Int -> Int -> Location -> Location
+toggleItem valueIndex itemIndex (Location location) =
+    let
+        toggle : Property -> Property
+        toggle (Property status value) =
+            let
+                ( newStatus, newValue ) =
+                    case value of
+                        Shop (Healing items) ->
+                            fromItems items
+                                |> Tuple.mapSecond (Shop << Healing)
+
+                        Shop (JItem items) ->
+                            fromItems items
+                                |> Tuple.mapSecond (Shop << JItem)
+
+                        _ ->
+                            ( status, value )
+
+                fromItems : ConsumableItems -> ( Status, ConsumableItems )
+                fromItems (ConsumableItems items) =
+                    let
+                        newItems =
+                            Array.Extra.update
+                                itemIndex
+                                (\item -> { item | status = toggleStatus_ Dismissed item.status })
+                                items
+
+                        newStatus_ =
+                            if newItems |> Array.toList |> List.any (.status >> (==) Dismissed) then
+                                Dismissed
+
+                            else
+                                Unseen
+                    in
+                    ( newStatus_, ConsumableItems newItems )
+            in
+            Property newStatus newValue
+    in
+    Location { location | properties = Array.Extra.update valueIndex toggle location.properties }
+
+
 statusToString : Status -> String
 statusToString status =
     case status of
@@ -374,6 +523,29 @@ statusToString status =
 
         Dismissed ->
             "dismissed"
+
+
+{-| "Toggle" the existing status with respect to the given "on" state: if they're the
+same, toggle "off" (to Unseen); otherwise, set to "on".
+
+This is to accommodate treating either Seen or Dismissed as the "on" state,
+while also being able to switch directly from one to the other.
+
+    Unseen |> statusToggle Dismissed
+    --> Dismissed
+    Dismissed |> statusToggle Dismissed
+    --> Unseen
+    Dismissed |> statusToggle Seen
+    --> Seen
+
+-}
+toggleStatus_ : Status -> Status -> Status
+toggleStatus_ on existing =
+    if on == existing then
+        Unseen
+
+    else
+        on
 
 
 areaToString : Area -> String
@@ -396,6 +568,11 @@ isClass class (Location location) =
 
 type Locations
     = Locations (Dict Key Location)
+
+
+get : Key -> Locations -> Maybe Location
+get key (Locations locations) =
+    Dict.get key locations
 
 
 values : Locations -> List Location
@@ -480,16 +657,15 @@ filterByContext class c (Locations locations) =
                             ( Requirement _, _ ) ->
                                 True
 
+                            ( Shop _, _ ) ->
+                                True
+
                             ( _, Just filter ) ->
                                 Set.member filter filters
 
                             _ ->
                                 False
                     )
-
-        hasValue location =
-            isClass Shops location
-                || propertiesHaveValue location
 
         hasNoValue (Location l) =
             -- hide the chests-only pseudo-location once its
@@ -512,7 +688,7 @@ filterByContext class c (Locations locations) =
                     |> (==) Show
 
             else
-                hasValue location
+                propertiesHaveValue location
                     && (not <| hasNoValue location)
                     && areaAccessible attainedRequirements location
                     && (context.flags.pushBToJump && Set.member l.key jumpable || requirementsMet attainedRequirements location)
@@ -1340,7 +1516,7 @@ moon =
     ]
 
 
-healingItems : Array ConsumableItem
+healingItems : ConsumableItems
 healingItems =
     [ { name = "Cure2"
       , tier = 3
@@ -1354,43 +1530,53 @@ healingItems =
     , { name = "Ether1/2"
       , tier = 3
       }
+    , { name = "Status-healing"
+      , tier = 1
+      }
     ]
         |> List.map
             (\{ name, tier } ->
                 { name = name
                 , tier = tier
+                , isJItem = False
                 , status = Unseen
                 }
             )
         |> Array.fromList
+        |> ConsumableItems
 
 
-jItems : Array ConsumableItem
+jItems : ConsumableItems
 jItems =
-    [ { name = "Siren"
-      , tier = 5
-      }
-    , { name = "Hourglass"
-      , tier = 5
-      }
-    , { name = "Starveil"
-      , tier = 2
-      }
-    , { name = "Moonveil"
-      , tier = 6
-      }
-    , { name = "Bacchus"
+    [ { name = "Bacchus"
       , tier = 5
       }
     , { name = "Coffin"
       , tier = 5
       }
+    , { name = "Hourglass"
+      , tier = 5
+      }
+    , { name = "Moonveil"
+      , tier = 6
+      }
+    , { name = "Siren"
+      , tier = 5
+      }
+    , { name = "Starveil"
+      , tier = 2
+      }
+    , { name = "Vampire"
+      , tier = 4
+      }
     ]
         |> List.map
             (\{ name, tier } ->
                 { name = name
                 , tier = tier
+                , isJItem = True
                 , status = Unseen
                 }
             )
         |> Array.fromList
+        |> ConsumableItems
