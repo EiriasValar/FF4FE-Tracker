@@ -632,22 +632,16 @@ viewProperty context location ( index, status, value ) =
                 _ ->
                     ""
 
-        -- we're awkwardly forced to get the items from the Location, rather
-        -- than from the value we already have, so that filtering can be
-        -- enforced
-        shopItems () =
-            Location.getItems context index location
-
         msg =
             case value of
                 KeyItem Warp ->
                     ToggleWarpGlitchUsed
 
-                Shop (Healing _) ->
-                    ToggleShopMenu <| shopItems ()
+                Shop (Healing items) ->
+                    ToggleShopMenu <| Location.filterItems context location items
 
-                Shop (JItem _) ->
-                    ToggleShopMenu <| shopItems ()
+                Shop (JItem items) ->
+                    ToggleShopMenu <| Location.filterItems context location items
 
                 _ ->
                     ToggleProperty

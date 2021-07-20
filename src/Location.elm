@@ -17,6 +17,7 @@ module Location exposing
     , areaToString
     , countable
     , filterByContext
+    , filterItems
     , get
     , getArea
     , getItems
@@ -108,6 +109,7 @@ type ConsumableItems
 type alias ConsumableItem =
     { name : String
     , tier : Int
+    , isJItem : Bool
     , status : Status
     }
 
@@ -268,7 +270,7 @@ regardless of their Status, minus any that have been filtered out. The Int
 is the index of the property within the location, for use with toggleProperty.
 -}
 getProperties : Context -> Location -> List ( Int, Status, Value )
-getProperties { flags, warpGlitchUsed, filterOverrides } (Location location) =
+getProperties ({ flags, warpGlitchUsed, filterOverrides } as context) (Location location) =
     let
         -- certain values don't exist under certain flags
         -- note the free key item from Edward has its own key item class rather than
@@ -296,15 +298,18 @@ getProperties { flags, warpGlitchUsed, filterOverrides } (Location location) =
                                 || (location.key == CaveEblanShops)
                                 || (location.key == ToroiaShops && (not <| List.member shopValue [ Weapon, Armour ]))
 
-                        passesJItems =
+                        hasValue =
                             case shopValue of
-                                JItem _ ->
-                                    not flags.noJItems
+                                Healing items ->
+                                    not <| List.isEmpty <| filterItems context (Location location) items
+
+                                JItem items ->
+                                    not <| List.isEmpty <| filterItems context (Location location) items
 
                                 _ ->
                                     True
                     in
-                    passesNightMode && passesJItems
+                    passesNightMode && hasValue
 
                 _ ->
                     True
@@ -326,74 +331,81 @@ getProperties { flags, warpGlitchUsed, filterOverrides } (Location location) =
         |> List.map toTuple
 
 
+{-| For the given property index, returns a list – filtered by the given Context
+– of all the ConsumableItems in that property's value, if any. The returned Ints
+are the indices of the items within the property, for use with toggleItem.
+-}
+getItems : Context -> Int -> Location -> List ( Int, ConsumableItem )
+getItems context valueIndex (Location location) =
+    case Array.get valueIndex location.properties of
+        Just (Property _ (Shop (Healing items))) ->
+            filterItems context (Location location) items
+
+        Just (Property _ (Shop (JItem items))) ->
+            filterItems context (Location location) items
+
+        _ ->
+            []
+
+
 type ShopType
     = UngatedShop
     | GatedShop
     | SmithyShop
 
 
-{-| For the given property index, returns a list – filtered by the given Context
-– of all the ConsumableItems in that property's value, if any. The returned Ints
-are the indices of the items within the property, for use with toggleItem.
+{-| Filters the ConsumableItems to just those that exist, given the Context and
+Location.
 -}
-getItems : Context -> Int -> Location -> List ( Int, ConsumableItem )
-getItems { flags } valueIndex (Location location) =
+filterItems : Context -> Location -> ConsumableItems -> List ( Int, ConsumableItem )
+filterItems { flags } (Location location) (ConsumableItems items) =
     let
-        filterItems (ConsumableItems items) =
-            let
-                shopType =
-                    if location.key == KokkolShop then
-                        SmithyShop
+        shopType =
+            if location.key == KokkolShop then
+                SmithyShop
 
-                    else if Set.isEmpty location.requirements && location.area == Surface then
-                        UngatedShop
+            else if Set.isEmpty location.requirements && location.area == Surface then
+                UngatedShop
 
-                    else
-                        GatedShop
+            else
+                GatedShop
 
-                exists item =
-                    if item.name == "Life" && flags.noLifePots then
-                        False
+        exists item =
+            if item.name == "Life" && flags.noLifePots then
+                False
 
-                    else if item.name == "Siren" && flags.noSirens then
-                        False
+            else if item.name == "Siren" && flags.noSirens then
+                False
 
-                    else
-                        case ( flags.shopRandomization, shopType ) of
-                            ( Flags.Standard, UngatedShop ) ->
-                                item.tier <= 4
+            else if item.isJItem && flags.noJItems then
+                False
 
-                            ( Flags.Standard, GatedShop ) ->
-                                item.tier <= 5
+            else
+                case ( flags.shopRandomization, shopType ) of
+                    ( Flags.Standard, UngatedShop ) ->
+                        item.tier <= 4
 
-                            ( Flags.Standard, SmithyShop ) ->
-                                item.tier == 6
+                    ( Flags.Standard, GatedShop ) ->
+                        item.tier <= 5
 
-                            ( Flags.Pro, UngatedShop ) ->
-                                item.tier <= 3
+                    ( Flags.Standard, SmithyShop ) ->
+                        item.tier == 6
 
-                            ( Flags.Pro, GatedShop ) ->
-                                item.tier <= 4
+                    ( Flags.Pro, UngatedShop ) ->
+                        item.tier <= 3
 
-                            ( Flags.Pro, SmithyShop ) ->
-                                List.member item.tier [ 5, 6 ]
+                    ( Flags.Pro, GatedShop ) ->
+                        item.tier <= 4
 
-                            _ ->
-                                True
-            in
-            items
-                |> Array.toIndexedList
-                |> List.filter (Tuple.second >> exists)
+                    ( Flags.Pro, SmithyShop ) ->
+                        List.member item.tier [ 5, 6 ]
+
+                    _ ->
+                        True
     in
-    case Array.get valueIndex location.properties of
-        Just (Property _ (Shop (Healing items))) ->
-            filterItems items
-
-        Just (Property _ (Shop (JItem items))) ->
-            filterItems items
-
-        _ ->
-            []
+    items
+        |> Array.toIndexedList
+        |> List.filter (Tuple.second >> exists)
 
 
 getStatus : Location -> Status
@@ -1526,6 +1538,7 @@ healingItems =
             (\{ name, tier } ->
                 { name = name
                 , tier = tier
+                , isJItem = False
                 , status = Unseen
                 }
             )
@@ -1561,6 +1574,7 @@ jItems =
             (\{ name, tier } ->
                 { name = name
                 , tier = tier
+                , isJItem = True
                 , status = Unseen
                 }
             )
