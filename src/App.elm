@@ -13,8 +13,8 @@ import Bootstrap.Dropdown as Dropdown exposing (DropdownItem)
 import Browser
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
-import Html exposing (Html, div, h2, h4, input, li, span, table, td, text, textarea, tr, ul)
-import Html.Attributes exposing (checked, class, classList, id, type_)
+import Html exposing (Html, div, h2, h4, li, span, table, td, text, textarea, tr, ul)
+import Html.Attributes exposing (class, classList, id)
 import Html.Events exposing (onClick, onInput)
 import Icon
 import Json.Decode
@@ -606,15 +606,10 @@ viewMenu menu =
         viewItem ( itemIndex, item ) =
             div
                 [ class "shop-item"
+                , class <| Location.statusToString item.status
                 , onClick <| ToggleShopItem menu itemIndex
                 ]
-                [ input
-                    [ type_ "checkbox"
-                    , checked <| item.status == Dismissed
-                    ]
-                    []
-                , span [] [ text item.name ]
-                ]
+                [ text item.name ]
     in
     div [ class "shop-menu" ] <|
         List.map viewItem menu.items

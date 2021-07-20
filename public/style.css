@@ -246,6 +246,7 @@ h4 {
 
 .locations .icons-container {
     grid-column: 2 / 3;
+    position: relative;
 }
 
 .filters {
@@ -337,4 +338,31 @@ h4 {
 
 #shops .locations .icon.unseen img {
     filter: opacity(50%);
+}
+
+.shop-menu {
+    position: absolute;
+    left: 1em;
+    z-index: 1;
+    background-color: white;
+    border: black solid 1px;
+    box-shadow: 3px 3px 3px black;
+}
+
+.shop-item {
+    padding: 2px 5px;
+    font-size: smaller;
+    cursor: pointer;
+}
+
+.shop-item:hover {
+    background-color: #e2e3e4;
+}
+
+.shop-item.unseen {
+    filter: opacity(40%);
+}
+
+.shop-item.dismissed {
+    text-decoration: none;
 }

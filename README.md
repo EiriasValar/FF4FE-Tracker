@@ -39,7 +39,6 @@ no navigation infrastructure is implemented (anymore).
 - Type-to-filter random objective selection
 - Shops:
     - Text entry and display for Other
-    - Shop menu styling
     - Proper shop item lists for Svanilla and Sshuffle
     - Hide Healing/JItem icons when their lists are empty
     - Dismiss menu on click outside it
