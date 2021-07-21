@@ -40,7 +40,6 @@ no navigation infrastructure is implemented (anymore).
 - Shops:
     - Text entry and display for Other
     - Proper shop item lists for Svanilla and Sshuffle
-    - Dismiss menu on click outside it
 - Wacky flags!
     - Afflicted - no heal potions in shops (not currently relevant)
     - Kleptomania - nothing of value in weapon and armour shops (but maybe accessories?)

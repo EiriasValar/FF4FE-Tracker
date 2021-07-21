@@ -11,6 +11,7 @@ import Array exposing (Array)
 import AssocList as Dict exposing (Dict)
 import Bootstrap.Dropdown as Dropdown exposing (DropdownItem)
 import Browser
+import Browser.Events
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
 import Html exposing (Html, div, h2, h4, li, span, table, td, text, textarea, tr, ul)
@@ -77,6 +78,7 @@ type Msg
     | HardToggleProperty Location.Key Int
     | ToggleWarpGlitchUsed Location.Key Int
     | ToggleShopMenu (List ( Int, ConsumableItem )) Location.Key Int
+    | CloseShopMenu
     | ToggleShopItem ShopMenu Int
     | UpdateFlags String
 
@@ -113,18 +115,59 @@ init _ =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    model.randomObjectives
-        |> Array.indexedMap
-            (\index randomObjective ->
-                case randomObjective of
-                    Unset dropdown ->
-                        Dropdown.subscriptions dropdown (DropdownMsg index)
+    let
+        dropdowns =
+            model.randomObjectives
+                |> Array.indexedMap
+                    (\index randomObjective ->
+                        case randomObjective of
+                            Unset dropdown ->
+                                Dropdown.subscriptions dropdown (DropdownMsg index)
 
-                    Set _ ->
-                        Sub.none
-            )
-        |> Array.toList
-        |> Sub.batch
+                            Set _ ->
+                                Sub.none
+                    )
+                |> Array.toList
+                |> Sub.batch
+
+        -- close the shop menu on any click outside it
+        shopMenuClick =
+            -- for simplicity, rather than figuring out whether a click
+            -- was in or out of the shop menu, we listen for clicks
+            -- anywhere, and rely on a) the shop menu being entirely
+            -- comprised of elements with their own onClick handlers,
+            -- and b) those elements using onClickNoBubble: as a result,
+            -- any clicks inside the menu won't reach this handler, and
+            -- so won't cause the menu to close
+            Browser.Events.onClick <| Json.Decode.succeed CloseShopMenu
+
+        -- close the shop menu on pressing the Escape key
+        shopMenuEscape =
+            Json.Decode.field "key" Json.Decode.string
+                |> Json.Decode.andThen
+                    (\key ->
+                        case key of
+                            "Escape" ->
+                                Json.Decode.succeed CloseShopMenu
+
+                            _ ->
+                                Json.Decode.fail ""
+                    )
+                -- onKeyPress doesn't work with the macbook touchbar
+                |> Browser.Events.onKeyUp
+
+        shopMenu =
+            case model.shopMenu of
+                Just _ ->
+                    Sub.batch [ shopMenuClick, shopMenuEscape ]
+
+                Nothing ->
+                    Sub.none
+    in
+    Sub.batch
+        [ dropdowns
+        , shopMenu
+        ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -259,6 +302,9 @@ innerUpdate msg model =
                             Just newShop
             in
             { model | shopMenu = shopMenu }
+
+        CloseShopMenu ->
+            { model | shopMenu = Nothing }
 
         ToggleShopItem menu itemIndex ->
             let
@@ -607,7 +653,10 @@ viewMenu menu =
             div
                 [ class "shop-item"
                 , class <| Location.statusToString item.status
-                , onClick <| ToggleShopItem menu itemIndex
+
+                -- prevent propagation so toggling an item doesn't
+                -- also trigger closing the menu
+                , onClickNoBubble <| ToggleShopItem menu itemIndex
                 ]
                 [ text item.name ]
     in
@@ -618,6 +667,9 @@ viewMenu menu =
 viewProperty : Location.Context -> Location -> ( Int, Status, Value ) -> Html Msg
 viewProperty context location ( index, status, value ) =
     let
+        key =
+            Location.getKey location
+
         extraClass =
             case value of
                 KeyItem Warp ->
@@ -632,19 +684,31 @@ viewProperty context location ( index, status, value ) =
                 _ ->
                     ""
 
-        msg =
+        clickHandler =
+            let
+                toggleShopMenu items =
+                    ToggleShopMenu
+                        (Location.filterItems context location items)
+                        key
+                        index
+            in
             case value of
                 KeyItem Warp ->
-                    ToggleWarpGlitchUsed
+                    onClick <| ToggleWarpGlitchUsed key index
 
+                -- prevent propagation of clicks on shop menu roots: clicking
+                -- the root of an already-open menu already closes itself, and
+                -- if we let the click propagate, the top-level onClick handler
+                -- in subscriptions will catch it and immediately re-close the
+                -- menu after we open it
                 Shop (Healing items) ->
-                    ToggleShopMenu <| Location.filterItems context location items
+                    onClickNoBubble <| toggleShopMenu items
 
                 Shop (JItem items) ->
-                    ToggleShopMenu <| Location.filterItems context location items
+                    onClickNoBubble <| toggleShopMenu items
 
                 _ ->
-                    ToggleProperty
+                    onClick <| ToggleProperty key index
 
         count =
             case ( Location.countable value, status ) of
@@ -664,8 +728,8 @@ viewProperty context location ( index, status, value ) =
                 , class icon.class
                 , class extraClass
                 , class <| Location.statusToString status
-                , onClick <| msg (Location.getKey location) index
-                , onRightClick <| HardToggleProperty (Location.getKey location) index
+                , clickHandler
+                , onRightClick <| HardToggleProperty key index
                 ]
                 [ icon.img |> Html.map never
                 , displayIf (count > 0) <|
@@ -761,3 +825,15 @@ with b a =
 onRightClick : msg -> Html.Attribute msg
 onRightClick msg =
     Html.Events.preventDefaultOn "contextmenu" <| Json.Decode.succeed ( msg, True )
+
+
+{-| A click event that doesn't propagate
+-}
+onClickNoBubble : msg -> Html.Attribute msg
+onClickNoBubble msg =
+    Html.Events.custom "click" <|
+        Json.Decode.succeed
+            { message = msg
+            , stopPropagation = True
+            , preventDefault = True
+            }
