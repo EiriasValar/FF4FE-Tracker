@@ -41,7 +41,7 @@ no navigation infrastructure is implemented (anymore).
     - Text entry and display for Other
     - Proper shop item lists for Svanilla and Sshuffle
 - Wacky flags!
-    - Afflicted - no heal potions in shops (not currently relevant)
+    - Afflicted - no heal potions in shops
     - Kleptomania - nothing of value in weapon and armour shops (but maybe accessories?)
     - Mystery Juice - consumable item tracking?
 - Preserve chest counts between CaveMagnes and SylphCave variants

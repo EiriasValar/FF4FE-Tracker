@@ -771,18 +771,8 @@ randomObjectiveToMaybe o =
 
 getContext : Model -> Location.Context
 getContext model =
-    let
-        toMaybe : RandomObjective -> Maybe Objective
-        toMaybe randomObjective =
-            case randomObjective of
-                Set objective ->
-                    Just objective
-
-                Unset _ ->
-                    Nothing
-    in
     { flags = model.flags
-    , randomObjectives = model.randomObjectives |> Array.toList |> List.filterMap toMaybe |> Set.fromList
+    , randomObjectives = model.randomObjectives |> Array.toList |> List.filterMap randomObjectiveToMaybe |> Set.fromList
     , completedObjectives = model.completedObjectives
     , attainedRequirements = model.attainedRequirements
     , warpGlitchUsed = model.warpGlitchUsed
