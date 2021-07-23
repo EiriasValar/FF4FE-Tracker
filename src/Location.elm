@@ -941,7 +941,7 @@ surface =
             ]
       }
     , { key = MistVillageMom
-      , name = "Mist Village - Mom"
+      , name = "Mist - Mom"
       , requirements = [ Pseudo MistDragon ]
       , value =
             [ KeyItem Main
@@ -1474,7 +1474,7 @@ moon =
             ]
       }
     , { key = MurasameAltar
-      , name = "Murasame Altar"
+      , name = "Altar 1 (Murasame)"
       , requirements = []
       , value =
             [ Boss
@@ -1482,7 +1482,7 @@ moon =
             ]
       }
     , { key = WyvernAltar
-      , name = "Wyvern Altar"
+      , name = "Altar 2 (Crystal Sword)"
       , requirements = []
       , value =
             [ Boss
@@ -1490,7 +1490,7 @@ moon =
             ]
       }
     , { key = WhiteSpearAltar
-      , name = "White Spear Altar"
+      , name = "Altar 3 (White Spear)"
       , requirements = []
       , value =
             [ Boss
@@ -1498,7 +1498,7 @@ moon =
             ]
       }
     , { key = RibbonRoom
-      , name = "Ribbon Room"
+      , name = "Altar 4 (Ribbons)"
       , requirements = []
       , value =
             [ Boss
@@ -1506,7 +1506,7 @@ moon =
             ]
       }
     , { key = MasamuneAltar
-      , name = "Masamune Altar"
+      , name = "Altar 5 (Masamune)"
       , requirements = []
       , value =
             [ Boss

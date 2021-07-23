@@ -381,7 +381,7 @@ view model =
                 , viewKeyItems model.flags model.attainedRequirements
                 ]
             , div [ id "checks" ]
-                [ h2 []
+                [ h2 [ class "locations-header" ]
                     [ text "Locations"
                     , viewFilters model
                     ]
@@ -520,7 +520,7 @@ viewKeyItems flags attained =
 
         numAttained =
             -- we care about this number for the 10 key items experience bonus, so
-            -- don't count the MistDragon or Pass, which aren't real key items
+            -- don't count the things that aren't real key items
             attained
                 |> Set.filter (not << Location.isPseudo)
                 |> Set.size
@@ -577,16 +577,16 @@ viewFilters model =
     let
         viewFilter filter =
             let
-                stateClass =
+                ( stateClass, hide ) =
                     case Dict.get filter model.filterOverrides of
                         Just Show ->
-                            "show"
+                            ( "show", False )
 
                         Just Hide ->
-                            "hide"
+                            ( "hide", True )
 
                         Nothing ->
-                            "unset"
+                            ( "unset", False )
 
                 icon =
                     Icon.fromFilter filter
@@ -597,7 +597,10 @@ viewFilters model =
                 , class icon.class
                 , onClick <| ToggleFilter filter
                 ]
-                [ icon.img |> Html.map never ]
+                [ icon.img |> Html.map never
+                , displayIf hide <|
+                    (Icon.no |> Html.map never)
+                ]
     in
     span [ class "filters" ] <|
         List.map viewFilter [ Characters, KeyItems, Bosses, Chests, TrappedChests, Checked ]

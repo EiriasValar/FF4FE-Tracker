@@ -1,4 +1,4 @@
-module Icon exposing (Icon, fromFilter, fromValue)
+module Icon exposing (Icon, fromFilter, fromValue, no)
 
 import Html exposing (Html)
 import Html.Attributes exposing (src)
@@ -110,6 +110,11 @@ visible =
     { class = "checked"
     , img = img "img/sprites/SecurityEye.gif"
     }
+
+
+no : Html Never
+no =
+    Html.img [ Html.Attributes.class "no", src "img/no.png" ] []
 
 
 weapon : Icon
