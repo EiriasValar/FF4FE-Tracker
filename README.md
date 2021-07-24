@@ -38,10 +38,10 @@ no navigation infrastructure is implemented (anymore).
 - Possibly de-value characters when the flags make them irrelevant (e.g. Cparty:1)
 - Type-to-filter random objective selection
 - Shops:
-    - Text entry and display for Other
     - Proper shop item lists for Svanilla and Sshuffle
+    - Close the Shop Other textarea onBlur (without breaking the toggle)
 - Wacky flags!
-    - Afflicted - no heal potions in shops (not currently relevant)
+    - Afflicted - no heal potions in shops
     - Kleptomania - nothing of value in weapon and armour shops (but maybe accessories?)
     - Mystery Juice - consumable item tracking?
 - Preserve chest counts between CaveMagnes and SylphCave variants
@@ -50,6 +50,7 @@ no navigation infrastructure is implemented (anymore).
   marked as obtained without clearing the location (and thus hiding the unchecked
   trapped chests)?
 - Make Statuses more intuitive; Dismissed meaning On for shops and items is weird
+- Add CSS linting
 
 # TOMAYBEDOs
 - Pull some types out of Location.elm, it's getting overloaded. Though they're
@@ -59,3 +60,7 @@ no navigation infrastructure is implemented (anymore).
   up doubling the surface area of Location.
 - Keyboard navigation?
 - Remove elm-bootstrap
+- Switch to compiled CSS
+- Resizing a shop's textarea input doesn't persist, neither between different
+  shops, nor when closing and reopening the same shop. Suppressing the ability
+  to resize feels unfriendly to the user, but is it useful without persistence?

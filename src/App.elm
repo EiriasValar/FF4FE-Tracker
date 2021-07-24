@@ -11,17 +11,19 @@ import Array exposing (Array)
 import AssocList as Dict exposing (Dict)
 import Bootstrap.Dropdown as Dropdown exposing (DropdownItem)
 import Browser
+import Browser.Dom
 import Browser.Events
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
 import Html exposing (Html, div, h2, h4, li, span, table, td, text, textarea, tr, ul)
-import Html.Attributes exposing (class, classList, id)
+import Html.Attributes exposing (autocomplete, class, classList, cols, id, rows, spellcheck, value)
 import Html.Events exposing (onClick, onInput)
 import Icon
 import Json.Decode
 import Location
     exposing
         ( ConsumableItem
+        , ConsumableItems
         , Filter(..)
         , FilterType(..)
         , Location
@@ -35,6 +37,7 @@ import Location
 import Maybe.Extra
 import Objective exposing (Objective)
 import String.Extra
+import Task
 
 
 type alias Set a =
@@ -62,8 +65,13 @@ type RandomObjective
 type alias ShopMenu =
     { key : Location.Key
     , index : Int
-    , items : List ( Int, ConsumableItem )
+    , content : ShopMenuContent
     }
+
+
+type ShopMenuContent
+    = Items (List ( Int, ConsumableItem ))
+    | Text String
 
 
 type Msg
@@ -77,10 +85,20 @@ type Msg
     | ToggleProperty Location.Key Int
     | HardToggleProperty Location.Key Int
     | ToggleWarpGlitchUsed Location.Key Int
-    | ToggleShopMenu (List ( Int, ConsumableItem )) Location.Key Int
+    | ToggleShopMenu ShopMenu
     | CloseShopMenu
     | ToggleShopItem ShopMenu Int
+    | UpdateShopText ShopMenu String
     | UpdateFlags String
+    | DoNothing
+
+
+{-| The ID of any shop menu text input, of which only one will ever
+exist at a time.
+-}
+shopMenuID : String
+shopMenuID =
+    "shop-menu-input"
 
 
 init : () -> ( Model, Cmd Msg )
@@ -172,10 +190,23 @@ subscriptions model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    -- we don't have any Cmds to send (we're just using Browser.document for
-    -- subscriptions)
+    let
+        -- doing this here rather than every other Msg branch having to
+        -- explicitly return its own Cmd.none
+        cmd =
+            case msg of
+                ToggleShopMenu _ ->
+                    -- a bit inelegant that we're unconditionally trying to
+                    -- focus an element that will only sometimes exist, but so
+                    -- convenient
+                    Browser.Dom.focus shopMenuID
+                        |> Task.attempt (always DoNothing)
+
+                _ ->
+                    Cmd.none
+    in
     innerUpdate msg model
-        |> with Cmd.none
+        |> with cmd
 
 
 innerUpdate : Msg -> Model -> Model
@@ -281,14 +312,8 @@ innerUpdate msg model =
             toggleProperty key index False <|
                 { model | warpGlitchUsed = not model.warpGlitchUsed }
 
-        ToggleShopMenu items key index ->
+        ToggleShopMenu newShop ->
             let
-                newShop =
-                    { key = key
-                    , index = index
-                    , items = items
-                    }
-
                 shopMenu =
                     case model.shopMenu of
                         Just existingShop ->
@@ -317,12 +342,22 @@ innerUpdate msg model =
                         |> Maybe.map (Location.getItems (getContext model) menu.index)
                         |> Maybe.map
                             (\items ->
-                                { menu | items = items }
+                                { menu | content = Items items }
                             )
             in
             { model
                 | locations = locations
                 , shopMenu = shopMenu
+            }
+
+        UpdateShopText menu newText ->
+            let
+                locations =
+                    Location.update menu.key (Maybe.map <| Location.setText menu.index newText) model.locations
+            in
+            { model
+                | locations = locations
+                , shopMenu = Just { menu | content = Text newText }
             }
 
         UpdateFlags flagString ->
@@ -362,6 +397,9 @@ innerUpdate msg model =
                 , shopMenu = Nothing
             }
 
+        DoNothing ->
+            model
+
 
 view : Model -> Browser.Document Msg
 view model =
@@ -381,7 +419,7 @@ view model =
                 , viewKeyItems model.flags model.attainedRequirements
                 ]
             , div [ id "checks" ]
-                [ h2 []
+                [ h2 [ class "locations-header" ]
                     [ text "Locations"
                     , viewFilters model
                     ]
@@ -520,7 +558,7 @@ viewKeyItems flags attained =
 
         numAttained =
             -- we care about this number for the 10 key items experience bonus, so
-            -- don't count the MistDragon or Pass, which aren't real key items
+            -- don't count the things that aren't real key items
             attained
                 |> Set.filter (not << Location.isPseudo)
                 |> Set.size
@@ -577,16 +615,16 @@ viewFilters model =
     let
         viewFilter filter =
             let
-                stateClass =
+                ( stateClass, hide ) =
                     case Dict.get filter model.filterOverrides of
                         Just Show ->
-                            "show"
+                            ( "show", False )
 
                         Just Hide ->
-                            "hide"
+                            ( "hide", True )
 
                         Nothing ->
-                            "unset"
+                            ( "unset", False )
 
                 icon =
                     Icon.fromFilter filter
@@ -597,7 +635,10 @@ viewFilters model =
                 , class icon.class
                 , onClick <| ToggleFilter filter
                 ]
-                [ icon.img |> Html.map never ]
+                [ icon.img |> Html.map never
+                , displayIf hide <|
+                    (Icon.no |> Html.map never)
+                ]
     in
     span [ class "filters" ] <|
         List.map viewFilter [ Characters, KeyItems, Bosses, Chests, TrappedChests, Checked ]
@@ -661,7 +702,23 @@ viewMenu menu =
                 [ text item.name ]
     in
     div [ class "shop-menu" ] <|
-        List.map viewItem menu.items
+        case menu.content of
+            Items items ->
+                List.map viewItem items
+
+            Text shopText ->
+                [ textarea
+                    [ id shopMenuID
+                    , rows 3
+                    , cols 10
+                    , autocomplete False
+                    , spellcheck False
+                    , value shopText
+                    , onInput (UpdateShopText menu)
+                    , onClickNoBubble DoNothing
+                    ]
+                    []
+                ]
 
 
 viewProperty : Location.Context -> Location -> ( Int, Status, Value ) -> Html Msg
@@ -686,11 +743,16 @@ viewProperty context location ( index, status, value ) =
 
         clickHandler =
             let
-                toggleShopMenu items =
+                shopItems : ConsumableItems -> ShopMenuContent
+                shopItems =
+                    Items << Location.filterItems context location
+
+                toggleShopMenu content =
                     ToggleShopMenu
-                        (Location.filterItems context location items)
-                        key
-                        index
+                        { key = key
+                        , index = index
+                        , content = content
+                        }
             in
             case value of
                 KeyItem Warp ->
@@ -702,10 +764,13 @@ viewProperty context location ( index, status, value ) =
                 -- in subscriptions will catch it and immediately re-close the
                 -- menu after we open it
                 Shop (Healing items) ->
-                    onClickNoBubble <| toggleShopMenu items
+                    onClickNoBubble <| toggleShopMenu <| shopItems items
 
                 Shop (JItem items) ->
-                    onClickNoBubble <| toggleShopMenu items
+                    onClickNoBubble <| toggleShopMenu <| shopItems items
+
+                Shop (Other shopText) ->
+                    onClickNoBubble <| toggleShopMenu <| Text shopText
 
                 _ ->
                     onClick <| ToggleProperty key index
@@ -771,18 +836,8 @@ randomObjectiveToMaybe o =
 
 getContext : Model -> Location.Context
 getContext model =
-    let
-        toMaybe : RandomObjective -> Maybe Objective
-        toMaybe randomObjective =
-            case randomObjective of
-                Set objective ->
-                    Just objective
-
-                Unset _ ->
-                    Nothing
-    in
     { flags = model.flags
-    , randomObjectives = model.randomObjectives |> Array.toList |> List.filterMap toMaybe |> Set.fromList
+    , randomObjectives = model.randomObjectives |> Array.toList |> List.filterMap randomObjectiveToMaybe |> Set.fromList
     , completedObjectives = model.completedObjectives
     , attainedRequirements = model.attainedRequirements
     , warpGlitchUsed = model.warpGlitchUsed
