@@ -51,7 +51,8 @@ h4 {
 }
 
 .flagstring {
-  width: 100%;
+  width: 95%;
+  display: block;
 }
 
 #objectives .progress {
@@ -344,6 +345,12 @@ h4 {
     background-color: white;
     border: black solid 1px;
     box-shadow: 3px 3px 3px black;
+}
+
+.shop-menu textarea {
+    outline: none;
+    border: 0;
+    display: block;
 }
 
 .shop-item {

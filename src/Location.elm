@@ -2,6 +2,7 @@ module Location exposing
     ( Area
     , Class(..)
     , ConsumableItem
+    , ConsumableItems
     , Context
     , Filter(..)
     , FilterType(..)
@@ -28,6 +29,7 @@ module Location exposing
     , groupByArea
     , insert
     , isPseudo
+    , setText
     , statusToString
     , toggleItem
     , toggleProperty
@@ -507,6 +509,34 @@ toggleItem valueIndex itemIndex (Location location) =
             Property newStatus newValue
     in
     Location { location | properties = Array.Extra.update valueIndex toggle location.properties }
+
+
+{-| Set the string in the Location's Shop Other property at the given index.
+-}
+setText : Int -> String -> Location -> Location
+setText valueIndex newText (Location location) =
+    let
+        set : Property -> Property
+        set (Property _ value) =
+            let
+                newStatus =
+                    if newText == "" then
+                        Unseen
+
+                    else
+                        Dismissed
+
+                newValue =
+                    case value of
+                        Shop (Other _) ->
+                            Shop <| Other newText
+
+                        _ ->
+                            value
+            in
+            Property newStatus newValue
+    in
+    Location { location | properties = Array.Extra.update valueIndex set location.properties }
 
 
 statusToString : Status -> String
