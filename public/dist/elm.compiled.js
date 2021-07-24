@@ -1857,7 +1857,7 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.dD,
+		impl.dC,
 		impl.d4,
 		impl.d0,
 		function() { return function() {} }
@@ -3928,7 +3928,7 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.dD,
+		impl.dC,
 		impl.d4,
 		impl.d0,
 		function(sendToApp, initialModel) {
@@ -3964,7 +3964,7 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.dD,
+		impl.dC,
 		impl.d4,
 		impl.d0,
 		function(sendToApp, initialModel) {
@@ -4069,9 +4069,9 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		dD: function(flags)
+		dC: function(flags)
 		{
-			return A3(impl.dD, flags, _Browser_getUrl(), key);
+			return A3(impl.dC, flags, _Browser_getUrl(), key);
 		},
 		d5: impl.d5,
 		d4: impl.d4,
@@ -4141,17 +4141,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { dA: 'hidden', dt: 'visibilitychange' }
+		? { dz: 'hidden', dt: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { dA: 'mozHidden', dt: 'mozvisibilitychange' }
+		? { dz: 'mozHidden', dt: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { dA: 'msHidden', dt: 'msvisibilitychange' }
+		? { dz: 'msHidden', dt: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { dA: 'webkitHidden', dt: 'webkitvisibilitychange' }
-		: { dA: 'hidden', dt: 'visibilitychange' };
+		? { dz: 'webkitHidden', dt: 'webkitvisibilitychange' }
+		: { dz: 'hidden', dt: 'visibilitychange' };
 }
 
 
@@ -4316,7 +4316,7 @@ function _Browser_getElement(id)
 				dm: _Browser_doc.documentElement.clientWidth,
 				cO: _Browser_doc.documentElement.clientHeight
 			},
-			dx: {
+			dw: {
 				dn: x + rect.left,
 				$7: y + rect.top,
 				dm: rect.width,
@@ -5495,7 +5495,7 @@ var $author$project$Location$WyvernAltar = 64;
 var $author$project$Location$moon = _List_fromArray(
 	[
 		{
-		N: 59,
+		G: 59,
 		dJ: 'Hummingway',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5504,7 +5504,7 @@ var $author$project$Location$moon = _List_fromArray(
 			])
 	},
 		{
-		N: 60,
+		G: 60,
 		dJ: 'Cave Bahamut',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5515,7 +5515,7 @@ var $author$project$Location$moon = _List_fromArray(
 			])
 	},
 		{
-		N: 61,
+		G: 61,
 		dJ: 'Lunar Path',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5525,7 +5525,7 @@ var $author$project$Location$moon = _List_fromArray(
 			])
 	},
 		{
-		N: 62,
+		G: 62,
 		dJ: 'Lunar Palace',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5536,8 +5536,8 @@ var $author$project$Location$moon = _List_fromArray(
 			])
 	},
 		{
-		N: 63,
-		dJ: 'Murasame Altar',
+		G: 63,
+		dJ: 'Altar 1 (Murasame)',
 		a: _List_Nil,
 		b: _List_fromArray(
 			[
@@ -5546,8 +5546,8 @@ var $author$project$Location$moon = _List_fromArray(
 			])
 	},
 		{
-		N: 64,
-		dJ: 'Wyvern Altar',
+		G: 64,
+		dJ: 'Altar 2 (Crystal Sword)',
 		a: _List_Nil,
 		b: _List_fromArray(
 			[
@@ -5556,8 +5556,8 @@ var $author$project$Location$moon = _List_fromArray(
 			])
 	},
 		{
-		N: 65,
-		dJ: 'White Spear Altar',
+		G: 65,
+		dJ: 'Altar 3 (White Spear)',
 		a: _List_Nil,
 		b: _List_fromArray(
 			[
@@ -5566,8 +5566,8 @@ var $author$project$Location$moon = _List_fromArray(
 			])
 	},
 		{
-		N: 66,
-		dJ: 'Ribbon Room',
+		G: 66,
+		dJ: 'Altar 4 (Ribbons)',
 		a: _List_Nil,
 		b: _List_fromArray(
 			[
@@ -5576,8 +5576,8 @@ var $author$project$Location$moon = _List_fromArray(
 			])
 	},
 		{
-		N: 67,
-		dJ: 'Masamune Altar',
+		G: 67,
+		dJ: 'Altar 5 (Masamune)',
 		a: _List_Nil,
 		b: _List_fromArray(
 			[
@@ -5657,7 +5657,7 @@ var $author$project$Location$Zot2 = 33;
 var $author$project$Location$surface = _List_fromArray(
 	[
 		{
-		N: 0,
+		G: 0,
 		dJ: 'Mist Cave',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5667,7 +5667,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 1,
+		G: 1,
 		dJ: 'Mist Village',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5676,7 +5676,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 2,
+		G: 2,
 		dJ: 'Mist Village',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5686,7 +5686,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 3,
+		G: 3,
 		dJ: 'Mist - Package',
 		a: _List_fromArray(
 			[$author$project$Location$Package]),
@@ -5697,8 +5697,8 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 4,
-		dJ: 'Mist Village - Mom',
+		G: 4,
+		dJ: 'Mist - Mom',
 		a: _List_fromArray(
 			[
 				$author$project$Location$Pseudo(1)
@@ -5710,7 +5710,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 5,
+		G: 5,
 		dJ: 'Kaipo',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5719,7 +5719,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 6,
+		G: 6,
 		dJ: 'Kaipo',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5730,7 +5730,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 7,
+		G: 7,
 		dJ: 'Kaipo',
 		a: _List_fromArray(
 			[$author$project$Location$SandRuby]),
@@ -5740,7 +5740,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 8,
+		G: 8,
 		dJ: 'Watery Pass',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5750,7 +5750,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 9,
+		G: 9,
 		dJ: 'Waterfall',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5760,7 +5760,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 10,
+		G: 10,
 		dJ: 'Damcyan',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5770,7 +5770,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 11,
+		G: 11,
 		dJ: 'Antlion Cave',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5782,7 +5782,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 12,
+		G: 12,
 		dJ: 'Mt. Hobs',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5793,7 +5793,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 13,
+		G: 13,
 		dJ: 'Fabul',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5804,7 +5804,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 14,
+		G: 14,
 		dJ: 'Fabul Defence',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5815,7 +5815,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 15,
+		G: 15,
 		dJ: 'Sheila 1',
 		a: _List_fromArray(
 			[
@@ -5828,7 +5828,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 16,
+		G: 16,
 		dJ: 'Sheila 2',
 		a: _List_fromArray(
 			[
@@ -5841,7 +5841,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 17,
+		G: 17,
 		dJ: 'Mysidia',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5851,7 +5851,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 18,
+		G: 18,
 		dJ: 'Mysidia',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5862,7 +5862,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 19,
+		G: 19,
 		dJ: 'Mt. Ordeals',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5877,7 +5877,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 20,
+		G: 20,
 		dJ: 'Baron Inn',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5891,7 +5891,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 21,
+		G: 21,
 		dJ: 'Baron',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5900,7 +5900,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 22,
+		G: 22,
 		dJ: 'Baron',
 		a: _List_fromArray(
 			[$author$project$Location$BaronKey]),
@@ -5911,7 +5911,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 23,
+		G: 23,
 		dJ: 'Baron Sewer',
 		a: _List_fromArray(
 			[$author$project$Location$BaronKey]),
@@ -5921,7 +5921,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 24,
+		G: 24,
 		dJ: 'Baron Castle',
 		a: _List_fromArray(
 			[$author$project$Location$BaronKey]),
@@ -5936,7 +5936,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 25,
+		G: 25,
 		dJ: 'Baron Basement',
 		a: _List_fromArray(
 			[$author$project$Location$BaronKey]),
@@ -5947,7 +5947,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 26,
+		G: 26,
 		dJ: 'Toroia',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5956,7 +5956,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 27,
+		G: 27,
 		dJ: 'Toroia',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5967,7 +5967,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 28,
+		G: 28,
 		dJ: 'Toroia Castle',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5977,7 +5977,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 29,
+		G: 29,
 		dJ: 'Toroia Treasury',
 		a: _List_fromArray(
 			[$author$project$Location$EarthCrystal]),
@@ -5987,7 +5987,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 30,
+		G: 30,
 		dJ: 'Cave Magnes',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -5996,7 +5996,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 31,
+		G: 31,
 		dJ: 'Cave Magnes',
 		a: _List_fromArray(
 			[$author$project$Location$TwinHarp]),
@@ -6009,7 +6009,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 32,
+		G: 32,
 		dJ: 'Tower of Zot 1',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6020,7 +6020,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 33,
+		G: 33,
 		dJ: 'Tower of Zot 2',
 		a: _List_fromArray(
 			[$author$project$Location$EarthCrystal]),
@@ -6034,7 +6034,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 34,
+		G: 34,
 		dJ: 'Agart',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6043,7 +6043,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 35,
+		G: 35,
 		dJ: 'Agart',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6054,7 +6054,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 36,
+		G: 36,
 		dJ: 'Silvera',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6063,7 +6063,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 37,
+		G: 37,
 		dJ: 'Silvera',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6074,7 +6074,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 38,
+		G: 38,
 		dJ: 'Adamant Grotto',
 		a: _List_fromArray(
 			[$author$project$Location$Hook, $author$project$Location$RatTail]),
@@ -6085,7 +6085,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 39,
+		G: 39,
 		dJ: 'Castle Eblan',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6095,7 +6095,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 40,
+		G: 40,
 		dJ: 'Cave Eblan',
 		a: _List_fromArray(
 			[$author$project$Location$Hook]),
@@ -6107,7 +6107,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 41,
+		G: 41,
 		dJ: 'Eblan',
 		a: _List_fromArray(
 			[$author$project$Location$Hook]),
@@ -6119,7 +6119,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 42,
+		G: 42,
 		dJ: 'Upper Bab-il',
 		a: _List_fromArray(
 			[$author$project$Location$Hook]),
@@ -6134,7 +6134,7 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		N: 43,
+		G: 43,
 		dJ: 'Giant of Bab-il',
 		a: _List_fromArray(
 			[$author$project$Location$DarknessCrystal]),
@@ -6172,7 +6172,7 @@ var $author$project$Flags$Warp = 1;
 var $author$project$Location$underground = _List_fromArray(
 	[
 		{
-		N: 44,
+		G: 44,
 		dJ: 'Dwarf Castle',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6187,7 +6187,7 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		N: 45,
+		G: 45,
 		dJ: 'Dwarf Castle',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6198,7 +6198,7 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		N: 46,
+		G: 46,
 		dJ: 'Lower Bab-il',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6211,7 +6211,7 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		N: 47,
+		G: 47,
 		dJ: 'Super Cannon',
 		a: _List_fromArray(
 			[$author$project$Location$TowerKey]),
@@ -6223,7 +6223,7 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		N: 48,
+		G: 48,
 		dJ: 'Sylph Cave',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6235,7 +6235,7 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		N: 49,
+		G: 49,
 		dJ: 'Sylph Cave',
 		a: _List_fromArray(
 			[$author$project$Location$Pan]),
@@ -6251,7 +6251,7 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		N: 50,
+		G: 50,
 		dJ: 'Feymarch',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6263,7 +6263,7 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		N: 51,
+		G: 51,
 		dJ: 'Feymarch',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6274,7 +6274,7 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		N: 52,
+		G: 52,
 		dJ: 'Feymarch King',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6284,7 +6284,7 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		N: 53,
+		G: 53,
 		dJ: 'Feymarch Queen',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6294,7 +6294,7 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		N: 54,
+		G: 54,
 		dJ: 'Tomra',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6303,7 +6303,7 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		N: 55,
+		G: 55,
 		dJ: 'Tomra',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6314,7 +6314,7 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		N: 56,
+		G: 56,
 		dJ: 'Sealed Cave',
 		a: _List_fromArray(
 			[$author$project$Location$LucaKey]),
@@ -6327,7 +6327,7 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		N: 57,
+		G: 57,
 		dJ: 'Kokkol',
 		a: _List_Nil,
 		b: _List_fromArray(
@@ -6336,7 +6336,7 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		N: 58,
+		G: 58,
 		dJ: 'Kokkol',
 		a: _List_fromArray(
 			[$author$project$Location$LegendSword, $author$project$Location$Adamant]),
@@ -6383,11 +6383,11 @@ var $author$project$Location$all = function () {
 	var finish = F2(
 		function (area, l) {
 			return {
-				V: area,
+				W: area,
 				cd: A2($elm$core$List$any, isShop, l.b),
-				N: l.N,
+				G: l.G,
 				dJ: l.dJ,
-				A: $elm$core$Array$fromList(
+				w: $elm$core$Array$fromList(
 					A2(
 						$elm$core$List$map,
 						$author$project$Location$Property($author$project$Location$Unseen),
@@ -6402,7 +6402,7 @@ var $author$project$Location$all = function () {
 			A2(
 				$elm$core$List$map,
 				function (l) {
-					return _Utils_Tuple2(l.N, l);
+					return _Utils_Tuple2(l.G, l);
 				},
 				_Utils_ap(
 					A2(
@@ -7560,7 +7560,7 @@ var $author$project$App$Unset = function (a) {
 };
 var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area = F4(
 	function (top, left, width, height) {
-		return {cO: height, O: left, R: top, dm: width};
+		return {cO: height, P: left, S: top, dm: width};
 	});
 var $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed = 2;
 var $rundis$elm_bootstrap$Bootstrap$Dropdown$State = $elm$core$Basics$identity;
@@ -7815,9 +7815,9 @@ var $author$project$App$init = function (_v0) {
 					])),
 			a5: flagString,
 			q: flags,
-			y: $author$project$Location$all,
+			v: $author$project$Location$all,
 			h: randomObjectives,
-			B: $elm$core$Maybe$Nothing,
+			A: $elm$core$Maybe$Nothing,
 			ag: false
 		});
 };
@@ -8107,7 +8107,7 @@ var $elm$core$Dict$merge = F6(
 	});
 var $elm$browser$Browser$Events$Event = F2(
 	function (key, event) {
-		return {cM: event, N: key};
+		return {cM: event, G: key};
 	});
 var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
 var $elm$browser$Browser$Events$spawn = F3(
@@ -8228,7 +8228,7 @@ var $elm$core$List$filterMap = F2(
 	});
 var $elm$browser$Browser$Events$onSelfMsg = F3(
 	function (router, _v0, state) {
-		var key = _v0.N;
+		var key = _v0.G;
 		var event = _v0.cM;
 		var toMessage = function (_v2) {
 			var subKey = _v2.a;
@@ -8443,7 +8443,7 @@ var $author$project$App$subscriptions = function (model) {
 	var shopMenuClick = $elm$browser$Browser$Events$onClick(
 		$elm$json$Json$Decode$succeed($author$project$App$CloseShopMenu));
 	var shopMenu = function () {
-		var _v1 = model.B;
+		var _v1 = model.A;
 		if (!_v1.$) {
 			return $elm$core$Platform$Sub$batch(
 				_List_fromArray(
@@ -8473,9 +8473,39 @@ var $author$project$App$subscriptions = function (model) {
 		_List_fromArray(
 			[dropdowns, shopMenu]));
 };
+var $author$project$App$DoNothing = {$: 15};
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
+var $elm$core$Task$onError = _Scheduler_onError;
+var $elm$core$Task$attempt = F2(
+	function (resultToMessage, task) {
+		return $elm$core$Task$command(
+			A2(
+				$elm$core$Task$onError,
+				A2(
+					$elm$core$Basics$composeL,
+					A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+					$elm$core$Result$Err),
+				A2(
+					$elm$core$Task$andThen,
+					A2(
+						$elm$core$Basics$composeL,
+						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+						$elm$core$Result$Ok),
+					task)));
+	});
+var $elm$browser$Browser$Dom$focus = _Browser_call('focus');
 var $author$project$Location$Checked = 5;
+var $author$project$App$Items = function (a) {
+	return {$: 0, a: a};
+};
 var $author$project$App$Set = function (a) {
 	return {$: 0, a: a};
+};
+var $author$project$App$Text = function (a) {
+	return {$: 1, a: a};
 };
 var $elm$core$Array$getHelp = F3(
 	function (shift, index, tree) {
@@ -8515,15 +8545,15 @@ var $author$project$Location$get = F2(
 		var locations = _v0;
 		return A2($pzp1997$assoc_list$AssocList$get, key, locations);
 	});
+var $author$project$App$randomObjectiveToMaybe = function (o) {
+	if (!o.$) {
+		var objective = o.a;
+		return $elm$core$Maybe$Just(objective);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$App$getContext = function (model) {
-	var toMaybe = function (randomObjective) {
-		if (!randomObjective.$) {
-			var objective = randomObjective.a;
-			return $elm$core$Maybe$Just(objective);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	};
 	return {
 		r: model.r,
 		s: model.s,
@@ -8532,7 +8562,7 @@ var $author$project$App$getContext = function (model) {
 		h: $Gizra$elm_all_set$EverySet$fromList(
 			A2(
 				$elm$core$List$filterMap,
-				toMaybe,
+				$author$project$App$randomObjectiveToMaybe,
 				$elm$core$Array$toList(model.h))),
 		ag: model.ag
 	};
@@ -8573,7 +8603,7 @@ var $author$project$Location$filterItems = F3(
 		var flags = _v0.q;
 		var location = _v1;
 		var items = _v2;
-		var shopType = (location.N === 58) ? 2 : (($Gizra$elm_all_set$EverySet$isEmpty(location.a) && (!location.V)) ? 0 : 1);
+		var shopType = (location.G === 58) ? 2 : (($Gizra$elm_all_set$EverySet$isEmpty(location.a) && (!location.W)) ? 0 : 1);
 		var exists = function (item) {
 			if ((item.dJ === 'Life') && flags.ci) {
 				return false;
@@ -8635,7 +8665,7 @@ var $author$project$Location$filterItems = F3(
 var $author$project$Location$getItems = F3(
 	function (context, valueIndex, _v0) {
 		var location = _v0;
-		var _v1 = A2($elm$core$Array$get, valueIndex, location.A);
+		var _v1 = A2($elm$core$Array$get, valueIndex, location.w);
 		_v1$2:
 		while (true) {
 			if ((!_v1.$) && (_v1.a.b.$ === 5)) {
@@ -8736,14 +8766,14 @@ var $author$project$Location$getProperties = F2(
 						return !flags.cg;
 					} else {
 						var _v3 = value.a;
-						return !(flags.b5 && (location.N === 43));
+						return !(flags.b5 && (location.G === 43));
 					}
 				case 2:
 					var itemClass = value.a;
-					return (!(warpGlitchUsed && (location.N === 56))) && ((!((location.N === 24) && ((itemClass === 6) && (!flags.cn)))) && A2($Gizra$elm_all_set$EverySet$member, itemClass, flags.cV));
+					return (!(warpGlitchUsed && (location.G === 56))) && ((!((location.G === 24) && ((itemClass === 6) && (!flags.cn)))) && A2($Gizra$elm_all_set$EverySet$member, itemClass, flags.cV));
 				case 5:
 					var shopValue = value.a;
-					var passesNightMode = (!flags.cf) || ((!(!location.V)) || ((location.N === 22) || ((location.N === 41) || ((location.N === 27) && (!A2(
+					var passesNightMode = (!flags.cf) || ((!(!location.W)) || ((location.G === 22) || ((location.G === 41) || ((location.G === 27) && (!A2(
 						$elm$core$List$member,
 						shopValue,
 						_List_fromArray(
@@ -8776,19 +8806,15 @@ var $author$project$Location$getProperties = F2(
 				A2(
 					$elm$core$List$filter,
 					A2($elm$core$Basics$composeR, $elm$core$Tuple$second, exists),
-					$elm$core$Array$toIndexedList(location.A))));
+					$elm$core$Array$toIndexedList(location.w))));
 	});
 var $author$project$Location$getStatus = function (_v0) {
 	var location = _v0;
 	return location.dZ;
 };
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
 var $author$project$Location$getKey = function (_v0) {
 	var location = _v0;
-	return location.N;
+	return location.G;
 };
 var $pzp1997$assoc_list$AssocList$update = F3(
 	function (targetKey, alter, dict) {
@@ -8852,14 +8878,6 @@ var $Gizra$elm_all_set$EverySet$intersect = F2(
 		var d2 = _v1;
 		return A2($pzp1997$assoc_list$AssocList$intersect, d1, d2);
 	});
-var $author$project$App$randomObjectiveToMaybe = function (o) {
-	if (!o.$) {
-		var objective = o.a;
-		return $elm$core$Maybe$Just(objective);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
 var $elm$core$Array$setHelp = F4(
 	function (shift, index, value, tree) {
 		var pos = $elm$core$Array$bitMask & (index >>> shift);
@@ -8902,23 +8920,7 @@ var $elm$core$Array$set = F3(
 			A4($elm$core$Array$setHelp, startShift, index, value, tree),
 			tail));
 	});
-var $author$project$App$toggle = F2(
-	function (item, set) {
-		return A2($Gizra$elm_all_set$EverySet$member, item, set) ? A2($Gizra$elm_all_set$EverySet$remove, item, set) : A2($Gizra$elm_all_set$EverySet$insert, item, set);
-	});
 var $author$project$Location$Dismissed = {$: 3};
-var $elm$core$Tuple$mapSecond = F2(
-	function (func, _v0) {
-		var x = _v0.a;
-		var y = _v0.b;
-		return _Utils_Tuple2(
-			x,
-			func(y));
-	});
-var $author$project$Location$toggleStatus_ = F2(
-	function (on, existing) {
-		return _Utils_eq(on, existing) ? $author$project$Location$Unseen : on;
-	});
 var $elm_community$array_extra$Array$Extra$update = F3(
 	function (n, f, a) {
 		var element = A2($elm$core$Array$get, n, a);
@@ -8932,6 +8934,44 @@ var $elm_community$array_extra$Array$Extra$update = F3(
 				f(element_),
 				a);
 		}
+	});
+var $author$project$Location$setText = F3(
+	function (valueIndex, newText, _v0) {
+		var location = _v0;
+		var set = function (_v2) {
+			var value = _v2.b;
+			var newValue = function () {
+				if ((value.$ === 5) && (value.a.$ === 5)) {
+					return $author$project$Location$Shop(
+						$author$project$Location$Other(newText));
+				} else {
+					return value;
+				}
+			}();
+			var newStatus = (newText === '') ? $author$project$Location$Unseen : $author$project$Location$Dismissed;
+			return A2($author$project$Location$Property, newStatus, newValue);
+		};
+		return _Utils_update(
+			location,
+			{
+				w: A3($elm_community$array_extra$Array$Extra$update, valueIndex, set, location.w)
+			});
+	});
+var $author$project$App$toggle = F2(
+	function (item, set) {
+		return A2($Gizra$elm_all_set$EverySet$member, item, set) ? A2($Gizra$elm_all_set$EverySet$remove, item, set) : A2($Gizra$elm_all_set$EverySet$insert, item, set);
+	});
+var $elm$core$Tuple$mapSecond = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			x,
+			func(y));
+	});
+var $author$project$Location$toggleStatus_ = F2(
+	function (on, existing) {
+		return _Utils_eq(on, existing) ? $author$project$Location$Unseen : on;
 	});
 var $author$project$Location$toggleItem = F3(
 	function (valueIndex, itemIndex, _v0) {
@@ -8996,7 +9036,7 @@ var $author$project$Location$toggleItem = F3(
 		return _Utils_update(
 			location,
 			{
-				A: A3($elm_community$array_extra$Array$Extra$update, valueIndex, toggle, location.A)
+				w: A3($elm_community$array_extra$Array$Extra$update, valueIndex, toggle, location.w)
 			});
 	});
 var $author$project$Location$SeenSome = function (a) {
@@ -9017,7 +9057,7 @@ var $author$project$Location$countable = function (value) {
 var $author$project$Location$toggleProperty = F3(
 	function (index, hard, _v0) {
 		var location = _v0;
-		var _v1 = A2($elm$core$Array$get, index, location.A);
+		var _v1 = A2($elm$core$Array$get, index, location.w);
 		if (!_v1.$) {
 			var _v2 = _v1.a;
 			var status = _v2.a;
@@ -9058,11 +9098,11 @@ var $author$project$Location$toggleProperty = F3(
 			return _Utils_update(
 				location,
 				{
-					A: A3(
+					w: A3(
 						$elm$core$Array$set,
 						index,
 						A2($author$project$Location$Property, newStatus, value),
-						location.A)
+						location.w)
 				});
 		} else {
 			return location;
@@ -9104,12 +9144,12 @@ var $author$project$App$innerUpdate = F2(
 				return _Utils_update(
 					newModel,
 					{
-						y: A3(
+						v: A3(
 							$author$project$Location$update,
 							key,
 							$elm$core$Maybe$map(
 								A2($author$project$Location$toggleProperty, index, hard)),
-							newModel.y)
+							newModel.v)
 					});
 			});
 		switch (msg.$) {
@@ -9229,7 +9269,7 @@ var $author$project$App$innerUpdate = F2(
 					model,
 					{
 						r: attainedRequirements,
-						y: A2($author$project$Location$insert, newLocation, model.y)
+						v: A2($author$project$Location$insert, newLocation, model.v)
 					});
 			case 7:
 				var key = msg.a;
@@ -9251,53 +9291,72 @@ var $author$project$App$innerUpdate = F2(
 						model,
 						{ag: !model.ag}));
 			case 10:
-				var items = msg.a;
-				var key = msg.b;
-				var index = msg.c;
-				var newShop = {_: index, aq: items, N: key};
+				var newShop = msg.a;
 				var shopMenu = function () {
-					var _v8 = model.B;
+					var _v8 = model.A;
 					if (!_v8.$) {
 						var existingShop = _v8.a;
-						return (_Utils_eq(existingShop.N, newShop.N) && _Utils_eq(existingShop._, newShop._)) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(newShop);
+						return (_Utils_eq(existingShop.G, newShop.G) && _Utils_eq(existingShop.O, newShop.O)) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(newShop);
 					} else {
 						return $elm$core$Maybe$Just(newShop);
 					}
 				}();
 				return _Utils_update(
 					model,
-					{B: shopMenu});
+					{A: shopMenu});
 			case 11:
 				return _Utils_update(
 					model,
-					{B: $elm$core$Maybe$Nothing});
+					{A: $elm$core$Maybe$Nothing});
 			case 12:
 				var menu = msg.a;
 				var itemIndex = msg.b;
 				var locations = A3(
 					$author$project$Location$update,
-					menu.N,
+					menu.G,
 					$elm$core$Maybe$map(
-						A2($author$project$Location$toggleItem, menu._, itemIndex)),
-					model.y);
+						A2($author$project$Location$toggleItem, menu.O, itemIndex)),
+					model.v);
 				var shopMenu = A2(
 					$elm$core$Maybe$map,
 					function (items) {
 						return _Utils_update(
 							menu,
-							{aq: items});
+							{
+								ak: $author$project$App$Items(items)
+							});
 					},
 					A2(
 						$elm$core$Maybe$map,
 						A2(
 							$author$project$Location$getItems,
 							$author$project$App$getContext(model),
-							menu._),
-						A2($author$project$Location$get, menu.N, locations)));
+							menu.O),
+						A2($author$project$Location$get, menu.G, locations)));
 				return _Utils_update(
 					model,
-					{y: locations, B: shopMenu});
-			default:
+					{v: locations, A: shopMenu});
+			case 13:
+				var menu = msg.a;
+				var newText = msg.b;
+				var locations = A3(
+					$author$project$Location$update,
+					menu.G,
+					$elm$core$Maybe$map(
+						A2($author$project$Location$setText, menu.O, newText)),
+					model.v);
+				return _Utils_update(
+					model,
+					{
+						v: locations,
+						A: $elm$core$Maybe$Just(
+							_Utils_update(
+								menu,
+								{
+									ak: $author$project$App$Text(newText)
+								}))
+					});
+			case 14:
 				var flagString = msg.a;
 				var flags = $author$project$Flags$parse(flagString);
 				var randomObjectives = A2($author$project$App$updateRandomObjectives, flags, model.h);
@@ -9317,20 +9376,33 @@ var $author$project$App$innerUpdate = F2(
 								$elm$core$Array$toList(randomObjectives)))));
 				return _Utils_update(
 					model,
-					{s: completedObjectives, t: filterOverrides, a5: flagString, q: flags, h: randomObjectives, B: $elm$core$Maybe$Nothing});
+					{s: completedObjectives, t: filterOverrides, a5: flagString, q: flags, h: randomObjectives, A: $elm$core$Maybe$Nothing});
+			default:
+				return model;
 		}
 	});
+var $author$project$App$shopMenuID = 'shop-menu-input';
 var $author$project$App$update = F2(
 	function (msg, model) {
+		var cmd = function () {
+			if (msg.$ === 10) {
+				return A2(
+					$elm$core$Task$attempt,
+					$elm$core$Basics$always($author$project$App$DoNothing),
+					$elm$browser$Browser$Dom$focus($author$project$App$shopMenuID));
+			} else {
+				return $elm$core$Platform$Cmd$none;
+			}
+		}();
 		return A2(
 			$author$project$App$with,
-			$elm$core$Platform$Cmd$none,
+			cmd,
 			A2($author$project$App$innerUpdate, msg, model));
 	});
 var $author$project$Location$Checks = 0;
 var $author$project$Location$Shops = 1;
 var $author$project$App$UpdateFlags = function (a) {
-	return {$: 13, a: a};
+	return {$: 14, a: a};
 };
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
@@ -9444,6 +9516,14 @@ var $author$project$Icon$fromFilter = function (filter) {
 };
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
+var $author$project$Icon$no = A2(
+	$elm$html$Html$img,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('no'),
+			$elm$html$Html$Attributes$src('img/no.png')
+		]),
+	_List_Nil);
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 0, a: a};
 };
@@ -9463,21 +9543,23 @@ var $elm$html$Html$Events$onClick = function (msg) {
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $author$project$App$viewFilters = function (model) {
 	var viewFilter = function (filter) {
-		var stateClass = function () {
-			var _v0 = A2($pzp1997$assoc_list$AssocList$get, filter, model.t);
-			if (!_v0.$) {
-				if (!_v0.a) {
-					var _v1 = _v0.a;
-					return 'show';
+		var icon = $author$project$Icon$fromFilter(filter);
+		var _v0 = function () {
+			var _v1 = A2($pzp1997$assoc_list$AssocList$get, filter, model.t);
+			if (!_v1.$) {
+				if (!_v1.a) {
+					var _v2 = _v1.a;
+					return _Utils_Tuple2('show', false);
 				} else {
-					var _v2 = _v0.a;
-					return 'hide';
+					var _v3 = _v1.a;
+					return _Utils_Tuple2('hide', true);
 				}
 			} else {
-				return 'unset';
+				return _Utils_Tuple2('unset', false);
 			}
 		}();
-		var icon = $author$project$Icon$fromFilter(filter);
+		var stateClass = _v0.a;
+		var hide = _v0.b;
 		return A2(
 			$elm$html$Html$span,
 			_List_fromArray(
@@ -9490,7 +9572,11 @@ var $author$project$App$viewFilters = function (model) {
 				]),
 			_List_fromArray(
 				[
-					A2($elm$html$Html$map, $elm$core$Basics$never, icon.cS)
+					A2($elm$html$Html$map, $elm$core$Basics$never, icon.cS),
+					A2(
+					$author$project$App$displayIf,
+					hide,
+					A2($elm$html$Html$map, $elm$core$Basics$never, $author$project$Icon$no))
 				]));
 	};
 	return A2(
@@ -9712,7 +9798,7 @@ var $author$project$Location$UndergroundAccess = 2;
 var $author$project$Location$areaAccessible = F2(
 	function (attained, _v0) {
 		var location = _v0;
-		var _v1 = location.V;
+		var _v1 = location.W;
 		switch (_v1) {
 			case 0:
 				return true;
@@ -9874,14 +9960,14 @@ var $author$project$Location$filterByContext = F3(
 		};
 		var hasNoValue = function (_v1) {
 			var l = _v1;
-			return (l.N === 30) && requirementsMetFor(31);
+			return (l.G === 30) && requirementsMetFor(31);
 		};
 		var isRelevant = function (location) {
 			var l = location;
-			return (!A2($author$project$Location$isClass, _class, location)) ? false : (((l.N === 48) && requirementsMetFor(49)) ? false : (_Utils_eq(l.dZ, $author$project$Location$Dismissed) ? (!A2(
+			return (!A2($author$project$Location$isClass, _class, location)) ? false : (((l.G === 48) && requirementsMetFor(49)) ? false : (_Utils_eq(l.dZ, $author$project$Location$Dismissed) ? (!A2(
 				$elm$core$Maybe$withDefault,
 				1,
-				A2($pzp1997$assoc_list$AssocList$get, 5, context.t))) : (propertiesHaveValue(location) && ((!hasNoValue(location)) && (A2($author$project$Location$areaAccessible, attainedRequirements, location) && ((context.q.cq && A2($Gizra$elm_all_set$EverySet$member, l.N, jumpable)) || A2($author$project$Location$requirementsMet, attainedRequirements, location)))))));
+				A2($pzp1997$assoc_list$AssocList$get, 5, context.t))) : (propertiesHaveValue(location) && ((!hasNoValue(location)) && (A2($author$project$Location$areaAccessible, attainedRequirements, location) && ((context.q.cq && A2($Gizra$elm_all_set$EverySet$member, l.G, jumpable)) || A2($author$project$Location$requirementsMet, attainedRequirements, location)))))));
 		};
 		return A2(
 			$pzp1997$assoc_list$AssocList$filter,
@@ -9946,7 +10032,7 @@ var $elm_community$list_extra$List$Extra$gatherEqualsBy = F2(
 	});
 var $author$project$Location$getArea = function (_v0) {
 	var location = _v0;
-	return location.V;
+	return location.W;
 };
 var $pzp1997$assoc_list$AssocList$values = function (_v0) {
 	var alist = _v0;
@@ -9973,7 +10059,7 @@ var $author$project$Location$groupByArea = A2(
 var $elm$html$Html$h4 = _VirtualDom_node('h4');
 var $elm$regex$Regex$Match = F4(
 	function (match, index, number, submatches) {
-		return {_: index, dG: match, dL: number, d$: submatches};
+		return {O: index, dG: match, dL: number, d$: submatches};
 	});
 var $elm$regex$Regex$fromStringWith = _Regex_fromStringWith;
 var $elm$regex$Regex$fromString = function (string) {
@@ -10082,6 +10168,22 @@ var $author$project$App$ToggleShopItem = F2(
 	function (a, b) {
 		return {$: 12, a: a, b: b};
 	});
+var $author$project$App$UpdateShopText = F2(
+	function (a, b) {
+		return {$: 13, a: a, b: b};
+	});
+var $elm$html$Html$Attributes$autocomplete = function (bool) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'autocomplete',
+		bool ? 'on' : 'off');
+};
+var $elm$html$Html$Attributes$cols = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'cols',
+		$elm$core$String$fromInt(n));
+};
 var $elm$virtual_dom$VirtualDom$Custom = function (a) {
 	return {$: 3, a: a};
 };
@@ -10099,10 +10201,26 @@ var $author$project$App$onClickNoBubble = function (msg) {
 		$elm$json$Json$Decode$succeed(
 			{dH: msg, dT: true, d_: true}));
 };
+var $elm$html$Html$Attributes$rows = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'rows',
+		$elm$core$String$fromInt(n));
+};
+var $elm$json$Json$Encode$bool = _Json_wrap;
+var $elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$bool(bool));
+	});
+var $elm$html$Html$Attributes$spellcheck = $elm$html$Html$Attributes$boolProperty('spellcheck');
+var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $author$project$App$viewMenu = function (menu) {
-	var viewItem = function (_v0) {
-		var itemIndex = _v0.a;
-		var item = _v0.b;
+	var viewItem = function (_v1) {
+		var itemIndex = _v1.a;
+		var item = _v1.b;
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -10124,7 +10242,33 @@ var $author$project$App$viewMenu = function (menu) {
 			[
 				$elm$html$Html$Attributes$class('shop-menu')
 			]),
-		A2($elm$core$List$map, viewItem, menu.aq));
+		function () {
+			var _v0 = menu.ak;
+			if (!_v0.$) {
+				var items = _v0.a;
+				return A2($elm$core$List$map, viewItem, items);
+			} else {
+				var shopText = _v0.a;
+				return _List_fromArray(
+					[
+						A2(
+						$elm$html$Html$textarea,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$id($author$project$App$shopMenuID),
+								$elm$html$Html$Attributes$rows(3),
+								$elm$html$Html$Attributes$cols(10),
+								$elm$html$Html$Attributes$autocomplete(false),
+								$elm$html$Html$Attributes$spellcheck(false),
+								$elm$html$Html$Attributes$value(shopText),
+								$elm$html$Html$Events$onInput(
+								$author$project$App$UpdateShopText(menu)),
+								$author$project$App$onClickNoBubble($author$project$App$DoNothing)
+							]),
+						_List_Nil)
+					]);
+			}
+		}());
 };
 var $author$project$App$HardToggleProperty = F2(
 	function (a, b) {
@@ -10134,10 +10278,9 @@ var $author$project$App$ToggleProperty = F2(
 	function (a, b) {
 		return {$: 7, a: a, b: b};
 	});
-var $author$project$App$ToggleShopMenu = F3(
-	function (a, b, c) {
-		return {$: 10, a: a, b: b, c: c};
-	});
+var $author$project$App$ToggleShopMenu = function (a) {
+	return {$: 10, a: a};
+};
 var $author$project$App$ToggleWarpGlitchUsed = F2(
 	function (a, b) {
 		return {$: 9, a: a, b: b};
@@ -10244,14 +10387,15 @@ var $author$project$App$viewProperty = F3(
 			}
 		}();
 		var clickHandler = function () {
-			var toggleShopMenu = function (items) {
-				return A3(
-					$author$project$App$ToggleShopMenu,
-					A3($author$project$Location$filterItems, context, location, items),
-					key,
-					index);
+			var toggleShopMenu = function (content) {
+				return $author$project$App$ToggleShopMenu(
+					{ak: content, O: index, G: key});
 			};
-			_v2$3:
+			var shopItems = A2(
+				$elm$core$Basics$composeL,
+				$author$project$App$Items,
+				A2($author$project$Location$filterItems, context, location));
+			_v2$4:
 			while (true) {
 				switch (value.$) {
 					case 2:
@@ -10260,23 +10404,30 @@ var $author$project$App$viewProperty = F3(
 							return $elm$html$Html$Events$onClick(
 								A2($author$project$App$ToggleWarpGlitchUsed, key, index));
 						} else {
-							break _v2$3;
+							break _v2$4;
 						}
 					case 5:
 						switch (value.a.$) {
 							case 3:
 								var items = value.a.a;
 								return $author$project$App$onClickNoBubble(
-									toggleShopMenu(items));
+									toggleShopMenu(
+										shopItems(items)));
 							case 4:
 								var items = value.a.a;
 								return $author$project$App$onClickNoBubble(
-									toggleShopMenu(items));
+									toggleShopMenu(
+										shopItems(items)));
+							case 5:
+								var shopText = value.a.a;
+								return $author$project$App$onClickNoBubble(
+									toggleShopMenu(
+										$author$project$App$Text(shopText)));
 							default:
-								break _v2$3;
+								break _v2$4;
 						}
 					default:
-						break _v2$3;
+						break _v2$4;
 				}
 			}
 			return $elm$html$Html$Events$onClick(
@@ -10371,7 +10522,7 @@ var $author$project$App$viewLocation = F3(
 								A2(
 									$elm$core$Basics$composeR,
 									function ($) {
-										return $.N;
+										return $.G;
 									},
 									$elm$core$Basics$eq(
 										$author$project$Location$getKey(location))),
@@ -10407,7 +10558,7 @@ var $author$project$App$viewLocations = F2(
 							]),
 						A2(
 							$elm$core$List$concatMap,
-							A2($author$project$App$viewLocation, model.B, context),
+							A2($author$project$App$viewLocation, model.A, context),
 							locations))
 					]));
 		};
@@ -10421,7 +10572,7 @@ var $author$project$App$viewLocations = F2(
 				$elm$core$List$map,
 				viewArea,
 				$author$project$Location$groupByArea(
-					A3($author$project$Location$filterByContext, locClass, context, model.y))));
+					A3($author$project$Location$filterByContext, locClass, context, model.v))));
 	});
 var $elm$core$Elm$JsArray$map = _JsArray_map;
 var $elm$core$Array$map = F2(
@@ -10515,11 +10666,11 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownAttributes = F2(
 						[
 							_Utils_Tuple2('btn-group', true),
 							_Utils_Tuple2('show', status !== 2),
-							_Utils_Tuple2('dropup', config.ap)
+							_Utils_Tuple2('dropup', config.aq)
 						]))
 				]),
 			_Utils_ap(
-				$rundis$elm_bootstrap$Bootstrap$Dropdown$dropDir(config.ak),
+				$rundis$elm_bootstrap$Bootstrap$Dropdown$dropDir(config.al),
 				config.aT));
 	});
 var $elm$core$String$fromFloat = _String_fromNumber;
@@ -10545,7 +10696,7 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$menuStyles = F2(
 				A2($elm$html$Html$Attributes$style, 'top', '0'),
 				A2($elm$html$Html$Attributes$style, 'left', '0')
 			]);
-		var _v1 = _Utils_Tuple2(config.ap, config.ak);
+		var _v1 = _Utils_Tuple2(config.aq, config.al);
 		_v1$0:
 		while (true) {
 			if (!_v1.b.$) {
@@ -10651,7 +10802,7 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$applyModifier = F2(
 			case 0:
 				return _Utils_update(
 					options,
-					{ap: true});
+					{aq: true});
 			case 4:
 				var attrs_ = option.a;
 				return _Utils_update(
@@ -10662,7 +10813,7 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$applyModifier = F2(
 				return _Utils_update(
 					options,
 					{
-						ak: $elm$core$Maybe$Just(dir)
+						al: $elm$core$Maybe$Just(dir)
 					});
 			default:
 				var attrs_ = option.a;
@@ -10671,7 +10822,7 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$applyModifier = F2(
 					{bj: attrs_});
 		}
 	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$defaultOptions = {aT: _List_Nil, ak: $elm$core$Maybe$Nothing, bc: false, ap: false, bj: _List_Nil};
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$defaultOptions = {aT: _List_Nil, al: $elm$core$Maybe$Nothing, bc: false, aq: false, bj: _List_Nil};
 var $rundis$elm_bootstrap$Bootstrap$Dropdown$toConfig = function (options) {
 	return A3($elm$core$List$foldl, $rundis$elm_bootstrap$Bootstrap$Dropdown$applyModifier, $rundis$elm_bootstrap$Bootstrap$Dropdown$defaultOptions, options);
 };
@@ -10680,7 +10831,7 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropdown = F2(
 		var status = state.dZ;
 		var toggleMsg = _v0.d3;
 		var toggleButton = _v0.d2;
-		var items = _v0.aq;
+		var items = _v0.dD;
 		var options = _v0.dQ;
 		var config = $rundis$elm_bootstrap$Bootstrap$Dropdown$toConfig(options);
 		var _v1 = toggleButton;
@@ -10952,14 +11103,6 @@ var $rundis$elm_bootstrap$Bootstrap$Internal$Button$applyModifier = F2(
 		}
 	});
 var $rundis$elm_bootstrap$Bootstrap$Internal$Button$defaultOptions = {aT: _List_Nil, aW: false, E: $elm$core$Maybe$Nothing, a4: false, bS: $elm$core$Maybe$Nothing};
-var $elm$json$Json$Encode$bool = _Json_wrap;
-var $elm$html$Html$Attributes$boolProperty = F2(
-	function (key, bool) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$bool(bool));
-	});
 var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
 var $rundis$elm_bootstrap$Bootstrap$Internal$Button$roleClass = function (role) {
 	switch (role) {
@@ -11112,7 +11255,7 @@ var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$boundingArea = A4(
 		function (_v0, width, height) {
 			var x = _v0.a;
 			var y = _v0.b;
-			return {cO: height, O: x, R: y, dm: width};
+			return {cO: height, P: x, S: y, dm: width};
 		}),
 	A2($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$position, 0, 0),
 	$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetWidth,
@@ -11343,7 +11486,7 @@ var $author$project$App$viewEditableObjective = F4(
 						$rundis$elm_bootstrap$Bootstrap$Dropdown$dropdown,
 						dropdown,
 						{
-							aq: _Utils_ap(
+							dD: _Utils_ap(
 								A3(section, 0, 'Character Hunts', $author$project$Objective$characters),
 								_Utils_ap(
 									A3(section, 1, 'Boss Hunts', $author$project$Objective$bosses),
@@ -11485,7 +11628,10 @@ var $author$project$App$view = function (model) {
 							[
 								A2(
 								$elm$html$Html$h2,
-								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('locations-header')
+									]),
 								_List_fromArray(
 									[
 										$elm$html$Html$text('Locations'),
@@ -11523,6 +11669,6 @@ var $author$project$App$view = function (model) {
 	};
 };
 var $author$project$Main$main = $elm$browser$Browser$document(
-	{dD: $author$project$App$init, d0: $author$project$App$subscriptions, d4: $author$project$App$update, d5: $author$project$App$view});
+	{dC: $author$project$App$init, d0: $author$project$App$subscriptions, d4: $author$project$App$update, d5: $author$project$App$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$succeed(0))(0)}});}(this));
