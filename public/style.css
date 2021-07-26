@@ -40,6 +40,12 @@ body {
   order: 4;
 }
 
+#footer {
+  order: 5;
+  margin-top: 3em;
+  font-size: smaller;
+}
+
 h2 {
   font-size: 1em;
 }

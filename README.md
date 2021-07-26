@@ -60,3 +60,6 @@ no navigation infrastructure is implemented (anymore).
 - Resizing a shop's textarea input doesn't persist, neither between different
   shops, nor when closing and reopening the same shop. Suppressing the ability
   to resize feels unfriendly to the user, but is it useful without persistence?
+- Complete quest objectives when the corresponding location is dismissed? Might
+  be too aggressive. Maybe you dismissed the location because you know it will
+  be too slow/hard and you have other objectives you can take instead.

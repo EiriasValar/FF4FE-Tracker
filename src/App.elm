@@ -15,8 +15,8 @@ import Browser.Dom
 import Browser.Events
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
-import Html exposing (Html, div, h2, h4, li, span, text, textarea, ul)
-import Html.Attributes exposing (autocomplete, class, classList, cols, id, rows, spellcheck, title, value)
+import Html exposing (Html, a, div, h2, h4, li, span, text, textarea, ul)
+import Html.Attributes exposing (autocomplete, class, classList, cols, href, id, rows, spellcheck, target, title, value)
 import Html.Events exposing (onClick, onInput)
 import Icon
 import Json.Decode
@@ -432,6 +432,11 @@ view model =
                     [ h2 [] [ text "Shops" ]
                     , viewLocations model Location.Shops
                     ]
+            ]
+        , div [ id "footer" ]
+            [ text "Documentation, credits, etc can be found in "
+            , a [ href "https://github.com/EiriasValar/FF4FE-Tracker", target "_blank" ]
+                [ text "the GitHub repo" ]
             ]
         ]
     }
