@@ -16,7 +16,7 @@ import Browser.Events
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
 import Html exposing (Html, div, h2, h4, li, span, table, td, text, textarea, tr, ul)
-import Html.Attributes exposing (autocomplete, class, classList, cols, id, rows, spellcheck, value)
+import Html.Attributes exposing (autocomplete, class, classList, cols, id, rows, spellcheck, title, value)
 import Html.Events exposing (onClick, onInput)
 import Icon
 import Json.Decode
@@ -543,18 +543,22 @@ viewEditableObjective index randomObjective completedObjectives objectiveTypes =
 viewKeyItems : Flags -> Set Requirement -> Html Msg
 viewKeyItems flags attained =
     let
-        req : Requirement -> String -> Html Msg
-        req requirement class =
-            td
-                [ onClick (ToggleRequirement requirement) ]
-                [ div
-                    [ classList
-                        [ ( "requirement " ++ class, True )
-                        , ( "disabled", not <| Set.member requirement attained )
+        req : Requirement -> Html Msg
+        req requirement =
+            case Icon.fromRequirement requirement of
+                Just icon ->
+                    td [ onClick (ToggleRequirement requirement) ]
+                        [ icon.img
+                            [ class "requirement"
+                            , class icon.class
+                            , classList [ ( "disabled", not <| Set.member requirement attained ) ]
+                            , title icon.title
+                            ]
+                            |> Html.map never
                         ]
-                    ]
-                    []
-                ]
+
+                Nothing ->
+                    td [] []
 
         numAttained =
             -- we care about this number for the 10 key items experience bonus, so
@@ -565,36 +569,36 @@ viewKeyItems flags attained =
     in
     table [ class "requirements" ]
         [ tr []
-            [ req Crystal "crystal"
+            [ req Crystal
             , displayCellIf flags.passExists <|
-                req (Pseudo Pass) "pass"
-            , req Hook "hook"
-            , req DarknessCrystal "darkness-crystal"
+                req (Pseudo Pass)
+            , req Hook
+            , req DarknessCrystal
             ]
         , tr []
-            [ req EarthCrystal "earth-crystal"
-            , req TwinHarp "twin-harp"
-            , req Package "package"
-            , req SandRuby "sand-ruby"
+            [ req EarthCrystal
+            , req TwinHarp
+            , req Package
+            , req SandRuby
             ]
         , tr []
-            [ req BaronKey "baron-key"
-            , req MagmaKey "magma-key"
-            , req TowerKey "tower-key"
-            , req LucaKey "luca-key"
+            [ req BaronKey
+            , req MagmaKey
+            , req TowerKey
+            , req LucaKey
             ]
         , tr []
-            [ req Adamant "adamant"
-            , req LegendSword "legend-sword"
-            , req Pan "pan"
-            , req Spoon "spoon"
+            [ req Adamant
+            , req LegendSword
+            , req Pan
+            , req Spoon
             ]
         , tr []
             [ displayCellIf (not <| Set.member Flags.Free flags.keyItems) <|
-                req (Pseudo MistDragon) "mist-dragon"
-            , req RatTail "rat-tail"
+                req (Pseudo MistDragon)
+            , req RatTail
             , displayCellIf (not <| Set.member Vanilla flags.keyItems) <|
-                req PinkTail "pink-tail"
+                req PinkTail
             , displayCellIf flags.keyExpBonus <|
                 td
                     [ classList
@@ -633,9 +637,10 @@ viewFilters model =
                 [ class "filter"
                 , class stateClass
                 , class icon.class
+                , title icon.title
                 , onClick <| ToggleFilter filter
                 ]
-                [ icon.img |> Html.map never
+                [ icon.img [] |> Html.map never
                 , displayIf hide <|
                     (Icon.no |> Html.map never)
                 ]
@@ -793,10 +798,17 @@ viewProperty context location ( index, status, value ) =
                 , class icon.class
                 , class extraClass
                 , class <| Location.statusToString status
+                , title <|
+                    case value of
+                        KeyItem Warp ->
+                            "Sealed Cave key item check"
+
+                        _ ->
+                            icon.title
                 , clickHandler
                 , onRightClick <| HardToggleProperty key index
                 ]
-                [ icon.img |> Html.map never
+                [ icon.img [] |> Html.map never
                 , displayIf (count > 0) <|
                     span [ class "count" ] [ text <| String.fromInt count ]
                 ]

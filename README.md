@@ -33,7 +33,7 @@ no navigation infrastructure is implemented (anymore).
 [Elm Bootstrap](http://elm-bootstrap.info/) is used just for the Dropdown module, to allow for dropdown options with non-string values (used when setting a random objective). The "bootstrap" stylesheet is a heavily-gutted version to handle just the dropdown elements, with nothing particularly Bootstrap-y about them. This dependency could be entirely ripped out with a bit of work to recreate the Dropdown element.
 
 # TODOs
-- Consistent icon handling, alt tags
+- Consistent icon handling
 - Don't require right-clicks for anything
 - Possibly de-value characters when the flags make them irrelevant (e.g. Cparty:1)
 - Type-to-filter random objective selection
