@@ -15,7 +15,7 @@ import Browser.Dom
 import Browser.Events
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
-import Html exposing (Html, div, h2, h4, li, span, table, td, text, textarea, tr, ul)
+import Html exposing (Html, div, h2, h4, li, span, text, textarea, ul)
 import Html.Attributes exposing (autocomplete, class, classList, cols, id, rows, spellcheck, title, value)
 import Html.Events exposing (onClick, onInput)
 import Icon
@@ -409,6 +409,8 @@ view model =
             [ div [ id "flagstring" ]
                 [ textarea
                     [ class "flagstring"
+                    , autocomplete False
+                    , spellcheck False
                     , onInput UpdateFlags
                     ]
                     [ text model.flagString ]
@@ -547,18 +549,16 @@ viewKeyItems flags attained =
         req requirement =
             case Icon.fromRequirement requirement of
                 Just icon ->
-                    td [ onClick (ToggleRequirement requirement) ]
-                        [ icon.img
-                            [ class "requirement"
-                            , class icon.class
-                            , classList [ ( "disabled", not <| Set.member requirement attained ) ]
-                            , title icon.title
-                            ]
-                            |> Html.map never
+                    icon.img
+                        [ class "requirement"
+                        , class icon.class
+                        , classList [ ( "disabled", not <| Set.member requirement attained ) ]
+                        , title icon.title
+                        , onClick (ToggleRequirement requirement)
                         ]
 
                 Nothing ->
-                    td [] []
+                    div [] []
 
         numAttained =
             -- we care about this number for the 10 key items experience bonus, so
@@ -567,50 +567,37 @@ viewKeyItems flags attained =
                 |> Set.filter (not << Location.isPseudo)
                 |> Set.size
     in
-    table [ class "requirements" ]
-        [ tr []
-            [ req Crystal
-            , displayCellIf flags.passExists <|
-                req (Pseudo Pass)
-            , req Hook
-            , req DarknessCrystal
-            ]
-        , tr []
-            [ req EarthCrystal
-            , req TwinHarp
-            , req Package
-            , req SandRuby
-            ]
-        , tr []
-            [ req BaronKey
-            , req MagmaKey
-            , req TowerKey
-            , req LucaKey
-            ]
-        , tr []
-            [ req Adamant
-            , req LegendSword
-            , req Pan
-            , req Spoon
-            ]
-        , tr []
-            [ displayCellIf (not <| Set.member Flags.Free flags.keyItems) <|
-                req (Pseudo MistDragon)
-            , req RatTail
-            , displayCellIf (not <| Set.member Vanilla flags.keyItems) <|
-                req PinkTail
-            , displayCellIf flags.keyExpBonus <|
-                td
-                    [ classList
-                        [ ( "requirement total", True )
-                        , ( "key-bonus-reached", numAttained >= 10 )
-                        ]
-                    ]
-                    [ displayIf (numAttained > 0) <|
-                        text <|
-                            String.fromInt numAttained
-                    ]
-            ]
+    div [ class "requirements" ]
+        [ req Crystal
+        , displayCellIf flags.passExists <|
+            req (Pseudo Pass)
+        , req Hook
+        , req DarknessCrystal
+        , req EarthCrystal
+        , req TwinHarp
+        , req Package
+        , req SandRuby
+        , req BaronKey
+        , req MagmaKey
+        , req TowerKey
+        , req LucaKey
+        , req Adamant
+        , req LegendSword
+        , req Pan
+        , req Spoon
+        , displayCellIf (not <| Set.member Flags.Free flags.keyItems) <|
+            req (Pseudo MistDragon)
+        , req RatTail
+        , displayCellIf (not <| Set.member Vanilla flags.keyItems) <|
+            req PinkTail
+        , displayCellIf flags.keyExpBonus <|
+            div
+                [ class "requirement total"
+                , classList [ ( "key-bonus-reached", numAttained >= 10 ) ]
+                ]
+                [ displayIf (numAttained > 0) <|
+                    text (String.fromInt numAttained)
+                ]
         ]
 
 
@@ -640,9 +627,9 @@ viewFilters model =
                 , title icon.title
                 , onClick <| ToggleFilter filter
                 ]
-                [ icon.img [] |> Html.map never
+                [ icon.img []
                 , displayIf hide <|
-                    (Icon.no |> Html.map never)
+                    Icon.no
                 ]
     in
     span [ class "filters" ] <|
@@ -808,7 +795,7 @@ viewProperty context location ( index, status, value ) =
                 , clickHandler
                 , onRightClick <| HardToggleProperty key index
                 ]
-                [ icon.img [] |> Html.map never
+                [ icon.img []
                 , displayIf (count > 0) <|
                     span [ class "count" ] [ text <| String.fromInt count ]
                 ]
@@ -881,7 +868,7 @@ displayCellIf predicate html =
         html
 
     else
-        td [] []
+        div [] []
 
 
 with : b -> a -> ( a, b )

@@ -19,14 +19,14 @@ import Location
         )
 
 
-type alias Icon =
+type alias Icon msg =
     { class : String
     , title : String
-    , img : List (Html.Attribute Never) -> Html Never
+    , img : List (Html.Attribute msg) -> Html msg
     }
 
 
-fromFilter : Filter -> Icon
+fromFilter : Filter -> Icon msg
 fromFilter filter =
     case filter of
         Characters ->
@@ -48,7 +48,7 @@ fromFilter filter =
             visible
 
 
-fromValue : Value -> Maybe Icon
+fromValue : Value -> Maybe (Icon msg)
 fromValue value =
     case value of
         Character _ ->
@@ -85,12 +85,12 @@ fromValue value =
             Nothing
 
 
-fromRequirement : Requirement -> Maybe Icon
+fromRequirement : Requirement -> Maybe (Icon msg)
 fromRequirement requirement =
     Dict.get requirement requirements
 
 
-character : Icon
+character : Icon msg
 character =
     { class = "character"
     , title = "Character"
@@ -98,7 +98,7 @@ character =
     }
 
 
-boss : Icon
+boss : Icon msg
 boss =
     { class = "boss"
     , title = "Boss"
@@ -106,7 +106,7 @@ boss =
     }
 
 
-keyItem : Icon
+keyItem : Icon msg
 keyItem =
     { class = "key-item"
     , title = "Key item check"
@@ -114,7 +114,7 @@ keyItem =
     }
 
 
-chest : Icon
+chest : Icon msg
 chest =
     { class = "chest"
     , title = "Untrapped chests"
@@ -122,7 +122,7 @@ chest =
     }
 
 
-trappedChest : Icon
+trappedChest : Icon msg
 trappedChest =
     { class = "trapped-chest"
     , title = "Trapped chests"
@@ -130,7 +130,7 @@ trappedChest =
     }
 
 
-visible : Icon
+visible : Icon msg
 visible =
     { class = "checked"
     , title = "Dismissed locations"
@@ -138,12 +138,12 @@ visible =
     }
 
 
-no : Html Never
+no : Html msg
 no =
     Html.img [ Html.Attributes.class "no", src "img/no.png" ] []
 
 
-weapon : Icon
+weapon : Icon msg
 weapon =
     { class = "weapon"
     , title = "Weapon"
@@ -151,7 +151,7 @@ weapon =
     }
 
 
-armour : Icon
+armour : Icon msg
 armour =
     { class = "armour"
     , title = "Armour"
@@ -159,7 +159,7 @@ armour =
     }
 
 
-healing : Icon
+healing : Icon msg
 healing =
     { class = "healing"
     , title = "Healing consumables"
@@ -167,7 +167,7 @@ healing =
     }
 
 
-jItem : Icon
+jItem : Icon msg
 jItem =
     { class = "jItem"
     , title = "J-items"
@@ -175,7 +175,7 @@ jItem =
     }
 
 
-other : Icon
+other : Icon msg
 other =
     { class = "other"
     , title = "Other"
@@ -183,7 +183,7 @@ other =
     }
 
 
-requirements : Dict Requirement Icon
+requirements : Dict Requirement (Icon msg)
 requirements =
     [ ( Adamant
       , { class = "adamant"
@@ -303,6 +303,6 @@ requirements =
         |> Dict.fromList
 
 
-img : String -> List (Html.Attribute Never) -> Html Never
+img : String -> List (Html.Attribute msg) -> Html msg
 img src_ attrs =
     Html.img (src src_ :: attrs) []
