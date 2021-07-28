@@ -33,17 +33,13 @@ no navigation infrastructure is implemented (anymore).
 [Elm Bootstrap](http://elm-bootstrap.info/) is used just for the Dropdown module, to allow for dropdown options with non-string values (used when setting a random objective). The "bootstrap" stylesheet is a heavily-gutted version to handle just the dropdown elements, with nothing particularly Bootstrap-y about them. This dependency could be entirely ripped out with a bit of work to recreate the Dropdown element.
 
 # TODOs
-- Consistent icon handling, alt tags
+- Consistent icon handling
 - Don't require right-clicks for anything
 - Possibly de-value characters when the flags make them irrelevant (e.g. Cparty:1)
 - Type-to-filter random objective selection
 - Shops:
     - Proper shop item lists for Svanilla and Sshuffle
     - Close the Shop Other textarea onBlur (without breaking the toggle)
-- Wacky flags!
-    - Afflicted - no heal potions in shops
-    - Kleptomania - nothing of value in weapon and armour shops (but maybe accessories?)
-    - Mystery Juice - consumable item tracking?
 - Preserve chest counts between CaveMagnes and SylphCave variants
 - Treat locations as having value when we have quest objectives for completing them
 - Ktrap and Sylph Cave/Sheila don't play nice; surface the Yang value so it can be
@@ -51,6 +47,9 @@ no navigation infrastructure is implemented (anymore).
   trapped chests)?
 - Make Statuses more intuitive; Dismissed meaning On for shops and items is weird
 - Add CSS linting
+- Bvanilla + Nkey + no boss hunt objectives = Mist Cave is the only boss with value
+- With default boss valuation, no boss hunt, and the Earth Crystal, Zot 2 appears
+  while Zot 1 remains hidden, which is weird.
 
 # TOMAYBEDOs
 - Pull some types out of Location.elm, it's getting overloaded. Though they're
@@ -64,3 +63,6 @@ no navigation infrastructure is implemented (anymore).
 - Resizing a shop's textarea input doesn't persist, neither between different
   shops, nor when closing and reopening the same shop. Suppressing the ability
   to resize feels unfriendly to the user, but is it useful without persistence?
+- Complete quest objectives when the corresponding location is dismissed? Might
+  be too aggressive. Maybe you dismissed the location because you know it will
+  be too slow/hard and you have other objectives you can take instead.

@@ -15,8 +15,8 @@ import Browser.Dom
 import Browser.Events
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
-import Html exposing (Html, div, h2, h4, li, span, table, td, text, textarea, tr, ul)
-import Html.Attributes exposing (autocomplete, class, classList, cols, id, rows, spellcheck, value)
+import Html exposing (Html, a, div, h2, h4, li, span, text, textarea, ul)
+import Html.Attributes exposing (autocomplete, class, classList, cols, href, id, rows, spellcheck, target, title, value)
 import Html.Events exposing (onClick, onInput)
 import Icon
 import Json.Decode
@@ -409,6 +409,8 @@ view model =
             [ div [ id "flagstring" ]
                 [ textarea
                     [ class "flagstring"
+                    , autocomplete False
+                    , spellcheck False
                     , onInput UpdateFlags
                     ]
                     [ text model.flagString ]
@@ -430,6 +432,11 @@ view model =
                     [ h2 [] [ text "Shops" ]
                     , viewLocations model Location.Shops
                     ]
+            ]
+        , div [ id "footer" ]
+            [ text "Documentation, credits, etc can be found in "
+            , a [ href "https://github.com/EiriasValar/FF4FE-Tracker", target "_blank" ]
+                [ text "the GitHub repo" ]
             ]
         ]
     }
@@ -531,7 +538,7 @@ viewEditableObjective index randomObjective completedObjectives objectiveTypes =
                     { options = []
                     , toggleMsg = DropdownMsg index
                     , toggleButton =
-                        Dropdown.toggle [] [ text "(Set random objective)" ]
+                        Dropdown.toggle [] [ text "(Choose random objective)" ]
                     , items =
                         section Objective.Character "Character Hunts" Objective.characters
                             ++ section Objective.Boss "Boss Hunts" Objective.bosses
@@ -543,18 +550,20 @@ viewEditableObjective index randomObjective completedObjectives objectiveTypes =
 viewKeyItems : Flags -> Set Requirement -> Html Msg
 viewKeyItems flags attained =
     let
-        req : Requirement -> String -> Html Msg
-        req requirement class =
-            td
-                [ onClick (ToggleRequirement requirement) ]
-                [ div
-                    [ classList
-                        [ ( "requirement " ++ class, True )
-                        , ( "disabled", not <| Set.member requirement attained )
+        req : Requirement -> Html Msg
+        req requirement =
+            case Icon.fromRequirement requirement of
+                Just icon ->
+                    icon.img
+                        [ class "requirement"
+                        , class icon.class
+                        , classList [ ( "disabled", not <| Set.member requirement attained ) ]
+                        , title icon.title
+                        , onClick (ToggleRequirement requirement)
                         ]
-                    ]
-                    []
-                ]
+
+                Nothing ->
+                    div [] []
 
         numAttained =
             -- we care about this number for the 10 key items experience bonus, so
@@ -563,50 +572,37 @@ viewKeyItems flags attained =
                 |> Set.filter (not << Location.isPseudo)
                 |> Set.size
     in
-    table [ class "requirements" ]
-        [ tr []
-            [ req Crystal "crystal"
-            , displayCellIf flags.passExists <|
-                req (Pseudo Pass) "pass"
-            , req Hook "hook"
-            , req DarknessCrystal "darkness-crystal"
-            ]
-        , tr []
-            [ req EarthCrystal "earth-crystal"
-            , req TwinHarp "twin-harp"
-            , req Package "package"
-            , req SandRuby "sand-ruby"
-            ]
-        , tr []
-            [ req BaronKey "baron-key"
-            , req MagmaKey "magma-key"
-            , req TowerKey "tower-key"
-            , req LucaKey "luca-key"
-            ]
-        , tr []
-            [ req Adamant "adamant"
-            , req LegendSword "legend-sword"
-            , req Pan "pan"
-            , req Spoon "spoon"
-            ]
-        , tr []
-            [ displayCellIf (not <| Set.member Flags.Free flags.keyItems) <|
-                req (Pseudo MistDragon) "mist-dragon"
-            , req RatTail "rat-tail"
-            , displayCellIf (not <| Set.member Vanilla flags.keyItems) <|
-                req PinkTail "pink-tail"
-            , displayCellIf flags.keyExpBonus <|
-                td
-                    [ classList
-                        [ ( "requirement total", True )
-                        , ( "key-bonus-reached", numAttained >= 10 )
-                        ]
-                    ]
-                    [ displayIf (numAttained > 0) <|
-                        text <|
-                            String.fromInt numAttained
-                    ]
-            ]
+    div [ class "requirements" ]
+        [ req Crystal
+        , displayCellIf flags.passExists <|
+            req (Pseudo Pass)
+        , req Hook
+        , req DarknessCrystal
+        , req EarthCrystal
+        , req TwinHarp
+        , req Package
+        , req SandRuby
+        , req BaronKey
+        , req MagmaKey
+        , req TowerKey
+        , req LucaKey
+        , req Adamant
+        , req LegendSword
+        , req Pan
+        , req Spoon
+        , displayCellIf (not <| Set.member Flags.Free flags.keyItems) <|
+            req (Pseudo MistDragon)
+        , req RatTail
+        , displayCellIf (not <| Set.member Vanilla flags.keyItems) <|
+            req PinkTail
+        , displayCellIf flags.keyExpBonus <|
+            div
+                [ class "requirement total"
+                , classList [ ( "key-bonus-reached", numAttained >= 10 ) ]
+                ]
+                [ displayIf (numAttained > 0) <|
+                    text (String.fromInt numAttained)
+                ]
         ]
 
 
@@ -633,11 +629,12 @@ viewFilters model =
                 [ class "filter"
                 , class stateClass
                 , class icon.class
+                , title icon.title
                 , onClick <| ToggleFilter filter
                 ]
-                [ icon.img |> Html.map never
+                [ icon.img []
                 , displayIf hide <|
-                    (Icon.no |> Html.map never)
+                    Icon.no
                 ]
     in
     span [ class "filters" ] <|
@@ -793,10 +790,17 @@ viewProperty context location ( index, status, value ) =
                 , class icon.class
                 , class extraClass
                 , class <| Location.statusToString status
+                , title <|
+                    case value of
+                        KeyItem Warp ->
+                            "Sealed Cave key item check"
+
+                        _ ->
+                            icon.title
                 , clickHandler
                 , onRightClick <| HardToggleProperty key index
                 ]
-                [ icon.img |> Html.map never
+                [ icon.img []
                 , displayIf (count > 0) <|
                     span [ class "count" ] [ text <| String.fromInt count ]
                 ]
@@ -869,7 +873,7 @@ displayCellIf predicate html =
         html
 
     else
-        td [] []
+        div [] []
 
 
 with : b -> a -> ( a, b )

@@ -302,6 +302,12 @@ getProperties ({ flags, warpGlitchUsed, filterOverrides } as context) (Location 
 
                         hasValue =
                             case shopValue of
+                                Weapon ->
+                                    not flags.kleptomania
+
+                                Armour ->
+                                    not flags.kleptomania
+
                                 Healing items ->
                                     not <| List.isEmpty <| filterItems context (Location location) items
 
@@ -1557,7 +1563,7 @@ healingItems =
     , { name = "Life"
       , tier = 2
       }
-    , { name = "Ether1/2"
+    , { name = "Ether"
       , tier = 3
       }
     , { name = "Status-healing"

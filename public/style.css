@@ -25,8 +25,9 @@ body {
 }
 
 #key-items {
-  flex: 0 35%;
+  flex: 0 auto;
   order: 1;
+  margin-right: 1em;
 }
 
 #checks {
@@ -37,6 +38,12 @@ body {
 #shops {
   flex: 1 40%;
   order: 4;
+}
+
+#footer {
+  order: 5;
+  margin-top: 3em;
+  font-size: smaller;
 }
 
 h2 {
@@ -112,13 +119,17 @@ h4 {
 }
 
 .requirements {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
   background-color: rgb(0,0,175);
   border-style: double;
   border-color: white;
   padding: 5px;
+  gap: 5px;
 }
 
 .requirement {
+  display: block;
   width: 32px;
   height: 32px;
   cursor: pointer;
@@ -128,91 +139,16 @@ h4 {
   filter: grayscale(100%) opacity(50%);
 }
 
-.requirement.crystal {
-  content: url("img/schalakitty/FFIVFE-Icons-1THECrystal-Color.png");
-}
-
-.requirement.pass {
-  content: url("img/schalakitty/FFIVFE-Icons-2Pass-Color.png")
-}
-
-.requirement.hook {
-  content: url("img/schalakitty/FFIVFE-Icons-3Hook-Color.png")
-}
-
-.requirement.darkness-crystal {
-  content: url("img/schalakitty/FFIVFE-Icons-4DarkCrystal-Color.png")
-}
-
-.requirement.earth-crystal {
-  content: url("img/schalakitty/FFIVFE-Icons-5EarthCrystal-Color.png")
-}
-
-.requirement.twin-harp {
-  content: url("img/schalakitty/FFIVFE-Icons-6TwinHarp-Color.png")
-}
-
-.requirement.package {
-  content: url("img/schalakitty/FFIVFE-Icons-7Package-Color.png")
-}
-
-.requirement.sand-ruby {
-  content: url("img/schalakitty/FFIVFE-Icons-8SandRuby-Color.png")
-}
-
-.requirement.baron-key {
-  content: url("img/schalakitty/FFIVFE-Icons-9BaronKey-Color.png")
-}
-
-.requirement.magma-key {
-  content: url("img/schalakitty/FFIVFE-Icons-10MagmaKey-Color.png")
-}
-
-.requirement.tower-key {
-  content: url("img/schalakitty/FFIVFE-Icons-11TowerKey-Color.png")
-}
-
-.requirement.luca-key {
-  content: url("img/schalakitty/FFIVFE-Icons-12LucaKey-Color.png")
-}
-
-.requirement.adamant {
-  content: url("img/schalakitty/FFIVFE-Icons-13Adamant-Color-Alt.png")
-}  
-
-.requirement.legend-sword {
-  content: url("img/schalakitty/FFIVFE-Icons-14LegendSword-Color.png")
-}  
-
-.requirement.pan {
-  content: url("img/schalakitty/FFIVFE-Icons-15Pan-Color-Alt.png")
-}  
-
-.requirement.spoon {
-  content: url("img/schalakitty/FFIVFE-Icons-16Spoon-Color.png")
-}  
-
-.requirement.mist-dragon {
-  content: url("img/sprites/MistDragon1.gif")
-}
-
-.requirement.rat-tail {
-  content: url("img/schalakitty/FFIVFE-Icons-17RatTail-Color.png")
-}
-
-.requirement.pink-tail {
-  content: url("img/schalakitty/FFIVFE-Icons-18PinkTail-Color.png")
-}
-
 .requirement.total {
   color: white;
-  text-align: center;
   cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .requirement.total.key-bonus-reached {
   color: chartreuse;
-  text-align: center;
 }
 
 .locations-header {

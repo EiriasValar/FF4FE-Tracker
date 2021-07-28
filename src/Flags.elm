@@ -36,6 +36,7 @@ type alias Flags =
     , keyExpBonus : Bool
     , pushBToJump : Bool
     , nightMode : Bool
+    , kleptomania : Bool
     }
 
 
@@ -101,6 +102,7 @@ parse flagString =
             , keyExpBonus = True
             , pushBToJump = False
             , nightMode = False
+            , kleptomania = False
             }
 
         -- Random objective types aren't additive flags: if none are given, all are enabled;
@@ -427,6 +429,9 @@ parseOther switch flags =
 
         "wacky:nightmode" ->
             { flags | nightMode = True }
+
+        "wacky:kleptomania" ->
+            { flags | kleptomania = True }
 
         _ ->
             flags
