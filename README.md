@@ -47,6 +47,9 @@ no navigation infrastructure is implemented (anymore).
   trapped chests)?
 - Make Statuses more intuitive; Dismissed meaning On for shops and items is weird
 - Add CSS linting
+- Bvanilla + Nkey + no boss hunt objectives = Mist Cave is the only boss with value
+- With default boss valuation, no boss hunt, and the Earth Crystal, Zot 2 appears
+  while Zot 1 remains hidden, which is weird.
 
 # TOMAYBEDOs
 - Pull some types out of Location.elm, it's getting overloaded. Though they're

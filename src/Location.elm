@@ -1563,7 +1563,7 @@ healingItems =
     , { name = "Life"
       , tier = 2
       }
-    , { name = "Ether1/2"
+    , { name = "Ether"
       , tier = 3
       }
     , { name = "Status-healing"

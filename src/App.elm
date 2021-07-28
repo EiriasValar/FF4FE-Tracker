@@ -538,7 +538,7 @@ viewEditableObjective index randomObjective completedObjectives objectiveTypes =
                     { options = []
                     , toggleMsg = DropdownMsg index
                     , toggleButton =
-                        Dropdown.toggle [] [ text "(Set random objective)" ]
+                        Dropdown.toggle [] [ text "(Choose random objective)" ]
                     , items =
                         section Objective.Character "Character Hunts" Objective.characters
                             ++ section Objective.Boss "Boss Hunts" Objective.bosses
