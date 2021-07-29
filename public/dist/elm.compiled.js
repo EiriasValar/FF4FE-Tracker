@@ -6428,6 +6428,7 @@ var $author$project$Objective$DefeatBoss = function (a) {
 };
 var $author$project$Objective$Elements = 28;
 var $author$project$Objective$Fiends = {$: 2};
+var $author$project$Objective$GatedQuest = 3;
 var $author$project$Objective$Kainazzo = 13;
 var $author$project$Objective$Milon = 7;
 var $author$project$Objective$MilonZ = 8;
@@ -6946,124 +6947,137 @@ var $elm$core$Maybe$map = F2(
 		}
 	});
 var $author$project$Objective$AntlionCave = 2;
-var $author$project$Objective$BaronBasement = 16;
-var $author$project$Objective$BaronCastle = 7;
+var $author$project$Objective$BaronBasement = 9;
+var $author$project$Objective$BaronCastle = 0;
 var $author$project$Objective$BaronInn = 6;
-var $author$project$Objective$BigWhale = 32;
-var $author$project$Objective$CaveBahamut = 18;
-var $author$project$Objective$CaveMagnes = 8;
-var $author$project$Objective$DwarfCastle = 10;
+var $author$project$Objective$BigWhale = 25;
+var $author$project$Objective$CaveBahamut = 11;
+var $author$project$Objective$CaveMagnes = 1;
+var $author$project$Objective$DwarfCastle = 3;
 var $author$project$Objective$Fabul = 4;
-var $author$project$Objective$Falcon = 12;
-var $author$project$Objective$FeymarchKing = 15;
-var $author$project$Objective$FeymarchQueen = 14;
-var $author$project$Objective$Forge = 34;
-var $author$project$Objective$Giant = 17;
-var $author$project$Objective$LowerBabil = 11;
-var $author$project$Objective$MagmaKey = 29;
-var $author$project$Objective$MasamuneAltar = 23;
+var $author$project$Objective$Falcon = 5;
+var $author$project$Objective$FeymarchKing = 8;
+var $author$project$Objective$FeymarchQueen = 7;
+var $author$project$Objective$Forge = 27;
+var $author$project$Objective$Gated = function (a) {
+	return {$: 1, a: a};
+};
+var $author$project$Objective$Giant = 10;
+var $author$project$Objective$LowerBabil = 4;
+var $author$project$Objective$MagmaKey = 22;
+var $author$project$Objective$MasamuneAltar = 16;
 var $author$project$Objective$MistCave = 0;
 var $author$project$Objective$MtHobs = 3;
 var $author$project$Objective$MtOrdeals = 5;
-var $author$project$Objective$MurasameAltar = 19;
-var $author$project$Objective$Package = 24;
-var $author$project$Objective$PanReturn = 36;
-var $author$project$Objective$PanWake = 35;
-var $author$project$Objective$Pass = 38;
-var $author$project$Objective$PinkTail = 37;
-var $author$project$Objective$RatTail = 33;
-var $author$project$Objective$RibbonRoom = 22;
-var $author$project$Objective$SandRuby = 25;
-var $author$project$Objective$SealedCave = 13;
-var $author$project$Objective$SuperCannon = 30;
-var $author$project$Objective$TowerZot = 9;
-var $author$project$Objective$Treasury = 28;
-var $author$project$Objective$TwinHarp = 27;
-var $author$project$Objective$UnlockSealedCave = 31;
-var $author$project$Objective$UnlockSewer = 26;
+var $author$project$Objective$MurasameAltar = 12;
+var $author$project$Objective$Package = 17;
+var $author$project$Objective$PanReturn = 29;
+var $author$project$Objective$PanWake = 28;
+var $author$project$Objective$Pass = 7;
+var $author$project$Objective$PinkTail = 30;
+var $author$project$Objective$RatTail = 26;
+var $author$project$Objective$RibbonRoom = 15;
+var $author$project$Objective$SandRuby = 18;
+var $author$project$Objective$SealedCave = 6;
+var $author$project$Objective$SuperCannon = 23;
+var $author$project$Objective$TowerZot = 2;
+var $author$project$Objective$Treasury = 21;
+var $author$project$Objective$TwinHarp = 20;
+var $author$project$Objective$Ungated = function (a) {
+	return {$: 0, a: a};
+};
+var $author$project$Objective$UnlockSealedCave = 24;
+var $author$project$Objective$UnlockSewer = 19;
 var $author$project$Objective$Waterfall = 1;
-var $author$project$Objective$WhiteSpearAltar = 21;
-var $author$project$Objective$WyvernAltar = 20;
+var $author$project$Objective$WhiteSpearAltar = 14;
+var $author$project$Objective$WyvernAltar = 13;
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
 var $author$project$Objective$questFromString = function (quest) {
+	var ungated = A2($elm$core$Basics$composeL, $elm$core$Maybe$Just, $author$project$Objective$Ungated);
+	var gated = A2($elm$core$Basics$composeL, $elm$core$Maybe$Just, $author$project$Objective$Gated);
 	switch (quest) {
 		case 'mistcave':
-			return $elm$core$Maybe$Just(0);
+			return ungated(0);
 		case 'waterfall':
-			return $elm$core$Maybe$Just(1);
+			return ungated(1);
 		case 'antlionnest':
-			return $elm$core$Maybe$Just(2);
+			return ungated(2);
 		case 'hobs':
-			return $elm$core$Maybe$Just(3);
+			return ungated(3);
 		case 'fabul':
-			return $elm$core$Maybe$Just(4);
+			return ungated(4);
 		case 'ordeals':
-			return $elm$core$Maybe$Just(5);
+			return ungated(5);
 		case 'baroninn':
-			return $elm$core$Maybe$Just(6);
+			return ungated(6);
 		case 'baroncastle':
-			return $elm$core$Maybe$Just(7);
+			return gated(0);
 		case 'magnes':
-			return $elm$core$Maybe$Just(8);
+			return gated(1);
 		case 'zot':
-			return $elm$core$Maybe$Just(9);
+			return gated(2);
 		case 'dwarfcastle':
-			return $elm$core$Maybe$Just(10);
+			return gated(3);
 		case 'lowerbabil':
-			return $elm$core$Maybe$Just(11);
+			return gated(4);
 		case 'falcon':
-			return $elm$core$Maybe$Just(12);
+			return gated(5);
 		case 'sealedcave':
-			return $elm$core$Maybe$Just(13);
+			return gated(6);
 		case 'monsterqueen':
-			return $elm$core$Maybe$Just(14);
+			return gated(7);
 		case 'monsterking':
-			return $elm$core$Maybe$Just(15);
+			return gated(8);
 		case 'baronbasement':
-			return $elm$core$Maybe$Just(16);
+			return gated(9);
 		case 'giant':
-			return $elm$core$Maybe$Just(17);
+			return gated(10);
 		case 'cavebahamut':
-			return $elm$core$Maybe$Just(18);
+			return gated(11);
 		case 'murasamealtar':
-			return $elm$core$Maybe$Just(19);
+			return gated(12);
 		case 'crystalaltar':
-			return $elm$core$Maybe$Just(20);
+			return gated(13);
 		case 'whitealtar':
-			return $elm$core$Maybe$Just(21);
+			return gated(14);
 		case 'ribbonaltar':
-			return $elm$core$Maybe$Just(22);
+			return gated(15);
 		case 'masamunealtar':
-			return $elm$core$Maybe$Just(23);
+			return gated(16);
 		case 'burnmist':
-			return $elm$core$Maybe$Just(24);
+			return gated(17);
 		case 'curefever':
-			return $elm$core$Maybe$Just(25);
+			return gated(18);
 		case 'unlocksewer':
-			return $elm$core$Maybe$Just(26);
+			return gated(19);
 		case 'music':
-			return $elm$core$Maybe$Just(27);
+			return gated(20);
 		case 'toroiatreasury':
-			return $elm$core$Maybe$Just(28);
+			return gated(21);
 		case 'magma':
-			return $elm$core$Maybe$Just(29);
+			return gated(22);
 		case 'supercannon':
-			return $elm$core$Maybe$Just(30);
+			return gated(23);
 		case 'unlocksealedcave':
-			return $elm$core$Maybe$Just(31);
+			return gated(24);
 		case 'bigwhale':
-			return $elm$core$Maybe$Just(32);
+			return gated(25);
 		case 'traderat':
-			return $elm$core$Maybe$Just(33);
+			return gated(26);
 		case 'forge':
-			return $elm$core$Maybe$Just(34);
+			return gated(27);
 		case 'wakeyang':
-			return $elm$core$Maybe$Just(35);
+			return gated(28);
 		case 'tradepan':
-			return $elm$core$Maybe$Just(36);
+			return gated(29);
 		case 'tradepink':
-			return $elm$core$Maybe$Just(37);
+			return gated(30);
 		case 'pass':
-			return $elm$core$Maybe$Just(38);
+			return ungated(7);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -7157,6 +7171,12 @@ var $author$project$Flags$parseO = F2(
 							flags,
 							{
 								dW: A2($Gizra$elm_all_set$EverySet$insert, 2, flags.dW)
+							});
+					case 'gated_quest':
+						return _Utils_update(
+							flags,
+							{
+								dW: A2($Gizra$elm_all_set$EverySet$insert, 3, flags.dW)
 							});
 					default:
 						var num = _switch;
@@ -7490,7 +7510,11 @@ var $author$project$Flags$parse = function (flagString) {
 				dW: $Gizra$elm_all_set$EverySet$fromList(
 					_List_fromArray(
 						[0, 1, 2]))
-			}) : flags;
+			}) : (A2($Gizra$elm_all_set$EverySet$member, 2, flags.dW) ? _Utils_update(
+			flags,
+			{
+				dW: A2($Gizra$elm_all_set$EverySet$remove, 3, flags.dW)
+			}) : flags);
 	};
 	var fixupKeyItems = function (flags) {
 		var keyItems = A2($Gizra$elm_all_set$EverySet$member, 6, flags.cX) ? A2(
@@ -8383,11 +8407,6 @@ var $elm$browser$Browser$AnimationManager$onSelfMsg = F3(
 var $elm$browser$Browser$AnimationManager$Delta = function (a) {
 	return {$: 1, a: a};
 };
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
 var $elm$browser$Browser$AnimationManager$subMap = F2(
 	function (func, sub) {
 		if (!sub.$) {
@@ -10980,6 +10999,35 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropdown = F2(
 					A3($rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownMenu, state, config, items)
 				]));
 	});
+var $author$project$Objective$quests = A2(
+	$elm$core$List$map,
+	$author$project$Objective$DoQuest,
+	_Utils_ap(
+		A2(
+			$elm$core$List$map,
+			$author$project$Objective$Ungated,
+			_List_fromArray(
+				[0, 1, 2, 3, 4, 5, 6])),
+		_Utils_ap(
+			A2(
+				$elm$core$List$map,
+				$author$project$Objective$Gated,
+				_List_fromArray(
+					[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30])),
+			_List_fromArray(
+				[
+					$author$project$Objective$Ungated(7)
+				]))));
+var $author$project$Objective$gatedQuests = function () {
+	var isGated = function (q) {
+		if ((q.$ === 6) && (q.a.$ === 1)) {
+			return true;
+		} else {
+			return false;
+		}
+	};
+	return A2($elm$core$List$filter, isGated, $author$project$Objective$quests);
+}();
 var $elm$html$Html$h6 = _VirtualDom_node('h6');
 var $rundis$elm_bootstrap$Bootstrap$Dropdown$header = function (children) {
 	return A2(
@@ -10991,11 +11039,6 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$header = function (children) {
 		children);
 };
 var $elm$html$Html$li = _VirtualDom_node('li');
-var $author$project$Objective$quests = A2(
-	$elm$core$List$map,
-	$author$project$Objective$DoQuest,
-	_List_fromArray(
-		[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38]));
 var $author$project$Objective$bossToString = function (boss) {
 	switch (boss) {
 		case 0:
@@ -11099,85 +11142,92 @@ var $author$project$Objective$charToString = function (_char) {
 	}
 };
 var $author$project$Objective$questToString = function (quest) {
-	switch (quest) {
-		case 0:
-			return 'Defeat the boss of the Mist Cave';
-		case 1:
-			return 'Defeat the boss of the Waterfall';
-		case 2:
-			return 'Complete the Antlion Nest';
-		case 3:
-			return 'Rescue the hostage on Mt. Hobs';
-		case 4:
-			return 'Defend Fabul';
-		case 5:
-			return 'Complete Mt. Ordeals';
-		case 6:
-			return 'Defeat the bosses of Baron Inn';
-		case 7:
-			return 'Liberate Baron Castle';
-		case 8:
-			return 'Complete Cave Magnes';
-		case 9:
-			return 'Complete the Tower of Zot';
-		case 10:
-			return 'Defeat the bosses of Dwarf Castle';
-		case 11:
-			return 'Defeat the boss of Lower Bab-il';
-		case 12:
-			return 'Launch the Falcon';
-		case 13:
-			return 'Complete the Sealed Cave';
-		case 14:
-			return 'Defeat the queen at the Town of Monsters';
-		case 15:
-			return 'Defeat the king at the Town of Monsters';
-		case 16:
-			return 'Defeat the Baron Castle basement throne';
-		case 17:
-			return 'Complete the Giant of Bab-il';
-		case 18:
-			return 'Complete Cave Bahamut';
-		case 19:
-			return 'Conquer the vanilla Murasame altar';
-		case 20:
-			return 'Conquer the vanilla Crystal Sword altar';
-		case 21:
-			return 'Conquer the vanilla White Spear altar';
-		case 22:
-			return 'Conquer the vanillla Ribbon room';
-		case 23:
-			return 'Conquer the vanilla Masamune Altar';
-		case 24:
-			return 'Burn village Mist with the Package';
-		case 25:
-			return 'Cure the fever with the SandRuby';
-		case 26:
-			return 'Unlock the sewer with the Baron Key';
-		case 27:
-			return 'Break the Dark Elf\'s spell with the TwinHarp';
-		case 28:
-			return 'Open the Toroia Treasury with the Earth Crystal';
-		case 29:
-			return 'Drop the Magma Key into the Agart well';
-		case 30:
-			return 'Destroy the Super Cannon';
-		case 31:
-			return 'Unlock the Sealed Cave';
-		case 32:
-			return 'Raise the Big Whale';
-		case 33:
-			return 'Trade away the Rat Tail';
-		case 34:
-			return 'Have Kokkol forge Legend Sword with Adamant';
-		case 35:
-			return 'Wake Yang with the Pan';
-		case 36:
-			return 'Return the Pan to Yang\'s wife';
-		case 37:
-			return 'Trade away the Pink Tail';
-		default:
-			return 'Unlock the Pass door in Toroia';
+	if (!quest.$) {
+		var q = quest.a;
+		switch (q) {
+			case 0:
+				return 'Defeat the boss of the Mist Cave';
+			case 1:
+				return 'Defeat the boss of the Waterfall';
+			case 2:
+				return 'Complete the Antlion Nest';
+			case 3:
+				return 'Rescue the hostage on Mt. Hobs';
+			case 4:
+				return 'Defend Fabul';
+			case 5:
+				return 'Complete Mt. Ordeals';
+			case 6:
+				return 'Defeat the bosses of Baron Inn';
+			default:
+				return 'Unlock the Pass door in Toroia';
+		}
+	} else {
+		var q = quest.a;
+		switch (q) {
+			case 0:
+				return 'Liberate Baron Castle';
+			case 1:
+				return 'Complete Cave Magnes';
+			case 2:
+				return 'Complete the Tower of Zot';
+			case 3:
+				return 'Defeat the bosses of Dwarf Castle';
+			case 4:
+				return 'Defeat the boss of Lower Bab-il';
+			case 5:
+				return 'Launch the Falcon';
+			case 6:
+				return 'Complete the Sealed Cave';
+			case 7:
+				return 'Defeat the queen at the Town of Monsters';
+			case 8:
+				return 'Defeat the king at the Town of Monsters';
+			case 9:
+				return 'Defeat the Baron Castle basement throne';
+			case 10:
+				return 'Complete the Giant of Bab-il';
+			case 11:
+				return 'Complete Cave Bahamut';
+			case 12:
+				return 'Conquer the vanilla Murasame altar';
+			case 13:
+				return 'Conquer the vanilla Crystal Sword altar';
+			case 14:
+				return 'Conquer the vanilla White Spear altar';
+			case 15:
+				return 'Conquer the vanillla Ribbon room';
+			case 16:
+				return 'Conquer the vanilla Masamune Altar';
+			case 17:
+				return 'Burn village Mist with the Package';
+			case 18:
+				return 'Cure the fever with the SandRuby';
+			case 19:
+				return 'Unlock the sewer with the Baron Key';
+			case 20:
+				return 'Break the Dark Elf\'s spell with the TwinHarp';
+			case 21:
+				return 'Open the Toroia Treasury with the Earth Crystal';
+			case 22:
+				return 'Drop the Magma Key into the Agart well';
+			case 23:
+				return 'Destroy the Super Cannon';
+			case 24:
+				return 'Unlock the Sealed Cave';
+			case 25:
+				return 'Raise the Big Whale';
+			case 26:
+				return 'Trade away the Rat Tail';
+			case 27:
+				return 'Have Kokkol forge Legend Sword with Adamant';
+			case 28:
+				return 'Wake Yang with the Pan';
+			case 29:
+				return 'Return the Pan to Yang\'s wife';
+			default:
+				return 'Trade away the Pink Tail';
+		}
 	}
 };
 var $author$project$Objective$toString = function (objective) {
@@ -11625,7 +11675,9 @@ var $author$project$App$viewEditableObjective = F4(
 								A3(section, 0, 'Character Hunts', $author$project$Objective$characters),
 								_Utils_ap(
 									A3(section, 1, 'Boss Hunts', $author$project$Objective$bosses),
-									A3(section, 2, 'Quests', $author$project$Objective$quests))),
+									_Utils_ap(
+										A3(section, 2, 'Quests', $author$project$Objective$quests),
+										A3(section, 3, 'Gated Quests', $author$project$Objective$gatedQuests)))),
 							dS: _List_Nil,
 							d3: A2(
 								$rundis$elm_bootstrap$Bootstrap$Dropdown$toggle,
