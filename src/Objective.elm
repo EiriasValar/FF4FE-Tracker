@@ -1,7 +1,7 @@
 {- Lotta unfortunate boilerplate in here, partly as a result of not being able
-   to get at all the possible values of a union type through reflection.
-   Could go the same route as Location, and just define (once) a list of records,
-   but that feels unnecessarily clunky when the records would have only two fields,
+   to get at all the possible values of a union type through reflection. Could
+   go the same route as Location, and just define (once) a list of records, but
+   that feels unnecessarily clunky when the records would have only two fields,
    plus `fromString` would then have to scan the list for the given name.
 -}
 
@@ -15,6 +15,7 @@ module Objective exposing
     , bosses
     , characters
     , fromString
+    , gatedQuests
     , isBoss
     , quests
     , toString
@@ -35,6 +36,7 @@ type Type
     = Character
     | Boss
     | Quest
+    | GatedQuest
 
 
 isBoss : Objective -> Bool
@@ -163,6 +165,11 @@ bosses =
 
 
 type QuestObjective
+    = Ungated UngatedQuest
+    | Gated GatedQuest
+
+
+type UngatedQuest
     = MistCave
     | Waterfall
     | AntlionCave
@@ -170,7 +177,11 @@ type QuestObjective
     | Fabul
     | MtOrdeals
     | BaronInn
-    | BaronCastle
+    | Pass
+
+
+type GatedQuest
+    = BaronCastle
     | CaveMagnes
     | TowerZot
     | DwarfCastle
@@ -201,52 +212,68 @@ type QuestObjective
     | PanWake
     | PanReturn
     | PinkTail
-    | Pass
 
 
 quests : List Objective
 quests =
-    [ MistCave
-    , Waterfall
-    , AntlionCave
-    , MtHobs
-    , Fabul
-    , MtOrdeals
-    , BaronInn
-    , BaronCastle
-    , CaveMagnes
-    , TowerZot
-    , DwarfCastle
-    , LowerBabil
-    , Falcon
-    , SealedCave
-    , FeymarchQueen
-    , FeymarchKing
-    , BaronBasement
-    , Giant
-    , CaveBahamut
-    , MurasameAltar
-    , WyvernAltar
-    , WhiteSpearAltar
-    , RibbonRoom
-    , MasamuneAltar
-    , Package
-    , SandRuby
-    , UnlockSewer
-    , TwinHarp
-    , Treasury
-    , MagmaKey
-    , SuperCannon
-    , UnlockSealedCave
-    , BigWhale
-    , RatTail
-    , Forge
-    , PanWake
-    , PanReturn
-    , PinkTail
-    , Pass
-    ]
+    List.map Ungated
+        [ MistCave
+        , Waterfall
+        , AntlionCave
+        , MtHobs
+        , Fabul
+        , MtOrdeals
+        , BaronInn
+        ]
+        ++ List.map Gated
+            [ BaronCastle
+            , CaveMagnes
+            , TowerZot
+            , DwarfCastle
+            , LowerBabil
+            , Falcon
+            , SealedCave
+            , FeymarchQueen
+            , FeymarchKing
+            , BaronBasement
+            , Giant
+            , CaveBahamut
+            , MurasameAltar
+            , WyvernAltar
+            , WhiteSpearAltar
+            , RibbonRoom
+            , MasamuneAltar
+            , Package
+            , SandRuby
+            , UnlockSewer
+            , TwinHarp
+            , Treasury
+            , MagmaKey
+            , SuperCannon
+            , UnlockSealedCave
+            , BigWhale
+            , RatTail
+            , Forge
+            , PanWake
+            , PanReturn
+            , PinkTail
+            ]
+        ++ [ Ungated Pass ]
         |> List.map DoQuest
+
+
+gatedQuests : List Objective
+gatedQuests =
+    let
+        isGated q =
+            case q of
+                DoQuest (Gated _) ->
+                    True
+
+                _ ->
+                    False
+    in
+    List.filter isGated quests
 
 
 toString : Objective -> String
@@ -426,122 +453,126 @@ bossToString boss =
 questToString : QuestObjective -> String
 questToString quest =
     case quest of
-        MistCave ->
-            "Defeat the boss of the Mist Cave"
+        Ungated q ->
+            case q of
+                MistCave ->
+                    "Defeat the boss of the Mist Cave"
 
-        Waterfall ->
-            "Defeat the boss of the Waterfall"
+                Waterfall ->
+                    "Defeat the boss of the Waterfall"
 
-        AntlionCave ->
-            "Complete the Antlion Nest"
+                AntlionCave ->
+                    "Complete the Antlion Nest"
 
-        MtHobs ->
-            "Rescue the hostage on Mt. Hobs"
+                MtHobs ->
+                    "Rescue the hostage on Mt. Hobs"
 
-        Fabul ->
-            "Defend Fabul"
+                Fabul ->
+                    "Defend Fabul"
 
-        MtOrdeals ->
-            "Complete Mt. Ordeals"
+                MtOrdeals ->
+                    "Complete Mt. Ordeals"
 
-        BaronInn ->
-            "Defeat the bosses of Baron Inn"
+                BaronInn ->
+                    "Defeat the bosses of Baron Inn"
 
-        BaronCastle ->
-            "Liberate Baron Castle"
+                Pass ->
+                    "Unlock the Pass door in Toroia"
 
-        CaveMagnes ->
-            "Complete Cave Magnes"
+        Gated q ->
+            case q of
+                BaronCastle ->
+                    "Liberate Baron Castle"
 
-        TowerZot ->
-            "Complete the Tower of Zot"
+                CaveMagnes ->
+                    "Complete Cave Magnes"
 
-        DwarfCastle ->
-            "Defeat the bosses of Dwarf Castle"
+                TowerZot ->
+                    "Complete the Tower of Zot"
 
-        LowerBabil ->
-            "Defeat the boss of Lower Bab-il"
+                DwarfCastle ->
+                    "Defeat the bosses of Dwarf Castle"
 
-        Falcon ->
-            "Launch the Falcon"
+                LowerBabil ->
+                    "Defeat the boss of Lower Bab-il"
 
-        SealedCave ->
-            "Complete the Sealed Cave"
+                Falcon ->
+                    "Launch the Falcon"
 
-        FeymarchQueen ->
-            "Defeat the queen at the Town of Monsters"
+                SealedCave ->
+                    "Complete the Sealed Cave"
 
-        FeymarchKing ->
-            "Defeat the king at the Town of Monsters"
+                FeymarchQueen ->
+                    "Defeat the queen at the Town of Monsters"
 
-        BaronBasement ->
-            "Defeat the Baron Castle basement throne"
+                FeymarchKing ->
+                    "Defeat the king at the Town of Monsters"
 
-        Giant ->
-            "Complete the Giant of Bab-il"
+                BaronBasement ->
+                    "Defeat the Baron Castle basement throne"
 
-        CaveBahamut ->
-            "Complete Cave Bahamut"
+                Giant ->
+                    "Complete the Giant of Bab-il"
 
-        MurasameAltar ->
-            "Conquer the vanilla Murasame altar"
+                CaveBahamut ->
+                    "Complete Cave Bahamut"
 
-        WyvernAltar ->
-            "Conquer the vanilla Crystal Sword altar"
+                MurasameAltar ->
+                    "Conquer the vanilla Murasame altar"
 
-        WhiteSpearAltar ->
-            "Conquer the vanilla White Spear altar"
+                WyvernAltar ->
+                    "Conquer the vanilla Crystal Sword altar"
 
-        RibbonRoom ->
-            "Conquer the vanillla Ribbon room"
+                WhiteSpearAltar ->
+                    "Conquer the vanilla White Spear altar"
 
-        MasamuneAltar ->
-            "Conquer the vanilla Masamune Altar"
+                RibbonRoom ->
+                    "Conquer the vanillla Ribbon room"
 
-        Package ->
-            "Burn village Mist with the Package"
+                MasamuneAltar ->
+                    "Conquer the vanilla Masamune Altar"
 
-        SandRuby ->
-            "Cure the fever with the SandRuby"
+                Package ->
+                    "Burn village Mist with the Package"
 
-        UnlockSewer ->
-            "Unlock the sewer with the Baron Key"
+                SandRuby ->
+                    "Cure the fever with the SandRuby"
 
-        TwinHarp ->
-            "Break the Dark Elf's spell with the TwinHarp"
+                UnlockSewer ->
+                    "Unlock the sewer with the Baron Key"
 
-        Treasury ->
-            "Open the Toroia Treasury with the Earth Crystal"
+                TwinHarp ->
+                    "Break the Dark Elf's spell with the TwinHarp"
 
-        MagmaKey ->
-            "Drop the Magma Key into the Agart well"
+                Treasury ->
+                    "Open the Toroia Treasury with the Earth Crystal"
 
-        SuperCannon ->
-            "Destroy the Super Cannon"
+                MagmaKey ->
+                    "Drop the Magma Key into the Agart well"
 
-        UnlockSealedCave ->
-            "Unlock the Sealed Cave"
+                SuperCannon ->
+                    "Destroy the Super Cannon"
 
-        BigWhale ->
-            "Raise the Big Whale"
+                UnlockSealedCave ->
+                    "Unlock the Sealed Cave"
 
-        RatTail ->
-            "Trade away the Rat Tail"
+                BigWhale ->
+                    "Raise the Big Whale"
 
-        Forge ->
-            "Have Kokkol forge Legend Sword with Adamant"
+                RatTail ->
+                    "Trade away the Rat Tail"
 
-        PanWake ->
-            "Wake Yang with the Pan"
+                Forge ->
+                    "Have Kokkol forge Legend Sword with Adamant"
 
-        PanReturn ->
-            "Return the Pan to Yang's wife"
+                PanWake ->
+                    "Wake Yang with the Pan"
 
-        PinkTail ->
-            "Trade away the Pink Tail"
+                PanReturn ->
+                    "Return the Pan to Yang's wife"
 
-        Pass ->
-            "Unlock the Pass door in Toroia"
+                PinkTail ->
+                    "Trade away the Pink Tail"
 
 
 fromString : String -> Maybe Objective
@@ -732,123 +763,130 @@ bossFromString boss =
 
 questFromString : String -> Maybe QuestObjective
 questFromString quest =
+    let
+        ungated =
+            Just << Ungated
+
+        gated =
+            Just << Gated
+    in
     case quest of
         "mistcave" ->
-            Just MistCave
+            ungated MistCave
 
         "waterfall" ->
-            Just Waterfall
+            ungated Waterfall
 
         "antlionnest" ->
-            Just AntlionCave
+            ungated AntlionCave
 
         "hobs" ->
-            Just MtHobs
+            ungated MtHobs
 
         "fabul" ->
-            Just Fabul
+            ungated Fabul
 
         "ordeals" ->
-            Just MtOrdeals
+            ungated MtOrdeals
 
         "baroninn" ->
-            Just BaronInn
+            ungated BaronInn
 
         "baroncastle" ->
-            Just BaronCastle
+            gated BaronCastle
 
         "magnes" ->
-            Just CaveMagnes
+            gated CaveMagnes
 
         "zot" ->
-            Just TowerZot
+            gated TowerZot
 
         "dwarfcastle" ->
-            Just DwarfCastle
+            gated DwarfCastle
 
         "lowerbabil" ->
-            Just LowerBabil
+            gated LowerBabil
 
         "falcon" ->
-            Just Falcon
+            gated Falcon
 
         "sealedcave" ->
-            Just SealedCave
+            gated SealedCave
 
         "monsterqueen" ->
-            Just FeymarchQueen
+            gated FeymarchQueen
 
         "monsterking" ->
-            Just FeymarchKing
+            gated FeymarchKing
 
         "baronbasement" ->
-            Just BaronBasement
+            gated BaronBasement
 
         "giant" ->
-            Just Giant
+            gated Giant
 
         "cavebahamut" ->
-            Just CaveBahamut
+            gated CaveBahamut
 
         "murasamealtar" ->
-            Just MurasameAltar
+            gated MurasameAltar
 
         "crystalaltar" ->
-            Just WyvernAltar
+            gated WyvernAltar
 
         "whitealtar" ->
-            Just WhiteSpearAltar
+            gated WhiteSpearAltar
 
         "ribbonaltar" ->
-            Just RibbonRoom
+            gated RibbonRoom
 
         "masamunealtar" ->
-            Just MasamuneAltar
+            gated MasamuneAltar
 
         "burnmist" ->
-            Just Package
+            gated Package
 
         "curefever" ->
-            Just SandRuby
+            gated SandRuby
 
         "unlocksewer" ->
-            Just UnlockSewer
+            gated UnlockSewer
 
         "music" ->
-            Just TwinHarp
+            gated TwinHarp
 
         "toroiatreasury" ->
-            Just Treasury
+            gated Treasury
 
         "magma" ->
-            Just MagmaKey
+            gated MagmaKey
 
         "supercannon" ->
-            Just SuperCannon
+            gated SuperCannon
 
         "unlocksealedcave" ->
-            Just UnlockSealedCave
+            gated UnlockSealedCave
 
         "bigwhale" ->
-            Just BigWhale
+            gated BigWhale
 
         "traderat" ->
-            Just RatTail
+            gated RatTail
 
         "forge" ->
-            Just Forge
+            gated Forge
 
         "wakeyang" ->
-            Just PanWake
+            gated PanWake
 
         "tradepan" ->
-            Just PanReturn
+            gated PanReturn
 
         "tradepink" ->
-            Just PinkTail
+            gated PinkTail
 
         "pass" ->
-            Just Pass
+            ungated Pass
 
         _ ->
             Nothing
