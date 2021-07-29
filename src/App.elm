@@ -543,6 +543,7 @@ viewEditableObjective index randomObjective completedObjectives objectiveTypes =
                         section Objective.Character "Character Hunts" Objective.characters
                             ++ section Objective.Boss "Boss Hunts" Objective.bosses
                             ++ section Objective.Quest "Quests" Objective.quests
+                            ++ section Objective.GatedQuest "Gated Quests" Objective.gatedQuests
                     }
                 ]
 
