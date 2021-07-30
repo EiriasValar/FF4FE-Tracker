@@ -139,7 +139,6 @@ type Key
     | MistVillageMom
     | Kaipo
     | KaipoShops
-    | KaipoBed
     | WateryPass
     | Waterfall
     | Damcyan
@@ -161,10 +160,8 @@ type Key
     | ToroiaShops
     | ToroiaCastle
     | ToroiaTreasury
-    | CaveMagnesChests
     | CaveMagnes
-    | Zot1
-    | Zot2
+    | Zot
     | Agart
     | AgartShops
     | Silvera
@@ -296,8 +293,22 @@ getProperties_ context unwrapGatedValues (Location location) =
                         && Set.member itemClass context.flags.keyItems
 
                 GatedValue required v ->
-                    Set.member required context.attainedRequirements
-                        && exists v
+                    case ( context.flags.pushBToJump, location.key, v ) of
+                        ( True, Zot, _ ) ->
+                            -- PBTJ lets us access all gated requirements in Zot
+                            exists v
+
+                        ( True, CaveMagnes, KeyItem _ ) ->
+                            -- PBTJ lets us access the gated Key Item in Magnes
+                            -- (but not the Boss)
+                            exists v
+
+                        _ ->
+                            -- otherwise, gated value exists if we have
+                            -- its gating requirement, and the value itself
+                            -- exists
+                            Set.member required context.attainedRequirements
+                                && exists v
 
                 Shop shopValue ->
                     let
@@ -704,19 +715,12 @@ filterByContext class c (Locations locations) =
         context =
             { c | attainedRequirements = attainedRequirements }
 
-        requirementsMetFor key =
-            Dict.get key locations
-                |> Maybe.map (requirementsMet attainedRequirements)
-                |> Maybe.withDefault False
-
         -- locations that can be accessed regardless of requirements if we can jump
         jumpable =
             Set.fromList <|
                 [ BaronSewer
                 , BaronCastle
                 , BaronBasement
-                , CaveMagnes
-                , Zot2
                 , CaveEblan
                 , CaveEblanShops
                 , UpperBabil
@@ -756,11 +760,6 @@ filterByContext class c (Locations locations) =
                                 False
                     )
 
-        hasNoValue (Location l) =
-            -- hide the chests-only pseudo-location once its
-            -- full-value counterpart is  unlocked
-            l.key == CaveMagnesChests && requirementsMetFor CaveMagnes
-
         isRelevant ((Location l) as location) =
             if not <| isClass class location then
                 False
@@ -773,7 +772,6 @@ filterByContext class c (Locations locations) =
 
             else
                 propertiesHaveValue location
-                    && (not <| hasNoValue location)
                     && areaAccessible attainedRequirements location
                     && (context.flags.pushBToJump && Set.member l.key jumpable || requirementsMet attainedRequirements location)
     in
@@ -1042,7 +1040,8 @@ surface =
       , name = "Kaipo"
       , requirements = []
       , value =
-            [ Chest 1
+            [ GatedValue SandRuby <| Character Gated
+            , Chest 1
             ]
       }
     , { key = KaipoShops
@@ -1052,13 +1051,6 @@ surface =
             [ Shop Weapon
             , Shop Armour
             , Shop Item
-            ]
-      }
-    , { key = KaipoBed
-      , name = "Kaipo"
-      , requirements = [ SandRuby ]
-      , value =
-            [ Character Gated
             ]
       }
     , { key = WateryPass
@@ -1250,41 +1242,28 @@ surface =
             [ Chest 18
             ]
       }
-    , { key = CaveMagnesChests
+    , { key = CaveMagnes
       , name = "Cave Magnes"
       , requirements = []
       , value =
-            [ Chest 10
-            ]
-      }
-    , { key = CaveMagnes
-      , name = "Cave Magnes"
-      , requirements = [ TwinHarp ]
-      , value =
-            [ Boss
-            , KeyItem Main
-            , KeyItem Vanilla
+            [ GatedValue TwinHarp Boss
+            , GatedValue TwinHarp <| KeyItem Main
+            , GatedValue TwinHarp <| KeyItem Vanilla
             , Chest 10
             ]
       }
-    , { key = Zot1
-      , name = "Tower of Zot 1"
+    , { key = Zot
+      , name = "Tower of Zot"
       , requirements = []
       , value =
             [ Boss
+            , GatedValue EarthCrystal <| Character Gated
+            , GatedValue EarthCrystal <| Character Gated
+            , GatedValue EarthCrystal <| Boss
+            , GatedValue EarthCrystal <| KeyItem Main
+            , GatedValue EarthCrystal <| KeyItem Vanilla
             , Chest 5
             , TrappedChest 1
-            ]
-      }
-    , { key = Zot2
-      , name = "Tower of Zot 2"
-      , requirements = [ EarthCrystal ]
-      , value =
-            [ Character Gated
-            , Character Gated
-            , Boss
-            , KeyItem Main
-            , KeyItem Vanilla
             ]
       }
     , { key = Agart
