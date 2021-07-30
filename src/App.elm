@@ -214,6 +214,24 @@ innerUpdate msg model =
     let
         toggleProperty key index hard newModel =
             { newModel | locations = Location.update key (Maybe.map <| Location.toggleProperty index hard) newModel.locations }
+
+        -- when we attain a new requirement, add it to the set and un-dismiss
+        -- any locations for which it gates value
+        attainRequirement requirement newModel =
+            let
+                attainedRequirements =
+                    Set.insert requirement newModel.attainedRequirements
+
+                context =
+                    getContext { newModel | attainedRequirements = attainedRequirements }
+
+                locations =
+                    Location.undismissByGatingRequirement context requirement newModel.locations
+            in
+            { newModel
+                | attainedRequirements = attainedRequirements
+                , locations = locations
+            }
     in
     case msg of
         ToggleObjective objective ->
@@ -236,7 +254,11 @@ innerUpdate msg model =
                     model
 
         ToggleRequirement requirement ->
-            { model | attainedRequirements = toggle requirement model.attainedRequirements }
+            if Set.member requirement model.attainedRequirements then
+                { model | attainedRequirements = Set.remove requirement model.attainedRequirements }
+
+            else
+                attainRequirement requirement model
 
         ToggleFilter filter ->
             { model
@@ -272,9 +294,13 @@ innerUpdate msg model =
                 newLocation =
                     Location.toggleStatus status location
 
+                newModel =
+                    { model | locations = Location.insert newLocation model.locations }
+
+                -- collect any Requirements this location awards as value
                 requirements =
                     newLocation
-                        |> Location.getProperties (getContext model)
+                        |> Location.getProperties (getContext newModel)
                         |> List.filterMap
                             (\( _, _, value ) ->
                                 case value of
@@ -285,22 +311,18 @@ innerUpdate msg model =
                                         Nothing
                             )
                         |> Set.fromList
-
-                attainedRequirements =
-                    case Location.getStatus newLocation of
-                        Unseen ->
-                            Set.diff model.attainedRequirements requirements
-
-                        Dismissed ->
-                            Set.union model.attainedRequirements requirements
-
-                        _ ->
-                            model.attainedRequirements
             in
-            { model
-                | locations = Location.insert newLocation model.locations
-                , attainedRequirements = attainedRequirements
-            }
+            case Location.getStatus newLocation of
+                Unseen ->
+                    -- unattain the rewarded requirements
+                    { newModel | attainedRequirements = Set.diff newModel.attainedRequirements requirements }
+
+                Dismissed ->
+                    -- attain the rewarded requirements
+                    Set.foldl attainRequirement newModel requirements
+
+                _ ->
+                    newModel
 
         ToggleProperty key index ->
             toggleProperty key index False model
