@@ -1,6 +1,9 @@
 ### 2021-07-30
 - Consolidate split locations for Kaipo, Cave Magnes, and Zot, similarly to
   Sylph Cave and Sheila.
+- Check off uniquely valuable things when dismissing locations that may become
+  undismissed automatically (Sylph Cave, Sheila), so it's clear what remains
+  to be gained from them when they do.
 
 ### 2021-07-29
 - Fix weirdness in how Sylph Cave was handled (it was actually two locations,

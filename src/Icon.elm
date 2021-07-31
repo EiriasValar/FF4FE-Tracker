@@ -72,6 +72,9 @@ fromValue value =
         Requirement (Pseudo YangBonk) ->
             Just yangBonk
 
+        Requirement (Pseudo Falcon) ->
+            Just falcon
+
         Shop Weapon ->
             Just weapon
 
@@ -149,6 +152,14 @@ yangBonk =
     { class = "yang-bonk"
     , title = "Bonk Yang"
     , img = img "img/sprites/Yang-Front.gif"
+    }
+
+
+falcon : Icon msg
+falcon =
+    { class = "falcon"
+    , title = "Launch the Falcon"
+    , img = img "img/sprites/Falcon-Left-still.png"
     }
 
 

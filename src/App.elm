@@ -292,7 +292,7 @@ innerUpdate msg model =
         ToggleLocationStatus location status ->
             let
                 newLocation =
-                    Location.toggleStatus status location
+                    Location.toggleStatus (getContext model) status location
 
                 newModel =
                     { model | locations = Location.insert newLocation model.locations }

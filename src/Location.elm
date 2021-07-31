@@ -448,9 +448,58 @@ getStatus (Location location) =
     location.status
 
 
-toggleStatus : Status -> Location -> Location
-toggleStatus status (Location location) =
-    Location { location | status = toggleStatus_ status location.status }
+toggleStatus : Context -> Status -> Location -> Location
+toggleStatus context status (Location location) =
+    let
+        newStatus =
+            toggleStatus_ status location.status
+
+        properties =
+            if newStatus == Dismissed then
+                Array.map dismissSpecialValue location.properties
+
+            else
+                location.properties
+
+        -- It would feel a little redundant and visually busy to mark as
+        -- dismissed each value icon when we dismiss the location (and also
+        -- potentially incorrect: sometimes you dismiss a location not because
+        -- you cleared it, but because you don't want to see it) – but for
+        -- Requirement values, which affect other location accessibility, it
+        -- makes sense, particularly at locations that can be visited multiple
+        -- times (i.e. Sylph Cave, Sheila).
+        dismissSpecialValue (Property propStatus value) =
+            let
+                newPropStatus =
+                    case value of
+                        Requirement _ ->
+                            Dismissed
+
+                        GatedValue required v ->
+                            case ( Set.member required context.attainedRequirements, v, location.key ) of
+                                ( True, Requirement _, _ ) ->
+                                    Dismissed
+
+                                ( True, KeyItem _, Sheila ) ->
+                                    -- Sheila's the only location with two (gated) key items
+                                    -- that we might get on separate trips; mark them completed
+                                    -- when the location is dismissed so things are clear when
+                                    -- the location gets automatically undismissed when we bonk Yang
+                                    Dismissed
+
+                                _ ->
+                                    propStatus
+
+                        _ ->
+                            propStatus
+            in
+            Property newPropStatus value
+    in
+    Location
+        { location
+            | status = newStatus
+            , properties = properties
+        }
 
 
 {-| Advance the given property of the given location to its next logical
