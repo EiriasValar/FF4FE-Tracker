@@ -66,6 +66,15 @@ fromValue value =
         TrappedChest _ ->
             Just trappedChest
 
+        Requirement (Pseudo YangTalk) ->
+            Just yangTalk
+
+        Requirement (Pseudo YangBonk) ->
+            Just yangBonk
+
+        Requirement (Pseudo Falcon) ->
+            Just falcon
+
         Shop Weapon ->
             Just weapon
 
@@ -127,6 +136,30 @@ trappedChest =
     { class = "trapped-chest"
     , title = "Trapped chests"
     , img = img "img/sprites/RedChest2.gif"
+    }
+
+
+yangTalk : Icon msg
+yangTalk =
+    { class = "yang-talk"
+    , title = "Talk to Yang"
+    , img = img "img/sprites/Yang-KO1.gif"
+    }
+
+
+yangBonk : Icon msg
+yangBonk =
+    { class = "yang-bonk"
+    , title = "Bonk Yang"
+    , img = img "img/sprites/Yang-Front.gif"
+    }
+
+
+falcon : Icon msg
+falcon =
+    { class = "falcon"
+    , title = "Launch the Falcon"
+    , img = img "img/sprites/Falcon-Left-still.png"
     }
 
 

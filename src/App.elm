@@ -51,7 +51,8 @@ type alias Model =
     , completedObjectives : Set Objective
     , attainedRequirements : Set Requirement
     , locations : Locations
-    , filterOverrides : Dict Filter FilterType
+    , locationFilterOverrides : Dict Filter FilterType
+    , shopFilterOverrides : Dict Filter FilterType
     , warpGlitchUsed : Bool
     , shopMenu : Maybe ShopMenu
     }
@@ -80,7 +81,7 @@ type Msg
     | UnsetRandomObjective Int
     | DropdownMsg Int Dropdown.State
     | ToggleRequirement Requirement
-    | ToggleFilter Filter
+    | ToggleFilter Location.Class Filter
     | ToggleLocationStatus Location Location.Status
     | ToggleProperty Location.Key Int
     | HardToggleProperty Location.Key Int
@@ -119,12 +120,13 @@ init _ =
     , completedObjectives = Set.empty
     , attainedRequirements = Set.empty
     , locations = Location.all
-    , filterOverrides =
+    , locationFilterOverrides =
         Dict.fromList
             [ ( Characters, Show )
             , ( KeyItems, Show )
             , ( Chests, Hide )
             ]
+    , shopFilterOverrides = Dict.empty
     , warpGlitchUsed = False
     , shopMenu = Nothing
     }
@@ -213,11 +215,58 @@ innerUpdate : Msg -> Model -> Model
 innerUpdate msg model =
     let
         toggleProperty key index hard newModel =
-            { newModel | locations = Location.update key (Maybe.map <| Location.toggleProperty index hard) newModel.locations }
+            let
+                locations =
+                    Location.update key (Maybe.map <| Location.toggleProperty index hard) newModel.locations
+
+                -- if the property is a Requirement, update our
+                -- attainedRequirements accordingly
+                updateRequirements =
+                    case Location.getProperty key index locations of
+                        Just ( Unseen, Requirement requirement ) ->
+                            removeRequirement requirement
+
+                        Just ( Dismissed, Requirement requirement ) ->
+                            attainRequirement requirement
+
+                        _ ->
+                            identity
+            in
+            { newModel | locations = locations }
+                |> updateRequirements
+
+        -- when we attain a new requirement, add it to the set and un-dismiss
+        -- any locations for which it gates value
+        attainRequirement requirement newModel =
+            let
+                attainedRequirements =
+                    Set.insert requirement newModel.attainedRequirements
+
+                context =
+                    getContext { newModel | attainedRequirements = attainedRequirements }
+
+                locations =
+                    Location.undismissByGatingRequirement context requirement newModel.locations
+            in
+            { newModel
+                | attainedRequirements = attainedRequirements
+                , locations = locations
+            }
+
+        removeRequirement requirement newModel =
+            { newModel | attainedRequirements = Set.remove requirement model.attainedRequirements }
     in
     case msg of
         ToggleObjective objective ->
-            { model | completedObjectives = toggle objective model.completedObjectives }
+            let
+                fn =
+                    if Set.member objective model.completedObjectives then
+                        Set.remove
+
+                    else
+                        Set.insert
+            in
+            { model | completedObjectives = fn objective model.completedObjectives }
 
         SetRandomObjective index objective ->
             { model | randomObjectives = Array.set index (Set objective) model.randomObjectives }
@@ -236,45 +285,55 @@ innerUpdate msg model =
                     model
 
         ToggleRequirement requirement ->
-            { model | attainedRequirements = toggle requirement model.attainedRequirements }
+            if Set.member requirement model.attainedRequirements then
+                removeRequirement requirement model
 
-        ToggleFilter filter ->
-            { model
-                | filterOverrides =
-                    Dict.update filter
-                        (\state ->
-                            case state of
-                                Nothing ->
-                                    Just Show
+            else
+                attainRequirement requirement model
 
-                                Just Show ->
-                                    if filter == Checked then
-                                        -- skip the Hide state for Checked, as that's the default
-                                        Nothing
+        ToggleFilter locClass filter ->
+            let
+                toggle state =
+                    case state of
+                        Nothing ->
+                            Just Show
 
-                                    else
-                                        Just Hide
+                        Just Show ->
+                            if filter == Checked then
+                                -- skip the Hide state for Checked, as that's the default
+                                Nothing
 
-                                Just Hide ->
-                                    if List.member filter [ Characters, KeyItems ] then
-                                        -- skip the Nothing state for these filters, as they always
-                                        -- default to Show (so Nothing is redundant)
-                                        Just Show
+                            else
+                                Just Hide
 
-                                    else
-                                        Nothing
-                        )
-                        model.filterOverrides
-            }
+                        Just Hide ->
+                            if List.member filter [ Characters, KeyItems ] then
+                                -- skip the Nothing state for these filters, as they always
+                                -- default to Show (so Nothing is redundant)
+                                Just Show
+
+                            else
+                                Nothing
+            in
+            case locClass of
+                Location.Checks ->
+                    { model | locationFilterOverrides = Dict.update filter toggle model.locationFilterOverrides }
+
+                Location.Shops ->
+                    { model | shopFilterOverrides = Dict.update filter toggle model.shopFilterOverrides }
 
         ToggleLocationStatus location status ->
             let
                 newLocation =
-                    Location.toggleStatus status location
+                    Location.toggleStatus (getContext model) status location
 
+                newModel =
+                    { model | locations = Location.insert newLocation model.locations }
+
+                -- collect any Requirements this location awards as value
                 requirements =
                     newLocation
-                        |> Location.getProperties (getContext model)
+                        |> Location.getProperties (getContext newModel)
                         |> List.filterMap
                             (\( _, _, value ) ->
                                 case value of
@@ -285,22 +344,16 @@ innerUpdate msg model =
                                         Nothing
                             )
                         |> Set.fromList
-
-                attainedRequirements =
-                    case Location.getStatus newLocation of
-                        Unseen ->
-                            Set.diff model.attainedRequirements requirements
-
-                        Dismissed ->
-                            Set.union model.attainedRequirements requirements
-
-                        _ ->
-                            model.attainedRequirements
             in
-            { model
-                | locations = Location.insert newLocation model.locations
-                , attainedRequirements = attainedRequirements
-            }
+            case Location.getStatus newLocation of
+                Dismissed ->
+                    -- attain the rewarded requirements
+                    Set.foldl attainRequirement newModel requirements
+
+                _ ->
+                    -- don't unattain the rewarded requirements on Unseen; they
+                    -- can be manually unchecked where appropriate
+                    newModel
 
         ToggleProperty key index ->
             toggleProperty key index False model
@@ -339,7 +392,7 @@ innerUpdate msg model =
                 shopMenu =
                     locations
                         |> Location.get menu.key
-                        |> Maybe.map (Location.getItems (getContext model) menu.index)
+                        |> Maybe.map (Location.getItems (getContextFor Location.Shops model) menu.index)
                         |> Maybe.map
                             (\items ->
                                 { menu | content = Items items }
@@ -379,12 +432,12 @@ innerUpdate msg model =
 
                 -- filter out chests when they're all empty, unless they've explicitly
                 -- been enabled
-                filterOverrides =
-                    if flags.noTreasures && Dict.get Chests model.filterOverrides /= Just Show then
-                        Dict.insert Chests Hide model.filterOverrides
+                locationFilterOverrides =
+                    if flags.noTreasures && Dict.get Chests model.locationFilterOverrides /= Just Show then
+                        Dict.insert Chests Hide model.locationFilterOverrides
 
                     else
-                        model.filterOverrides
+                        model.locationFilterOverrides
             in
             -- storing both flagString and the Flags derived from it isn't ideal, but we ignore
             -- flagString everywhere else; it only exists so we can prepopulate the flags textarea
@@ -393,7 +446,7 @@ innerUpdate msg model =
                 , flags = flags
                 , randomObjectives = randomObjectives
                 , completedObjectives = completedObjectives
-                , filterOverrides = filterOverrides
+                , locationFilterOverrides = locationFilterOverrides
                 , shopMenu = Nothing
             }
 
@@ -423,13 +476,16 @@ view model =
             , div [ id "checks" ]
                 [ h2 [ class "locations-header" ]
                     [ text "Locations"
-                    , viewFilters model
+                    , viewFilters model Location.Checks
                     ]
                 , viewLocations model Location.Checks
                 ]
             , displayIf (not <| List.member model.flags.shopRandomization [ Flags.Cabins, Flags.Empty ] || model.flags.passInShop) <|
                 div [ id "shops" ]
-                    [ h2 [] [ text "Shops" ]
+                    [ h2 [ class "shops-header" ]
+                        [ text "Shops"
+                        , viewFilters model Location.Shops
+                        ]
                     , viewLocations model Location.Shops
                     ]
             ]
@@ -485,10 +541,6 @@ viewObjectives model =
 
 viewObjective : Objective -> Bool -> Maybe Int -> Html Msg
 viewObjective objective completed randomIndex =
-    let
-        onClickNoPropagate msg =
-            Html.Events.stopPropagationOn "click" <| Json.Decode.succeed ( msg, True )
-    in
     li
         [ classList
             [ ( "objective", True )
@@ -502,7 +554,7 @@ viewObjective objective completed randomIndex =
             ( False, Just index ) ->
                 -- we're unlikely to want to delete a completed objective, and in the
                 -- event that we do, it's easy enough to toggle it off again first
-                span [ class "icon delete", onClickNoPropagate <| UnsetRandomObjective index ] []
+                span [ class "icon delete", onClickNoBubble <| UnsetRandomObjective index ] []
 
             _ ->
                 text ""
@@ -607,13 +659,25 @@ viewKeyItems flags attained =
         ]
 
 
-viewFilters : Model -> Html Msg
-viewFilters model =
+viewFilters : Model -> Location.Class -> Html Msg
+viewFilters model locClass =
     let
+        ( filters, overrides ) =
+            case locClass of
+                Location.Checks ->
+                    ( [ Characters, KeyItems, Bosses, Chests, TrappedChests, Checked ]
+                    , model.locationFilterOverrides
+                    )
+
+                Location.Shops ->
+                    ( [ Checked ]
+                    , model.shopFilterOverrides
+                    )
+
         viewFilter filter =
             let
                 ( stateClass, hide ) =
-                    case Dict.get filter model.filterOverrides of
+                    case Dict.get filter overrides of
                         Just Show ->
                             ( "show", False )
 
@@ -631,7 +695,7 @@ viewFilters model =
                 , class stateClass
                 , class icon.class
                 , title icon.title
-                , onClick <| ToggleFilter filter
+                , onClick <| ToggleFilter locClass filter
                 ]
                 [ icon.img []
                 , displayIf hide <|
@@ -639,7 +703,7 @@ viewFilters model =
                 ]
     in
     span [ class "filters" ] <|
-        List.map viewFilter [ Characters, KeyItems, Bosses, Chests, TrappedChests, Checked ]
+        List.map viewFilter filters
 
 
 viewLocations : Model -> Location.Class -> Html Msg
@@ -647,7 +711,7 @@ viewLocations model locClass =
     let
         context : Location.Context
         context =
-            getContext model
+            getContextFor locClass model
 
         viewArea : ( Location.Area, List Location ) -> Html Msg
         viewArea ( area, locations ) =
@@ -840,23 +904,28 @@ randomObjectiveToMaybe o =
 
 
 getContext : Model -> Location.Context
-getContext model =
+getContext =
+    -- a bit of a cheat, but currently in most places a) we handle location
+    -- events agnostic of whether they're Checks or Shops, and b) any meaningful
+    -- logic related to filters only applies to Checks
+    getContextFor Location.Checks
+
+
+getContextFor : Location.Class -> Model -> Location.Context
+getContextFor locClass model =
     { flags = model.flags
     , randomObjectives = model.randomObjectives |> Array.toList |> List.filterMap randomObjectiveToMaybe |> Set.fromList
     , completedObjectives = model.completedObjectives
     , attainedRequirements = model.attainedRequirements
     , warpGlitchUsed = model.warpGlitchUsed
-    , filterOverrides = model.filterOverrides
+    , filterOverrides =
+        case locClass of
+            Location.Checks ->
+                model.locationFilterOverrides
+
+            Location.Shops ->
+                model.shopFilterOverrides
     }
-
-
-toggle : a -> Set a -> Set a
-toggle item set =
-    if Set.member item set then
-        Set.remove item set
-
-    else
-        Set.insert item set
 
 
 displayIf : Bool -> Html msg -> Html msg

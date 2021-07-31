@@ -40,16 +40,11 @@ no navigation infrastructure is implemented (anymore).
 - Shops:
     - Proper shop item lists for Svanilla and Sshuffle
     - Close the Shop Other textarea onBlur (without breaking the toggle)
-- Preserve chest counts between CaveMagnes and SylphCave variants
 - Treat locations as having value when we have quest objectives for completing them
-- Ktrap and Sylph Cave/Sheila don't play nice; surface the Yang value so it can be
-  marked as obtained without clearing the location (and thus hiding the unchecked
-  trapped chests)?
 - Make Statuses more intuitive; Dismissed meaning On for shops and items is weird
 - Add CSS linting
 - Bvanilla + Nkey + no boss hunt objectives = Mist Cave is the only boss with value
-- With default boss valuation, no boss hunt, and the Earth Crystal, Zot 2 appears
-  while Zot 1 remains hidden, which is weird.
+- Accommodate streaming better (customizable background colour?)
 
 # TOMAYBEDOs
 - Pull some types out of Location.elm, it's getting overloaded. Though they're
@@ -67,3 +62,5 @@ no navigation infrastructure is implemented (anymore).
   be too aggressive. Maybe you dismissed the location because you know it will
   be too slow/hard and you have other objectives you can take instead.
 - Rework Objective.elm, it makes me sadder every time I interact with it.
+- Give a type to the Property thruple returned by getProperties
+- Show key boss stats in a tooltip on the boss value icons?

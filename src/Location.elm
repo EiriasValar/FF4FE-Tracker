@@ -25,6 +25,7 @@ module Location exposing
     , getKey
     , getName
     , getProperties
+    , getProperty
     , getStatus
     , groupByArea
     , insert
@@ -34,8 +35,8 @@ module Location exposing
     , toggleItem
     , toggleProperty
     , toggleStatus
+    , undismissByGatingRequirement
     , update
-    , valueToFilter
     , values
     )
 
@@ -86,6 +87,7 @@ type Value
     | TrappedChest Int
     | Shop ShopValue
     | Requirement Requirement
+    | GatedValue Requirement Value
 
 
 type CharacterType
@@ -138,7 +140,6 @@ type Key
     | MistVillageMom
     | Kaipo
     | KaipoShops
-    | KaipoBed
     | WateryPass
     | Waterfall
     | Damcyan
@@ -146,8 +147,7 @@ type Key
     | MtHobs
     | FabulShops
     | FabulDefence
-    | Sheila1
-    | Sheila2
+    | Sheila
     | Mysidia
     | MysidiaShops
     | MtOrdeals
@@ -161,10 +161,8 @@ type Key
     | ToroiaShops
     | ToroiaCastle
     | ToroiaTreasury
-    | CaveMagnesChests
     | CaveMagnes
-    | Zot1
-    | Zot2
+    | Zot
     | Agart
     | AgartShops
     | Silvera
@@ -179,8 +177,7 @@ type Key
     | DwarfCastleShops
     | LowerBabil
     | LowerBabilCannon
-    | SylphCave1
-    | SylphCave2
+    | SylphCave
     | Feymarch
     | FeymarchShops
     | FeymarchKing
@@ -272,29 +269,52 @@ regardless of their Status, minus any that have been filtered out. The Int
 is the index of the property within the location, for use with toggleProperty.
 -}
 getProperties : Context -> Location -> List ( Int, Status, Value )
-getProperties ({ flags, warpGlitchUsed, filterOverrides } as context) (Location location) =
+getProperties context location =
+    getProperties_ context True location
+
+
+getProperties_ : Context -> Bool -> Location -> List ( Int, Status, Value )
+getProperties_ context unwrapGatedValues (Location location) =
     let
         -- certain values don't exist under certain flags
         -- note the free key item from Edward has its own key item class rather than
         -- being special-cased here
-        exists (Property _ value) =
+        exists value =
             case value of
                 Character Ungated ->
-                    not flags.noFreeChars
+                    not context.flags.noFreeChars
 
                 Character Gated ->
-                    not <| flags.classicGiantObjective && location.key == Giant
+                    not <| context.flags.classicGiantObjective && location.key == Giant
 
                 KeyItem itemClass ->
-                    not (warpGlitchUsed && location.key == SealedCave)
+                    not (context.warpGlitchUsed && location.key == SealedCave)
                         -- under Kvanilla, Baron Castle only has a key item if it's the Pass
-                        && not (location.key == BaronCastle && itemClass == Vanilla && not flags.passIsKeyItem)
-                        && Set.member itemClass flags.keyItems
+                        && not (location.key == BaronCastle && itemClass == Vanilla && not context.flags.passIsKeyItem)
+                        && Set.member itemClass context.flags.keyItems
+
+                GatedValue required v ->
+                    case ( context.flags.pushBToJump, location.key, v ) of
+                        ( True, Zot, _ ) ->
+                            -- PBTJ lets us access all gated requirements in Zot
+                            exists v
+
+                        ( True, CaveMagnes, KeyItem _ ) ->
+                            -- PBTJ lets us access the gated Key Item in Magnes
+                            -- (but not the Boss)
+                            exists v
+
+                        _ ->
+                            -- otherwise, gated value exists if we have
+                            -- its gating requirement, and the value itself
+                            -- exists
+                            Set.member required context.attainedRequirements
+                                && exists v
 
                 Shop shopValue ->
                     let
                         passesNightMode =
-                            not flags.nightMode
+                            not context.flags.nightMode
                                 || (location.area /= Surface)
                                 || (location.key == BaronWeaponShop)
                                 || (location.key == CaveEblanShops)
@@ -303,10 +323,10 @@ getProperties ({ flags, warpGlitchUsed, filterOverrides } as context) (Location 
                         hasValue =
                             case shopValue of
                                 Weapon ->
-                                    not flags.kleptomania
+                                    not context.flags.kleptomania
 
                                 Armour ->
-                                    not flags.kleptomania
+                                    not context.flags.kleptomania
 
                                 Healing items ->
                                     not <| List.isEmpty <| filterItems context (Location location) items
@@ -324,17 +344,25 @@ getProperties ({ flags, warpGlitchUsed, filterOverrides } as context) (Location 
 
         notFilteredOut (Property _ value) =
             valueToFilter value
-                |> Maybe.andThen (\filter -> Dict.get filter filterOverrides)
+                |> Maybe.andThen (\filter -> Dict.get filter context.filterOverrides)
                 |> Maybe.withDefault Show
                 |> (/=) Hide
 
+        unwrapGatedValue value =
+            case ( unwrapGatedValues, value ) of
+                ( True, GatedValue _ v ) ->
+                    v
+
+                _ ->
+                    value
+
         toTuple ( index, Property status value ) =
-            ( index, status, value )
+            ( index, status, unwrapGatedValue value )
     in
     location.properties
         -- extract indices before doing any filtering so they're accurate
         |> Array.toIndexedList
-        |> List.filter (Tuple.second >> exists)
+        |> List.filter (\( _, Property _ value ) -> exists value)
         |> List.filter (Tuple.second >> notFilteredOut)
         |> List.map toTuple
 
@@ -421,9 +449,82 @@ getStatus (Location location) =
     location.status
 
 
-toggleStatus : Status -> Location -> Location
-toggleStatus status (Location location) =
-    Location { location | status = toggleStatus_ status location.status }
+toggleStatus : Context -> Status -> Location -> Location
+toggleStatus context status (Location location) =
+    let
+        newStatus =
+            toggleStatus_ status location.status
+
+        properties =
+            if newStatus == Dismissed then
+                Array.map dismissSpecialValue location.properties
+
+            else
+                location.properties
+
+        -- It would feel a little redundant and visually busy to mark as
+        -- dismissed each value icon when we dismiss the location (and also
+        -- potentially incorrect: sometimes you dismiss a location not because
+        -- you cleared it, but because you don't want to see it) – but for
+        -- Requirement values, which affect other location accessibility, it
+        -- makes sense, particularly at locations that can be visited multiple
+        -- times (i.e. Sylph Cave, Sheila).
+        dismissSpecialValue (Property propStatus value) =
+            let
+                newPropStatus =
+                    case value of
+                        Requirement _ ->
+                            Dismissed
+
+                        GatedValue required v ->
+                            case ( Set.member required context.attainedRequirements, v, location.key ) of
+                                ( True, Requirement _, _ ) ->
+                                    Dismissed
+
+                                ( True, KeyItem _, Sheila ) ->
+                                    -- Sheila's the only location with two (gated) key items
+                                    -- that we might get on separate trips; mark them completed
+                                    -- when the location is dismissed so things are clear when
+                                    -- the location gets automatically undismissed when we bonk Yang
+                                    Dismissed
+
+                                _ ->
+                                    propStatus
+
+                        _ ->
+                            propStatus
+            in
+            Property newPropStatus value
+    in
+    Location
+        { location
+            | status = newStatus
+            , properties = properties
+        }
+
+
+{-| Returns the info for the property at the given index for the given location,
+assuming they exist. No context filtering: we assume if you have the index for a
+property, it's visible. GatedValue is likewise unconditionally unpacked: if you
+don't have its gating requirement, you can't have had it returned by
+getProperties.
+-}
+getProperty : Key -> Int -> Locations -> Maybe ( Status, Value )
+getProperty key index (Locations locations) =
+    Dict.get key locations
+        |> Maybe.andThen
+            (\(Location location) ->
+                Array.get index location.properties
+            )
+        |> Maybe.map
+            (\(Property status value) ->
+                case value of
+                    GatedValue _ v ->
+                        ( status, v )
+
+                    _ ->
+                        ( status, value )
+            )
 
 
 {-| Advance the given property of the given location to its next logical
@@ -628,6 +729,39 @@ update key fn (Locations locations) =
         Dict.update key fn locations
 
 
+{-| Updates any Locations that have a GatedValue gated by the given Requirement,
+setting their status to Unseen.
+
+I.e. if the Pan's just been acquired, and Sylph Cave is Dismissed, set it to
+Unseen because there's something new to do there now.
+
+-}
+undismissByGatingRequirement : Context -> Requirement -> Locations -> Locations
+undismissByGatingRequirement context requirement (Locations locations) =
+    let
+        updateLocation ((Location l) as location) =
+            if hasGatedValue location then
+                Location { l | status = Unseen }
+
+            else
+                location
+
+        hasGatedValue : Location -> Bool
+        hasGatedValue =
+            getProperties_ context False
+                >> List.any
+                    (\( _, _, value ) ->
+                        case value of
+                            GatedValue req _ ->
+                                req == requirement
+
+                            _ ->
+                                False
+                    )
+    in
+    Locations <| Dict.map (always updateLocation) locations
+
+
 groupByArea : Locations -> List ( Area, List Location )
 groupByArea =
     values
@@ -655,19 +789,12 @@ filterByContext class c (Locations locations) =
         context =
             { c | attainedRequirements = attainedRequirements }
 
-        requirementsMetFor key =
-            Dict.get key locations
-                |> Maybe.map (requirementsMet attainedRequirements)
-                |> Maybe.withDefault False
-
         -- locations that can be accessed regardless of requirements if we can jump
         jumpable =
             Set.fromList <|
                 [ BaronSewer
                 , BaronCastle
                 , BaronBasement
-                , CaveMagnes
-                , Zot2
                 , CaveEblan
                 , CaveEblanShops
                 , UpperBabil
@@ -677,44 +804,41 @@ filterByContext class c (Locations locations) =
             filtersFrom context
 
         propertiesHaveValue location =
-            -- getProperties and filtersFrom have done all the heavy lifting:
-            -- anything that's in the set of positive filters at this point
-            -- has value by definition (and Requirement values are always
-            -- valuable)
+            -- getProperties and filtersFrom have done all the heavy lifting
+            -- of pruning the list of properties to just the ones appropriate
+            -- to the context we're in
             getProperties context location
                 |> List.any
-                    (\( _, _, value ) ->
+                    (\( _, status, value ) ->
                         case ( value, valueToFilter value ) of
                             ( Requirement (Pseudo Falcon), _ ) ->
                                 -- the Falcon only has value if we don't have a
-                                -- way underground yet
-                                not undergroundAccess
+                                -- way underground yet – but if our underground
+                                -- access IS the Falcon being checked off,
+                                -- continue to treat it as valuable so the
+                                -- location doesn't disappear
+                                status == Dismissed || not undergroundAccess
 
                             ( Requirement _, _ ) ->
+                                -- other Requirements are always valuable
                                 True
 
                             ( Shop _, _ ) ->
+                                -- shops are always valuable
                                 True
 
                             ( _, Just filter ) ->
+                                -- anything else is valuable if it's in the set of
+                                -- positive filters
                                 Set.member filter filters
 
                             _ ->
+                                -- anything else is likely invisible metadata
                                 False
                     )
 
-        hasNoValue (Location l) =
-            -- hide the chests-only pseudo-location once its
-            -- full-value counterpart is  unlocked
-            l.key == CaveMagnesChests && requirementsMetFor CaveMagnes
-
         isRelevant ((Location l) as location) =
             if not <| isClass class location then
-                False
-
-            else if l.key == SylphCave1 && requirementsMetFor SylphCave2 then
-                -- always hide the first "version" of Sylph Cave once the
-                -- second one is visible (even when viewing Checked locations)
                 False
 
             else if l.status == Dismissed then
@@ -725,7 +849,6 @@ filterByContext class c (Locations locations) =
 
             else
                 propertiesHaveValue location
-                    && (not <| hasNoValue location)
                     && areaAccessible attainedRequirements location
                     && (context.flags.pushBToJump && Set.member l.key jumpable || requirementsMet attainedRequirements location)
     in
@@ -866,6 +989,12 @@ valueToFilter value =
         Requirement _ ->
             Nothing
 
+        GatedValue _ _ ->
+            -- we could unwrap the gated value and call `valueToFilter` on it,
+            -- but we actually shouldn't ever wind up calling this on a
+            -- GatedValue; leave it Nothing so we notice if we do
+            Nothing
+
 
 countable : Value -> Maybe Int
 countable value =
@@ -988,7 +1117,8 @@ surface =
       , name = "Kaipo"
       , requirements = []
       , value =
-            [ Chest 1
+            [ GatedValue SandRuby <| Character Gated
+            , Chest 1
             ]
       }
     , { key = KaipoShops
@@ -998,13 +1128,6 @@ surface =
             [ Shop Weapon
             , Shop Armour
             , Shop Item
-            ]
-      }
-    , { key = KaipoBed
-      , name = "Kaipo"
-      , requirements = [ SandRuby ]
-      , value =
-            [ Character Gated
             ]
       }
     , { key = WateryPass
@@ -1068,20 +1191,14 @@ surface =
             , Chest 10
             ]
       }
-    , { key = Sheila1
-      , name = "Sheila 1"
-      , requirements = [ Pseudo YangTalk ]
+    , { key = Sheila
+      , name = "Sheila"
+      , requirements = []
       , value =
-            [ KeyItem Main
-            , KeyItem Vanilla
-            ]
-      }
-    , { key = Sheila2
-      , name = "Sheila 2"
-      , requirements = [ Pseudo YangBonk ]
-      , value =
-            [ KeyItem Main
-            , KeyItem Vanilla
+            [ GatedValue (Pseudo YangTalk) (KeyItem Main)
+            , GatedValue (Pseudo YangTalk) (KeyItem Vanilla)
+            , GatedValue (Pseudo YangBonk) (KeyItem Main)
+            , GatedValue (Pseudo YangBonk) (KeyItem Vanilla)
             ]
       }
     , { key = Mysidia
@@ -1202,41 +1319,28 @@ surface =
             [ Chest 18
             ]
       }
-    , { key = CaveMagnesChests
+    , { key = CaveMagnes
       , name = "Cave Magnes"
       , requirements = []
       , value =
-            [ Chest 10
-            ]
-      }
-    , { key = CaveMagnes
-      , name = "Cave Magnes"
-      , requirements = [ TwinHarp ]
-      , value =
-            [ Boss
-            , KeyItem Main
-            , KeyItem Vanilla
+            [ GatedValue TwinHarp Boss
+            , GatedValue TwinHarp <| KeyItem Main
+            , GatedValue TwinHarp <| KeyItem Vanilla
             , Chest 10
             ]
       }
-    , { key = Zot1
-      , name = "Tower of Zot 1"
+    , { key = Zot
+      , name = "Tower of Zot"
       , requirements = []
       , value =
             [ Boss
+            , GatedValue EarthCrystal <| Character Gated
+            , GatedValue EarthCrystal <| Character Gated
+            , GatedValue EarthCrystal <| Boss
+            , GatedValue EarthCrystal <| KeyItem Main
+            , GatedValue EarthCrystal <| KeyItem Vanilla
             , Chest 5
             , TrappedChest 1
-            ]
-      }
-    , { key = Zot2
-      , name = "Tower of Zot 2"
-      , requirements = [ EarthCrystal ]
-      , value =
-            [ Character Gated
-            , Character Gated
-            , Boss
-            , KeyItem Main
-            , KeyItem Vanilla
             ]
       }
     , { key = Agart
@@ -1374,22 +1478,13 @@ underground =
             , KeyItem Vanilla
             ]
       }
-    , { key = SylphCave1
+    , { key = SylphCave
       , name = "Sylph Cave"
       , requirements = []
       , value =
             [ Requirement <| Pseudo YangTalk
-            , Chest 25
-            , TrappedChest 7
-            ]
-      }
-    , { key = SylphCave2
-      , name = "Sylph Cave"
-      , requirements = [ Pan ]
-      , value =
-            [ KeyItem Summon
-            , Requirement <| Pseudo YangTalk
-            , Requirement <| Pseudo YangBonk
+            , GatedValue Pan (Requirement <| Pseudo YangBonk)
+            , GatedValue Pan (KeyItem Summon)
             , Chest 25
             , TrappedChest 7
             ]
