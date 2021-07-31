@@ -44,8 +44,6 @@ no navigation infrastructure is implemented (anymore).
 - Make Statuses more intuitive; Dismissed meaning On for shops and items is weird
 - Add CSS linting
 - Bvanilla + Nkey + no boss hunt objectives = Mist Cave is the only boss with value
-- With default boss valuation, no boss hunt, and the Earth Crystal, Zot 2 appears
-  while Zot 1 remains hidden, which is weird.
 - Add a separate Dismissed Locations filter toggle to the Shops section, as it's
   not obvious that the one on the Locations section will apply to Shops as well.
 - Accommodate streaming better (customizable background colour?)

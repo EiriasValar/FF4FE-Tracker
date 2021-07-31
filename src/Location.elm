@@ -25,6 +25,7 @@ module Location exposing
     , getKey
     , getName
     , getProperties
+    , getProperty
     , getStatus
     , groupByArea
     , insert
@@ -502,6 +503,30 @@ toggleStatus context status (Location location) =
         }
 
 
+{-| Returns the info for the property at the given index for the given location,
+assuming they exist. No context filtering: we assume if you have the index for a
+property, it's visible. GatedValue is likewise unconditionally unpacked: if you
+don't have its gating requirement, you can't have had it returned by
+getProperties.
+-}
+getProperty : Key -> Int -> Locations -> Maybe ( Status, Value )
+getProperty key index (Locations locations) =
+    Dict.get key locations
+        |> Maybe.andThen
+            (\(Location location) ->
+                Array.get index location.properties
+            )
+        |> Maybe.map
+            (\(Property status value) ->
+                case value of
+                    GatedValue _ v ->
+                        ( status, v )
+
+                    _ ->
+                        ( status, value )
+            )
+
+
 {-| Advance the given property of the given location to its next logical
 state.
 
@@ -784,12 +809,15 @@ filterByContext class c (Locations locations) =
             -- to the context we're in
             getProperties context location
                 |> List.any
-                    (\( _, _, value ) ->
+                    (\( _, status, value ) ->
                         case ( value, valueToFilter value ) of
                             ( Requirement (Pseudo Falcon), _ ) ->
                                 -- the Falcon only has value if we don't have a
-                                -- way underground yet
-                                not undergroundAccess
+                                -- way underground yet – but if our underground
+                                -- access IS the Falcon being checked off,
+                                -- continue to treat it as valuable so the
+                                -- location doesn't disappear
+                                status == Dismissed || not undergroundAccess
 
                             ( Requirement _, _ ) ->
                                 -- other Requirements are always valuable

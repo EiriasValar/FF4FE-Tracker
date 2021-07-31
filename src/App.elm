@@ -213,7 +213,25 @@ innerUpdate : Msg -> Model -> Model
 innerUpdate msg model =
     let
         toggleProperty key index hard newModel =
-            { newModel | locations = Location.update key (Maybe.map <| Location.toggleProperty index hard) newModel.locations }
+            let
+                locations =
+                    Location.update key (Maybe.map <| Location.toggleProperty index hard) newModel.locations
+
+                -- if the property is a Requirement, update our
+                -- attainedRequirements accordingly
+                updateRequirements =
+                    case Location.getProperty key index locations of
+                        Just ( Unseen, Requirement requirement ) ->
+                            removeRequirement requirement
+
+                        Just ( Dismissed, Requirement requirement ) ->
+                            attainRequirement requirement
+
+                        _ ->
+                            identity
+            in
+            { newModel | locations = locations }
+                |> updateRequirements
 
         -- when we attain a new requirement, add it to the set and un-dismiss
         -- any locations for which it gates value
@@ -232,10 +250,21 @@ innerUpdate msg model =
                 | attainedRequirements = attainedRequirements
                 , locations = locations
             }
+
+        removeRequirement requirement newModel =
+            { newModel | attainedRequirements = Set.remove requirement model.attainedRequirements }
     in
     case msg of
         ToggleObjective objective ->
-            { model | completedObjectives = toggle objective model.completedObjectives }
+            let
+                fn =
+                    if Set.member objective model.completedObjectives then
+                        Set.remove
+
+                    else
+                        Set.insert
+            in
+            { model | completedObjectives = fn objective model.completedObjectives }
 
         SetRandomObjective index objective ->
             { model | randomObjectives = Array.set index (Set objective) model.randomObjectives }
@@ -255,7 +284,7 @@ innerUpdate msg model =
 
         ToggleRequirement requirement ->
             if Set.member requirement model.attainedRequirements then
-                { model | attainedRequirements = Set.remove requirement model.attainedRequirements }
+                removeRequirement requirement model
 
             else
                 attainRequirement requirement model
@@ -313,15 +342,13 @@ innerUpdate msg model =
                         |> Set.fromList
             in
             case Location.getStatus newLocation of
-                Unseen ->
-                    -- unattain the rewarded requirements
-                    { newModel | attainedRequirements = Set.diff newModel.attainedRequirements requirements }
-
                 Dismissed ->
                     -- attain the rewarded requirements
                     Set.foldl attainRequirement newModel requirements
 
                 _ ->
+                    -- don't unattain the rewarded requirements on Unseen; they
+                    -- can be manually unchecked where appropriate
                     newModel
 
         ToggleProperty key index ->
@@ -507,10 +534,6 @@ viewObjectives model =
 
 viewObjective : Objective -> Bool -> Maybe Int -> Html Msg
 viewObjective objective completed randomIndex =
-    let
-        onClickNoPropagate msg =
-            Html.Events.stopPropagationOn "click" <| Json.Decode.succeed ( msg, True )
-    in
     li
         [ classList
             [ ( "objective", True )
@@ -524,7 +547,7 @@ viewObjective objective completed randomIndex =
             ( False, Just index ) ->
                 -- we're unlikely to want to delete a completed objective, and in the
                 -- event that we do, it's easy enough to toggle it off again first
-                span [ class "icon delete", onClickNoPropagate <| UnsetRandomObjective index ] []
+                span [ class "icon delete", onClickNoBubble <| UnsetRandomObjective index ] []
 
             _ ->
                 text ""
@@ -870,15 +893,6 @@ getContext model =
     , warpGlitchUsed = model.warpGlitchUsed
     , filterOverrides = model.filterOverrides
     }
-
-
-toggle : a -> Set a -> Set a
-toggle item set =
-    if Set.member item set then
-        Set.remove item set
-
-    else
-        Set.insert item set
 
 
 displayIf : Bool -> Html msg -> Html msg
