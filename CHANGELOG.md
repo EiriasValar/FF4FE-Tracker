@@ -3,6 +3,7 @@
   the Falcon, talking to Yang, bonking Yang) to work as you'd expect, so you
   can mark them as obtained without having to dismiss the location (e.g. you
   talked to Yang but still want to track the trapped chests in the Sylph Cave).
+- Add a separate 'Dismissed locations' filter for the Shops section.
 
 ### 2021-07-30
 - Consolidate split locations for Kaipo, Cave Magnes, and Zot, similarly to

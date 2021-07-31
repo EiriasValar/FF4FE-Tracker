@@ -51,7 +51,8 @@ type alias Model =
     , completedObjectives : Set Objective
     , attainedRequirements : Set Requirement
     , locations : Locations
-    , filterOverrides : Dict Filter FilterType
+    , locationFilterOverrides : Dict Filter FilterType
+    , shopFilterOverrides : Dict Filter FilterType
     , warpGlitchUsed : Bool
     , shopMenu : Maybe ShopMenu
     }
@@ -80,7 +81,7 @@ type Msg
     | UnsetRandomObjective Int
     | DropdownMsg Int Dropdown.State
     | ToggleRequirement Requirement
-    | ToggleFilter Filter
+    | ToggleFilter Location.Class Filter
     | ToggleLocationStatus Location Location.Status
     | ToggleProperty Location.Key Int
     | HardToggleProperty Location.Key Int
@@ -119,12 +120,13 @@ init _ =
     , completedObjectives = Set.empty
     , attainedRequirements = Set.empty
     , locations = Location.all
-    , filterOverrides =
+    , locationFilterOverrides =
         Dict.fromList
             [ ( Characters, Show )
             , ( KeyItems, Show )
             , ( Chests, Hide )
             ]
+    , shopFilterOverrides = Dict.empty
     , warpGlitchUsed = False
     , shopMenu = Nothing
     }
@@ -289,34 +291,36 @@ innerUpdate msg model =
             else
                 attainRequirement requirement model
 
-        ToggleFilter filter ->
-            { model
-                | filterOverrides =
-                    Dict.update filter
-                        (\state ->
-                            case state of
-                                Nothing ->
-                                    Just Show
+        ToggleFilter locClass filter ->
+            let
+                toggle state =
+                    case state of
+                        Nothing ->
+                            Just Show
 
-                                Just Show ->
-                                    if filter == Checked then
-                                        -- skip the Hide state for Checked, as that's the default
-                                        Nothing
+                        Just Show ->
+                            if filter == Checked then
+                                -- skip the Hide state for Checked, as that's the default
+                                Nothing
 
-                                    else
-                                        Just Hide
+                            else
+                                Just Hide
 
-                                Just Hide ->
-                                    if List.member filter [ Characters, KeyItems ] then
-                                        -- skip the Nothing state for these filters, as they always
-                                        -- default to Show (so Nothing is redundant)
-                                        Just Show
+                        Just Hide ->
+                            if List.member filter [ Characters, KeyItems ] then
+                                -- skip the Nothing state for these filters, as they always
+                                -- default to Show (so Nothing is redundant)
+                                Just Show
 
-                                    else
-                                        Nothing
-                        )
-                        model.filterOverrides
-            }
+                            else
+                                Nothing
+            in
+            case locClass of
+                Location.Checks ->
+                    { model | locationFilterOverrides = Dict.update filter toggle model.locationFilterOverrides }
+
+                Location.Shops ->
+                    { model | shopFilterOverrides = Dict.update filter toggle model.shopFilterOverrides }
 
         ToggleLocationStatus location status ->
             let
@@ -388,7 +392,7 @@ innerUpdate msg model =
                 shopMenu =
                     locations
                         |> Location.get menu.key
-                        |> Maybe.map (Location.getItems (getContext model) menu.index)
+                        |> Maybe.map (Location.getItems (getContextFor Location.Shops model) menu.index)
                         |> Maybe.map
                             (\items ->
                                 { menu | content = Items items }
@@ -428,12 +432,12 @@ innerUpdate msg model =
 
                 -- filter out chests when they're all empty, unless they've explicitly
                 -- been enabled
-                filterOverrides =
-                    if flags.noTreasures && Dict.get Chests model.filterOverrides /= Just Show then
-                        Dict.insert Chests Hide model.filterOverrides
+                locationFilterOverrides =
+                    if flags.noTreasures && Dict.get Chests model.locationFilterOverrides /= Just Show then
+                        Dict.insert Chests Hide model.locationFilterOverrides
 
                     else
-                        model.filterOverrides
+                        model.locationFilterOverrides
             in
             -- storing both flagString and the Flags derived from it isn't ideal, but we ignore
             -- flagString everywhere else; it only exists so we can prepopulate the flags textarea
@@ -442,7 +446,7 @@ innerUpdate msg model =
                 , flags = flags
                 , randomObjectives = randomObjectives
                 , completedObjectives = completedObjectives
-                , filterOverrides = filterOverrides
+                , locationFilterOverrides = locationFilterOverrides
                 , shopMenu = Nothing
             }
 
@@ -472,13 +476,16 @@ view model =
             , div [ id "checks" ]
                 [ h2 [ class "locations-header" ]
                     [ text "Locations"
-                    , viewFilters model
+                    , viewFilters model Location.Checks
                     ]
                 , viewLocations model Location.Checks
                 ]
             , displayIf (not <| List.member model.flags.shopRandomization [ Flags.Cabins, Flags.Empty ] || model.flags.passInShop) <|
                 div [ id "shops" ]
-                    [ h2 [] [ text "Shops" ]
+                    [ h2 [ class "shops-header" ]
+                        [ text "Shops"
+                        , viewFilters model Location.Shops
+                        ]
                     , viewLocations model Location.Shops
                     ]
             ]
@@ -652,13 +659,25 @@ viewKeyItems flags attained =
         ]
 
 
-viewFilters : Model -> Html Msg
-viewFilters model =
+viewFilters : Model -> Location.Class -> Html Msg
+viewFilters model locClass =
     let
+        ( filters, overrides ) =
+            case locClass of
+                Location.Checks ->
+                    ( [ Characters, KeyItems, Bosses, Chests, TrappedChests, Checked ]
+                    , model.locationFilterOverrides
+                    )
+
+                Location.Shops ->
+                    ( [ Checked ]
+                    , model.shopFilterOverrides
+                    )
+
         viewFilter filter =
             let
                 ( stateClass, hide ) =
-                    case Dict.get filter model.filterOverrides of
+                    case Dict.get filter overrides of
                         Just Show ->
                             ( "show", False )
 
@@ -676,7 +695,7 @@ viewFilters model =
                 , class stateClass
                 , class icon.class
                 , title icon.title
-                , onClick <| ToggleFilter filter
+                , onClick <| ToggleFilter locClass filter
                 ]
                 [ icon.img []
                 , displayIf hide <|
@@ -684,7 +703,7 @@ viewFilters model =
                 ]
     in
     span [ class "filters" ] <|
-        List.map viewFilter [ Characters, KeyItems, Bosses, Chests, TrappedChests, Checked ]
+        List.map viewFilter filters
 
 
 viewLocations : Model -> Location.Class -> Html Msg
@@ -692,7 +711,7 @@ viewLocations model locClass =
     let
         context : Location.Context
         context =
-            getContext model
+            getContextFor locClass model
 
         viewArea : ( Location.Area, List Location ) -> Html Msg
         viewArea ( area, locations ) =
@@ -885,13 +904,27 @@ randomObjectiveToMaybe o =
 
 
 getContext : Model -> Location.Context
-getContext model =
+getContext =
+    -- a bit of a cheat, but currently in most places a) we handle location
+    -- events agnostic of whether they're Checks or Shops, and b) any meaningful
+    -- logic related to filters only applies to Checks
+    getContextFor Location.Checks
+
+
+getContextFor : Location.Class -> Model -> Location.Context
+getContextFor locClass model =
     { flags = model.flags
     , randomObjectives = model.randomObjectives |> Array.toList |> List.filterMap randomObjectiveToMaybe |> Set.fromList
     , completedObjectives = model.completedObjectives
     , attainedRequirements = model.attainedRequirements
     , warpGlitchUsed = model.warpGlitchUsed
-    , filterOverrides = model.filterOverrides
+    , filterOverrides =
+        case locClass of
+            Location.Checks ->
+                model.locationFilterOverrides
+
+            Location.Shops ->
+                model.shopFilterOverrides
     }
 
 
