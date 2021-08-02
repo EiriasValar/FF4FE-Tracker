@@ -116,7 +116,6 @@ no navigation infrastructure is implemented (anymore).
 
 # TODO housekeeping
 - Consistent icon handling
-- Possibly de-value characters when the flags make them irrelevant (e.g. Cparty:1)
 - Don't require right-clicks for anything
 - Close the Shop Other textarea onBlur (without breaking the toggle)
 - Make Statuses more intuitive; Dismissed meaning On for shops and items is weird

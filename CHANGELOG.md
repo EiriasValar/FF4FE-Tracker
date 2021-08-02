@@ -1,6 +1,7 @@
 ## 2021-08-02
 - Show some rough/possible stats for a boss spot when hovering over its icon.
 - Appropriately limit the shop item lists under `Svanilla` or `Sshuffle`.
+- Automatically filter out characters under `Cparty:1`.
 
 ## 2021-07-31
 - Consolidate locations that had multiple instances to accommodate a mix of

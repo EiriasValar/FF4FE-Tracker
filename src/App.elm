@@ -431,14 +431,28 @@ innerUpdate msg model =
                         |> Set.fromList
                         |> Set.intersect model.completedObjectives
 
-                -- filter out chests when they're all empty, unless they've explicitly
-                -- been enabled
-                locationFilterOverrides =
+                -- filter out chests when they're all empty, unless they've
+                -- explicitly been enabled
+                filterChests =
                     if flags.noTreasures && Dict.get Chests model.locationFilterOverrides /= Just Show then
-                        Dict.insert Chests Hide model.locationFilterOverrides
+                        Dict.insert Chests Hide
 
                     else
-                        model.locationFilterOverrides
+                        identity
+
+                -- filter out characters if there aren't any to recruit
+                -- yes this is ridiculously niche
+                filterCharacters =
+                    if flags.noCharacters then
+                        Dict.insert Characters Hide
+
+                    else
+                        identity
+
+                locationFilterOverrides =
+                    model.locationFilterOverrides
+                        |> filterChests
+                        |> filterCharacters
             in
             -- storing both flagString and the Flags derived from it isn't ideal, but we ignore
             -- flagString everywhere else; it only exists so we can prepopulate the flags textarea
