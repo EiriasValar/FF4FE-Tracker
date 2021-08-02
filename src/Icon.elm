@@ -1,9 +1,13 @@
 module Icon exposing
     ( Icon
+    , dkc
     , fromFilter
     , fromRequirement
     , fromValue
+    , kainazzo
     , no
+    , toImg
+    , valvalis
     )
 
 import AssocList as Dict exposing (Dict)
@@ -54,7 +58,7 @@ fromValue value =
         Character _ ->
             Just character
 
-        Boss ->
+        Boss _ ->
             Just boss
 
         KeyItem _ ->
@@ -97,6 +101,11 @@ fromValue value =
 fromRequirement : Requirement -> Maybe (Icon msg)
 fromRequirement requirement =
     Dict.get requirement requirements
+
+
+toImg : Icon msg -> Html msg
+toImg icon =
+    icon.img [ Html.Attributes.class icon.class, Html.Attributes.title icon.title ]
 
 
 character : Icon msg
@@ -213,6 +222,30 @@ other =
     { class = "other"
     , title = "Other"
     , img = img "img/sprites/Summon.gif"
+    }
+
+
+kainazzo : Icon msg
+kainazzo =
+    { class = "kainazzo"
+    , title = "Kainazzo Wave damage at max HP"
+    , img = img "img/sprites/Cagnazzo.gif"
+    }
+
+
+dkc : Icon msg
+dkc =
+    { class = "dkc"
+    , title = "Dark Knight Cecil Darkwave damage"
+    , img = img "img/sprites/Cecil1-Front.gif"
+    }
+
+
+valvalis : Icon msg
+valvalis =
+    { class = "valvalis"
+    , title = "Valvalis MDef"
+    , img = img "img/sprites/Barbariccia.gif"
     }
 
 

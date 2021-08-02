@@ -26,6 +26,7 @@ type alias Flags =
     , passExists : Bool
     , passIsKeyItem : Bool
     , passInShop : Bool
+    , noCharacters : Bool
     , noTreasures : Bool
     , shopRandomization : ShopRandomization
     , noJItems : Bool
@@ -92,6 +93,7 @@ parse flagString =
             , passExists = False
             , passIsKeyItem = False
             , passInShop = False
+            , noCharacters = False
             , noTreasures = False
             , shopRandomization = None
             , noJItems = False
@@ -195,6 +197,11 @@ parseFlag flag flags =
             opts
                 |> String.split "/"
                 |> List.foldl parseP flags
+
+        Just ( 'C', opts ) ->
+            opts
+                |> String.split "/"
+                |> List.foldl parseC flags
 
         Just ( 'T', opts ) ->
             opts
@@ -337,6 +344,16 @@ parseP switch flags =
 
         "chests" ->
             { flags | passExists = True }
+
+        _ ->
+            flags
+
+
+parseC : String -> Flags -> Flags
+parseC opts flags =
+    case String.split ":" opts of
+        [ "party", "1" ] ->
+            { flags | noCharacters = True }
 
         _ ->
             flags

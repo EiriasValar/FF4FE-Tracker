@@ -15,14 +15,15 @@ import Browser.Dom
 import Browser.Events
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
-import Html exposing (Html, a, div, h2, h4, li, span, text, textarea, ul)
+import Html exposing (Html, a, div, h2, h4, hr, li, span, text, textarea, ul)
 import Html.Attributes exposing (autocomplete, class, classList, cols, href, id, rows, spellcheck, target, title, value)
 import Html.Events exposing (onClick, onInput)
 import Icon
 import Json.Decode
 import Location
     exposing
-        ( ConsumableItem
+        ( BossStats
+        , ConsumableItem
         , ConsumableItems
         , Filter(..)
         , FilterType(..)
@@ -430,14 +431,28 @@ innerUpdate msg model =
                         |> Set.fromList
                         |> Set.intersect model.completedObjectives
 
-                -- filter out chests when they're all empty, unless they've explicitly
-                -- been enabled
-                locationFilterOverrides =
+                -- filter out chests when they're all empty, unless they've
+                -- explicitly been enabled
+                filterChests =
                     if flags.noTreasures && Dict.get Chests model.locationFilterOverrides /= Just Show then
-                        Dict.insert Chests Hide model.locationFilterOverrides
+                        Dict.insert Chests Hide
 
                     else
-                        model.locationFilterOverrides
+                        identity
+
+                -- filter out characters if there aren't any to recruit
+                -- yes this is ridiculously niche
+                filterCharacters =
+                    if flags.noCharacters then
+                        Dict.insert Characters Hide
+
+                    else
+                        identity
+
+                locationFilterOverrides =
+                    model.locationFilterOverrides
+                        |> filterChests
+                        |> filterCharacters
             in
             -- storing both flagString and the Flags derived from it isn't ideal, but we ignore
             -- flagString everywhere else; it only exists so we can prepopulate the flags textarea
@@ -490,7 +505,7 @@ view model =
                     ]
             ]
         , div [ id "footer" ]
-            [ text "Documentation, credits, etc can be found in "
+            [ text "Documentation, credits, and contact info can be found in "
             , a [ href "https://github.com/EiriasValar/FF4FE-Tracker", target "_blank" ]
                 [ text "the GitHub repo" ]
             ]
@@ -868,10 +883,100 @@ viewProperty context location ( index, status, value ) =
                 [ icon.img []
                 , displayIf (count > 0) <|
                     span [ class "count" ] [ text <| String.fromInt count ]
+                , case value of
+                    Boss stats ->
+                        -- hidden/shown with CSS on hover
+                        viewBossStats stats
+
+                    _ ->
+                        text ""
                 ]
 
         Nothing ->
             text ""
+
+
+viewBossStats : BossStats -> Html Msg
+viewBossStats stats =
+    let
+        formatHP =
+            -- break up large HP totals with commas
+            stats.hp
+                |> String.fromInt
+                |> String.reverse
+                |> String.Extra.break 3
+                |> String.join ","
+                |> String.reverse
+
+        formatSpeed =
+            if stats.minSpeed == stats.maxSpeed then
+                String.fromInt stats.minSpeed
+
+            else
+                String.fromInt stats.minSpeed
+                    ++ "-"
+                    ++ String.fromInt stats.maxSpeed
+
+        waveDmg =
+            let
+                -- formula from Zoe's Kainazzo Reference sheet:
+                -- https://docs.google.com/spreadsheets/d/1Nf1amT-WzIw7RkffAGpEq05p1nSQ-6qU9lgQr7QyBgk/edit
+                min =
+                    (toFloat stats.hp / 25)
+                        |> ceiling
+
+                max =
+                    (toFloat min * 1.5)
+                        |> ceiling
+            in
+            String.fromInt min
+                ++ "-"
+                ++ String.fromInt max
+
+        darkwaveDmg =
+            let
+                -- formula from the PAIN MAN sheet:
+                -- https://docs.google.com/spreadsheets/d/1w938cMyuKb_-MBAUNQG8L1ynIRGBntskT4I4mkuTgF4/edit
+                min =
+                    (toFloat (stats.atk * stats.atkMult) / 2)
+                        |> ceiling
+
+                max =
+                    min + stats.atk
+            in
+            String.fromInt min
+                ++ "-"
+                ++ String.fromInt max
+    in
+    div [ class "boss-stats", onClickNoBubble DoNothing ]
+        [ div [] [ text "\"Benchmark\" stats" ]
+        , div [] [ text <| "HP: " ++ formatHP ]
+        , div []
+            [ text <|
+                "Atk: "
+                    ++ String.fromInt stats.atk
+                    ++ "x"
+                    ++ String.fromInt stats.atkMult
+                    ++ ", "
+                    ++ String.fromInt stats.hit
+                    ++ "%"
+            ]
+        , div [] [ text <| "Mag: " ++ String.fromInt stats.mag ]
+        , div [] [ text <| "Speed: " ++ formatSpeed ]
+        , hr [] []
+        , div []
+            [ Icon.toImg Icon.kainazzo
+            , text <| "Dmg: " ++ waveDmg
+            ]
+        , div []
+            [ Icon.toImg Icon.dkc
+            , text <| "Dmg: " ++ darkwaveDmg
+            ]
+        , div []
+            [ Icon.toImg Icon.valvalis
+            , text <| "MDef: " ++ String.fromInt stats.valvalisMDef
+            ]
+        ]
 
 
 updateRandomObjectives : Flags -> Array RandomObjective -> Array RandomObjective
