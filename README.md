@@ -58,6 +58,15 @@ Checking off value icons is generally just for your reference, and has no impact
 - `Dwarf Castle`: If `Gwarp` is on, a faded-out second Key Item icon is shown, representing the key item check in the `Sealed Cave`, which can be reached from this location via the warp glitch. Checking it off tells the tracker that you've done this, and that there's therefore no longer a key item check to be had in the `Sealed Cave`.
 - `Sylph Cave`: A Yang icon is shown; checking it off when you've talked to Yang in his bed enables a key item check with `Sheila` in Fabul. A second Yang icon appears when the `Pan` is acquired: bonk him with it and check the icon to enable `Sheila`'s second key item check. (Dismissing the whole location will also automatically check whichever Yang icons are present.) Since you may need to visit this location more than once, it will un-dismiss itself when you acquire the `Pan`.
 
+### Boss stats
+
+Hovering over a boss icon shows some stats for that boss spot. The stats that actually apply will depend on the boss who appears there; see the Free Enterprise Wiki's page on [the boss scaling algorithm](https://wiki.ff4fe.com/doku.php?id=boss_randomization#boss_scaling_algorithm) for more details. As such, these numbers should be taken as general indicators of a spot's power relative to other spots, not absolute truth.
+
+The bottom half of the stats popup shows some calculations for specific bosses of interest if they appear in that spot:
+- The damage range on Kainazzo's `Wave` attack (which is based on his current HP), calculated from his starting HP total in the given spot.
+- The damage range on Dark Knight Cecil's Darkwave attack, calculated from the physical attack stats in the given spot.
+- The magic defence that Valvalis will have in the given spot (while in her Tornado form): if it's 255 (as it is in many places), all spells will miss her.
+
 ### Filters
 
 A row of value icons also appears in the Locations header: these control the filters that are applied – in combination with some built-in logic – to determine what kinds of value are actually, well, _valuable_.
@@ -133,4 +142,3 @@ no navigation infrastructure is implemented (anymore).
   be too slow/hard and you have other objectives you can take instead.
 - Rework Objective.elm, it makes me sadder every time I interact with it.
 - Give a type to the Property thruple returned by getProperties
-- Show key boss stats in a tooltip on the boss value icons?

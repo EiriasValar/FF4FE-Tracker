@@ -1,5 +1,6 @@
 module Location exposing
     ( Area
+    , BossStats
     , Class(..)
     , ConsumableItem
     , ConsumableItems
@@ -81,7 +82,7 @@ type Status
 
 type Value
     = Character CharacterType
-    | Boss
+    | Boss BossStats
     | KeyItem KeyItemClass
     | Chest Int -- excluding trapped chests
     | TrappedChest Int
@@ -93,6 +94,30 @@ type Value
 type CharacterType
     = Ungated
     | Gated
+
+
+{-| Most stats are sourced from the FF3FE Boss Scaling Stats doc:
+<https://docs.google.com/spreadsheets/d/1hJZsbzStQfMCQUFzjW9pbdLhJ99wLu1QY-5cmp7Peqg/edit>
+The actual stats will vary depending on the boss who appears in a spot; I've
+tried to populate them with "representative" values for a "normal" boss. The
+Magic stats in particular are very hand-wavy.
+
+Valvalis' MDef is from Inven's Valvalis Reference:
+<https://docs.google.com/spreadsheets/d/1tVQFvlQ_4oWCn0EE9d7QAGrYW3w2IbZzuO2MWuUC8ww/edit>
+
+-}
+type alias BossStats =
+    { hp : Int
+    , exp : Int
+    , gp : Int
+    , atkMult : Int
+    , hit : Int
+    , atk : Int
+    , minSpeed : Int
+    , maxSpeed : Int
+    , mag : Int
+    , valvalisMDef : Int
+    }
 
 
 type ShopValue
@@ -971,7 +996,7 @@ valueToFilter value =
         Character _ ->
             Just Characters
 
-        Boss ->
+        Boss _ ->
             Just Bosses
 
         KeyItem _ ->
@@ -1079,6 +1104,17 @@ surface =
       , requirements = []
       , value =
             [ Boss
+                { hp = 465
+                , exp = 700
+                , gp = 200
+                , atkMult = 2
+                , hit = 90
+                , atk = 16
+                , minSpeed = 5
+                , maxSpeed = 5
+                , mag = 10
+                , valvalisMDef = 255
+                }
             , Chest 4
             ]
       }
@@ -1103,6 +1139,17 @@ surface =
       , value =
             [ Character Gated
             , Boss
+                { hp = 302
+                , exp = 880
+                , gp = 245
+                , atkMult = 3
+                , hit = 75
+                , atk = 26
+                , minSpeed = 2
+                , maxSpeed = 4
+                , mag = 11
+                , valvalisMDef = 255
+                }
             ]
       }
     , { key = MistVillageMom
@@ -1143,6 +1190,17 @@ surface =
       , requirements = []
       , value =
             [ Boss
+                { hp = 2350
+                , exp = 1200
+                , gp = 500
+                , atkMult = 2
+                , hit = 99
+                , atk = 22
+                , minSpeed = 31
+                , maxSpeed = 31
+                , mag = 10
+                , valvalisMDef = 255
+                }
             , Chest 4
             ]
       }
@@ -1159,6 +1217,17 @@ surface =
       , requirements = []
       , value =
             [ Boss
+                { hp = 1000
+                , exp = 1500
+                , gp = 800
+                , atkMult = 2
+                , hit = 85
+                , atk = 11
+                , minSpeed = 5
+                , maxSpeed = 5
+                , mag = 1
+                , valvalisMDef = 170
+                }
             , KeyItem Main
             , KeyItem Vanilla
             , Chest 13
@@ -1169,6 +1238,17 @@ surface =
       , requirements = []
       , value =
             [ Boss
+                { hp = 1250
+                , exp = 4360
+                , gp = 1755
+                , atkMult = 3
+                , hit = 80
+                , atk = 30
+                , minSpeed = 7
+                , maxSpeed = 7
+                , mag = 5
+                , valvalisMDef = 174
+                }
             , Character Gated
             , Chest 5
             ]
@@ -1187,6 +1267,17 @@ surface =
       , requirements = []
       , value =
             [ Boss
+                { hp = 1880
+                , exp = 5590
+                , gp = 1425
+                , atkMult = 3
+                , hit = 90
+                , atk = 36
+                , minSpeed = 6
+                , maxSpeed = 9
+                , mag = 15
+                , valvalisMDef = 254
+                }
             , KeyItem Main
             , Chest 10
             ]
@@ -1224,10 +1315,43 @@ surface =
       , value =
             [ Character Ungated
             , Boss
+                { hp = 2780
+                , exp = 3800
+                , gp = 3300
+                , atkMult = 1
+                , hit = 75
+                , atk = 19
+                , minSpeed = 8
+                , maxSpeed = 8
+                , mag = 14
+                , valvalisMDef = 0
+                }
             , Boss
+                { hp = 3000
+                , exp = 4000
+                , gp = 3000
+                , atkMult = 3
+                , hit = 99
+                , atk = 44
+                , minSpeed = 9
+                , maxSpeed = 9
+                , mag = 31
+                , valvalisMDef = 255
+                }
             , KeyItem Main
             , KeyItem Vanilla
             , Boss
+                { hp = 1000
+                , exp = 0
+                , gp = 0
+                , atkMult = 3
+                , hit = 99
+                , atk = 46
+                , minSpeed = 5
+                , maxSpeed = 5
+                , mag = 17
+                , valvalisMDef = 254
+                }
             , Chest 4
             ]
       }
@@ -1236,7 +1360,29 @@ surface =
       , requirements = []
       , value =
             [ Boss
+                { hp = 400
+                , exp = 1440
+                , gp = 1000
+                , atkMult = 3
+                , hit = 99
+                , atk = 46
+                , minSpeed = 11
+                , maxSpeed = 14
+                , mag = 26
+                , valvalisMDef = 255
+                }
             , Boss
+                { hp = 4000
+                , exp = 0
+                , gp = 0
+                , atkMult = 6
+                , hit = 99
+                , atk = 86
+                , minSpeed = 4
+                , maxSpeed = 7
+                , mag = 31
+                , valvalisMDef = 0
+                }
             , Character Gated
             , KeyItem Main
             , KeyItem Vanilla
@@ -1273,7 +1419,29 @@ surface =
       , requirements = [ BaronKey ]
       , value =
             [ Boss
+                { hp = 4200
+                , exp = 4820
+                , gp = 3000
+                , atkMult = 4
+                , hit = 99
+                , atk = 52
+                , minSpeed = 8
+                , maxSpeed = 8
+                , mag = 9
+                , valvalisMDef = 254
+                }
             , Boss
+                { hp = 4000
+                , exp = 5500
+                , gp = 4000
+                , atkMult = 3
+                , hit = 99
+                , atk = 44
+                , minSpeed = 15
+                , maxSpeed = 15
+                , mag = 29
+                , valvalisMDef = 255
+                }
             , Character Gated
             , KeyItem Main
             , KeyItem Vanilla
@@ -1285,6 +1453,17 @@ surface =
       , requirements = [ BaronKey ]
       , value =
             [ Boss
+                { hp = 20500
+                , exp = 18000
+                , gp = 0
+                , atkMult = 9
+                , hit = 85
+                , atk = 116
+                , minSpeed = 43
+                , maxSpeed = 46
+                , mag = 95
+                , valvalisMDef = 255
+                }
             , KeyItem Summon
             ]
       }
@@ -1323,7 +1502,19 @@ surface =
       , name = "Cave Magnes"
       , requirements = []
       , value =
-            [ GatedValue TwinHarp Boss
+            [ GatedValue TwinHarp <|
+                Boss
+                    { hp = 5000
+                    , exp = 7000
+                    , gp = 9000
+                    , atkMult = 4
+                    , hit = 99
+                    , atk = 54
+                    , minSpeed = 11
+                    , maxSpeed = 11
+                    , mag = 15
+                    , valvalisMDef = 255
+                    }
             , GatedValue TwinHarp <| KeyItem Main
             , GatedValue TwinHarp <| KeyItem Vanilla
             , Chest 10
@@ -1334,9 +1525,32 @@ surface =
       , requirements = []
       , value =
             [ Boss
+                { hp = 9000
+                , exp = 9000
+                , gp = 9000
+                , atkMult = 5
+                , hit = 80
+                , atk = 60
+                , minSpeed = 7
+                , maxSpeed = 7
+                , mag = 11
+                , valvalisMDef = 254
+                }
             , GatedValue EarthCrystal <| Character Gated
             , GatedValue EarthCrystal <| Character Gated
-            , GatedValue EarthCrystal <| Boss
+            , GatedValue EarthCrystal <|
+                Boss
+                    { hp = 6000
+                    , exp = 9500
+                    , gp = 5500
+                    , atkMult = 5
+                    , hit = 99
+                    , atk = 70
+                    , minSpeed = 18
+                    , maxSpeed = 18
+                    , mag = 63
+                    , valvalisMDef = 255
+                    }
             , GatedValue EarthCrystal <| KeyItem Main
             , GatedValue EarthCrystal <| KeyItem Vanilla
             , Chest 5
@@ -1414,7 +1628,29 @@ surface =
       , requirements = [ Hook ]
       , value =
             [ Boss
+                { hp = 6000
+                , exp = 0
+                , gp = 0
+                , atkMult = 9
+                , hit = 85
+                , atk = 116
+                , minSpeed = 53
+                , maxSpeed = 53
+                , mag = 15
+                , valvalisMDef = 0
+                }
             , Boss
+                { hp = 25200
+                , exp = 25000
+                , gp = 700
+                , atkMult = 7
+                , hit = 80
+                , atk = 88
+                , minSpeed = 38
+                , maxSpeed = 38
+                , mag = 16
+                , valvalisMDef = 255
+                }
             , Chest 7
             , TrappedChest 1
             , Requirement <| Pseudo Falcon
@@ -1425,7 +1661,29 @@ surface =
       , requirements = [ DarknessCrystal ]
       , value =
             [ Boss
+                { hp = 65000
+                , exp = 102500
+                , gp = 20000
+                , atkMult = 10
+                , hit = 80
+                , atk = 128
+                , minSpeed = 89
+                , maxSpeed = 89
+                , mag = 15
+                , valvalisMDef = 86
+                }
             , Boss
+                { hp = 24000
+                , exp = 150000
+                , gp = 10333
+                , atkMult = 13
+                , hit = 99
+                , atk = 174
+                , minSpeed = 38
+                , maxSpeed = 38
+                , mag = 127
+                , valvalisMDef = 255
+                }
             , Character Gated
             , Chest 7
             , TrappedChest 1
@@ -1441,8 +1699,30 @@ underground =
       , requirements = []
       , value =
             [ Boss
+                { hp = 8524
+                , exp = 21000
+                , gp = 8000
+                , atkMult = 7
+                , hit = 99
+                , atk = 96
+                , minSpeed = 11
+                , maxSpeed = 11
+                , mag = 41
+                , valvalisMDef = 255
+                }
             , Character Gated
             , Boss
+                { hp = 3002
+                , exp = 20000
+                , gp = 11000
+                , atkMult = 5
+                , hit = 99
+                , atk = 68
+                , minSpeed = 27
+                , maxSpeed = 27
+                , mag = 1
+                , valvalisMDef = 0
+                }
             , KeyItem Main
             , KeyItem Vanilla
             , KeyItem Warp -- also Vanilla
@@ -1463,6 +1743,17 @@ underground =
       , requirements = []
       , value =
             [ Boss
+                { hp = 18943
+                , exp = 26020
+                , gp = 11000
+                , atkMult = 6
+                , hit = 99
+                , atk = 86
+                , minSpeed = 27
+                , maxSpeed = 27
+                , mag = 7
+                , valvalisMDef = 0
+                }
             , KeyItem Main
             , KeyItem Vanilla
             , Chest 12
@@ -1474,6 +1765,17 @@ underground =
       , requirements = [ TowerKey ]
       , value =
             [ Boss
+                { hp = 597
+                , exp = 5820
+                , gp = 135
+                , atkMult = 5
+                , hit = 70
+                , atk = 56
+                , minSpeed = 18
+                , maxSpeed = 21
+                , mag = 16
+                , valvalisMDef = 0
+                }
             , KeyItem Main
             , KeyItem Vanilla
             ]
@@ -1513,6 +1815,17 @@ underground =
       , requirements = []
       , value =
             [ Boss
+                { hp = 35000
+                , exp = 28000
+                , gp = 0
+                , atkMult = 13
+                , hit = 99
+                , atk = 174
+                , minSpeed = 53
+                , maxSpeed = 53
+                , mag = 34
+                , valvalisMDef = 255
+                }
             , KeyItem Summon
             ]
       }
@@ -1521,6 +1834,17 @@ underground =
       , requirements = []
       , value =
             [ Boss
+                { hp = 23000
+                , exp = 20000
+                , gp = 0
+                , atkMult = 10
+                , hit = 99
+                , atk = 134
+                , minSpeed = 66
+                , maxSpeed = 66
+                , mag = 69
+                , valvalisMDef = 255
+                }
             , KeyItem Summon
             ]
       }
@@ -1547,6 +1871,17 @@ underground =
             [ KeyItem Main
             , KeyItem Vanilla
             , Boss
+                { hp = 19000
+                , exp = 23000
+                , gp = 8000
+                , atkMult = 6
+                , hit = 90
+                , atk = 84
+                , minSpeed = 66
+                , maxSpeed = 66
+                , mag = 79
+                , valvalisMDef = 255
+                }
             , Chest 19
             ]
       }
@@ -1583,6 +1918,17 @@ moon =
       , requirements = []
       , value =
             [ Boss
+                { hp = 37000
+                , exp = 35000
+                , gp = 0
+                , atkMult = 13
+                , hit = 99
+                , atk = 174
+                , minSpeed = 27
+                , maxSpeed = 27
+                , mag = 17
+                , valvalisMDef = 170
+                }
             , KeyItem Summon
             , Chest 4
             ]
@@ -1609,6 +1955,17 @@ moon =
       , requirements = []
       , value =
             [ Boss
+                { hp = 27300
+                , exp = 59000
+                , gp = 0
+                , atkMult = 11
+                , hit = 85
+                , atk = 144
+                , minSpeed = 40
+                , maxSpeed = 43
+                , mag = 31
+                , valvalisMDef = 255
+                }
             , KeyItem MoonBoss
             ]
       }
@@ -1617,6 +1974,17 @@ moon =
       , requirements = []
       , value =
             [ Boss
+                { hp = 25000
+                , exp = 64300
+                , gp = 0
+                , atkMult = 12
+                , hit = 90
+                , atk = 160
+                , minSpeed = 43
+                , maxSpeed = 46
+                , mag = 8
+                , valvalisMDef = 255
+                }
             , KeyItem MoonBoss
             ]
       }
@@ -1625,6 +1993,17 @@ moon =
       , requirements = []
       , value =
             [ Boss
+                { hp = 28000
+                , exp = 31200
+                , gp = 550
+                , atkMult = 11
+                , hit = 90
+                , atk = 146
+                , minSpeed = 29
+                , maxSpeed = 32
+                , mag = 96
+                , valvalisMDef = 255
+                }
             , KeyItem MoonBoss
             ]
       }
@@ -1633,6 +2012,17 @@ moon =
       , requirements = []
       , value =
             [ Boss
+                { hp = 42000
+                , exp = 100000
+                , gp = 0
+                , atkMult = 11
+                , hit = 85
+                , atk = 144
+                , minSpeed = 30
+                , maxSpeed = 30
+                , mag = 36
+                , valvalisMDef = 255
+                }
             , KeyItem MoonBoss
             ]
       }
@@ -1641,6 +2031,17 @@ moon =
       , requirements = []
       , value =
             [ Boss
+                { hp = 37000
+                , exp = 61100
+                , gp = 0
+                , atkMult = 11
+                , hit = 99
+                , atk = 150
+                , minSpeed = 38
+                , maxSpeed = 38
+                , mag = 127
+                , valvalisMDef = 255
+                }
             , KeyItem MoonBoss
             ]
       }

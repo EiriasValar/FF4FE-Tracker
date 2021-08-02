@@ -15,14 +15,15 @@ import Browser.Dom
 import Browser.Events
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
-import Html exposing (Html, a, div, h2, h4, li, span, text, textarea, ul)
+import Html exposing (Html, a, div, h2, h4, hr, li, span, text, textarea, ul)
 import Html.Attributes exposing (autocomplete, class, classList, cols, href, id, rows, spellcheck, target, title, value)
 import Html.Events exposing (onClick, onInput)
 import Icon
 import Json.Decode
 import Location
     exposing
-        ( ConsumableItem
+        ( BossStats
+        , ConsumableItem
         , ConsumableItems
         , Filter(..)
         , FilterType(..)
@@ -868,10 +869,100 @@ viewProperty context location ( index, status, value ) =
                 [ icon.img []
                 , displayIf (count > 0) <|
                     span [ class "count" ] [ text <| String.fromInt count ]
+                , case value of
+                    Boss stats ->
+                        -- hidden/shown with CSS on hover
+                        viewBossStats stats
+
+                    _ ->
+                        text ""
                 ]
 
         Nothing ->
             text ""
+
+
+viewBossStats : BossStats -> Html Msg
+viewBossStats stats =
+    let
+        formatHP =
+            -- break up large HP totals with commas
+            stats.hp
+                |> String.fromInt
+                |> String.reverse
+                |> String.Extra.break 3
+                |> String.join ","
+                |> String.reverse
+
+        formatSpeed =
+            if stats.minSpeed == stats.maxSpeed then
+                String.fromInt stats.minSpeed
+
+            else
+                String.fromInt stats.minSpeed
+                    ++ "-"
+                    ++ String.fromInt stats.maxSpeed
+
+        waveDmg =
+            let
+                -- formula from Zoe's Kainazzo Reference sheet:
+                -- https://docs.google.com/spreadsheets/d/1Nf1amT-WzIw7RkffAGpEq05p1nSQ-6qU9lgQr7QyBgk/edit
+                min =
+                    (toFloat stats.hp / 25)
+                        |> ceiling
+
+                max =
+                    (toFloat min * 1.5)
+                        |> ceiling
+            in
+            String.fromInt min
+                ++ "-"
+                ++ String.fromInt max
+
+        darkwaveDmg =
+            let
+                -- formula from the PAIN MAN sheet:
+                -- https://docs.google.com/spreadsheets/d/1w938cMyuKb_-MBAUNQG8L1ynIRGBntskT4I4mkuTgF4/edit
+                min =
+                    (toFloat (stats.atk * stats.atkMult) / 2)
+                        |> ceiling
+
+                max =
+                    min + stats.atk
+            in
+            String.fromInt min
+                ++ "-"
+                ++ String.fromInt max
+    in
+    div [ class "boss-stats", onClickNoBubble DoNothing ]
+        [ div [] [ text "\"Benchmark\" stats" ]
+        , div [] [ text <| "HP: " ++ formatHP ]
+        , div []
+            [ text <|
+                "Atk: "
+                    ++ String.fromInt stats.atk
+                    ++ "x"
+                    ++ String.fromInt stats.atkMult
+                    ++ ", "
+                    ++ String.fromInt stats.hit
+                    ++ "%"
+            ]
+        , div [] [ text <| "Mag: " ++ String.fromInt stats.mag ]
+        , div [] [ text <| "Speed: " ++ formatSpeed ]
+        , hr [] []
+        , div []
+            [ Icon.toImg Icon.kainazzo
+            , text <| "Dmg: " ++ waveDmg
+            ]
+        , div []
+            [ Icon.toImg Icon.dkc
+            , text <| "Dmg: " ++ darkwaveDmg
+            ]
+        , div []
+            [ Icon.toImg Icon.valvalis
+            , text <| "MDef: " ++ String.fromInt stats.valvalisMDef
+            ]
+        ]
 
 
 updateRandomObjectives : Flags -> Array RandomObjective -> Array RandomObjective
