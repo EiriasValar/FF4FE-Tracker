@@ -93,6 +93,8 @@ The value icons for a shop correspond to Weapons, Armour, Curatives, J-Items, an
 
 There are a lot of items in Free Enterprise, and even the most obscure might happen to be relevant in a particular situation, so no attempt is made to be comprehensive here. Instead, it's an opinionated list of the items you're most likely to be a) interested in and b) unable to purchase as much of as you want on your first visit – i.e. the things you may actually need to come back for later. For anything else, there's the Other text area.
 
+The set of items potentially available in a given shop can also be limited by your flags; see the Wiki's [Shop randomization](https://wiki.ff4fe.com/doku.php?id=shop_randomization) page for details.
+
 # Contact
 
 Feel free to drop me (`@EiriasValar`) a line on the **Free Enterprise Workshop** Discord, and/or to [create an Issue](https://github.com/EiriasValar/FF4FE-Tracker/issues) on GitHub to report a bug or request a feature.
@@ -108,7 +110,6 @@ no navigation infrastructure is implemented (anymore).
 
 # TODO features
 - Type-to-filter random objective selection
-- Proper shop item lists for Svanilla and Sshuffle
 - Treat locations as having value when we have quest objectives for completing them
 - Accommodate streaming better (customizable background colour?)
 - Expand the shop weapon and armour items into short submenus?

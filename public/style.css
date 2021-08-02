@@ -314,6 +314,7 @@ h4 {
 
 .shop-item {
     padding: 2px 5px;
+    white-space: nowrap;
     font-size: smaller;
     cursor: pointer;
 }

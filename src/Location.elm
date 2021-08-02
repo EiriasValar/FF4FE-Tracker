@@ -431,6 +431,17 @@ filterItems { flags } (Location location) (ConsumableItems items) =
             else
                 GatedShop
 
+        vanillaItems : Set String
+        vanillaItems =
+            Dict.get location.key vanillaShops
+                |> Maybe.withDefault Set.empty
+
+        allVanillaItems : Set String
+        allVanillaItems =
+            vanillaShops
+                |> Dict.values
+                |> List.foldl Set.union Set.empty
+
         exists item =
             if item.name == "Life" && flags.noLifePots then
                 False
@@ -443,6 +454,12 @@ filterItems { flags } (Location location) (ConsumableItems items) =
 
             else
                 case ( flags.shopRandomization, shopType ) of
+                    ( Flags.None, _ ) ->
+                        Set.member item.name vanillaItems
+
+                    ( Flags.Shuffle, _ ) ->
+                        Set.member item.name allVanillaItems
+
                     ( Flags.Standard, UngatedShop ) ->
                         item.tier <= 4
 
@@ -2059,6 +2076,12 @@ healingItems =
     , { name = "Life"
       , tier = 2
       }
+    , { name = "Tent"
+      , tier = 2
+      }
+    , { name = "Cabin"
+      , tier = 4
+      }
     , { name = "Ether"
       , tier = 3
       }
@@ -2112,3 +2135,24 @@ jItems =
             )
         |> Array.fromList
         |> ConsumableItems
+
+
+vanillaShops : Dict Key (Set String)
+vanillaShops =
+    -- using strings for this is gross, but a type still feels like overkill
+    [ ( KaipoShops, [ "Life", "Tent", "Status-healing" ] )
+    , ( FabulShops, [ "Life", "Tent", "Status-healing" ] )
+    , ( MysidiaShops, [ "Cure2", "Life", "Tent", "Cabin", "Status-healing" ] )
+    , ( BaronItemShop, [ "Life", "Tent", "Status-healing" ] )
+    , ( ToroiaShops, [ "Life", "Tent", "Status-healing" ] )
+    , ( AgartShops, [ "Life", "Tent", "Status-healing" ] )
+    , ( SilveraShops, [ "Status-healing" ] )
+    , ( CaveEblanShops, [ "Status-healing" ] )
+    , ( DwarfCastleShops, [ "Cure2", "Life", "Tent", "Cabin", "Status-healing" ] )
+    , ( FeymarchShops, [ "Cure2", "Life", "Tent", "Cabin", "Status-healing" ] )
+    , ( TomraShops, [ "Cure2", "Life", "Tent", "Cabin", "Status-healing" ] )
+    , ( KokkolShop, [] )
+    , ( Hummingway, [ "Cure2", "Life", "Cabin", "Ether" ] )
+    ]
+        |> List.map (Tuple.mapSecond Set.fromList)
+        |> Dict.fromList
