@@ -1,3 +1,7 @@
+## 2021-08-03
+- Free Enterprise 4.4.0 has been released: Moonveil is now a tier 7 item, up
+  from tier 6.
+
 ## 2021-08-02
 - Show some rough/possible stats for a boss spot when hovering over its icon.
 - Appropriately limit the shop item lists under `Svanilla` or `Sshuffle`.

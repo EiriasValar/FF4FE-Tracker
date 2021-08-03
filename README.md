@@ -47,7 +47,7 @@ A given location is shown if:
 - You can enter it (you have any required key items)
 - It has **value**
 
-Each location shows icons representing the kinds of **value** available there: characters to recruit, bosses to fight, _potential_ key items to acquire, and untrapped/trapped chests to loot. The value that exists at a location depends on the flags (certain character and key item checks only exist under certain flags), and on the [filters](#filters)。
+Each location shows icons representing the kinds of **value** available there: characters to recruit, bosses to fight, _potential_ key items to acquire, and untrapped/trapped chests to loot. The value that exists at a location depends on the flags (certain character and key item checks only exist under certain flags), and on the [filters](#filters).
 
 Value icons can be clicked to mark them as individually completed. In the case of treasure chests, clicking them decrements the displayed counter; these can also be right-clicked to skip directly to being completed.
 
