@@ -5463,7 +5463,7 @@ var $author$project$Location$jItems = $elm$core$Array$fromList(
 				{dW: 'Bacchus', e: 5},
 				{dW: 'Coffin', e: 5},
 				{dW: 'Hourglass', e: 5},
-				{dW: 'Moonveil', e: 6},
+				{dW: 'Moonveil', e: 7},
 				{dW: 'Siren', e: 5},
 				{dW: 'Starveil', e: 2},
 				{dW: 'Vampire', e: 4}
@@ -10973,7 +10973,7 @@ var $author$project$App$viewBossStats = function (stats) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$text('\"Benchmark\" stats')
+						$elm$html$Html$text('Approximate stats:')
 					])),
 				A2(
 				$elm$html$Html$div,
