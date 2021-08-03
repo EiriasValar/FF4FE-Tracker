@@ -949,7 +949,7 @@ viewBossStats stats =
                 ++ String.fromInt max
     in
     div [ class "boss-stats", onClickNoBubble DoNothing ]
-        [ div [] [ text "\"Benchmark\" stats" ]
+        [ div [] [ text "Approximate stats:" ]
         , div [] [ text <| "HP: " ++ formatHP ]
         , div []
             [ text <|

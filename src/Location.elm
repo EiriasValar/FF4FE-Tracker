@@ -2113,7 +2113,7 @@ jItems =
       , tier = 5
       }
     , { name = "Moonveil"
-      , tier = 6
+      , tier = 7
       }
     , { name = "Siren"
       , tier = 5
