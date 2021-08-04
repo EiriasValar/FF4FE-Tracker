@@ -124,6 +124,7 @@ no navigation infrastructure is implemented (anymore).
 - Enable the Crystal when under Owin:crystal and the requisite number of objectives
   are completed
 - Hide the Objectives section when no objectives are active
+- Do we still need the separate classicGiantObjective flag?
 
 # TOMAYBEDOs
 - Pull some types out of Location.elm, it's getting overloaded. Though they're
@@ -140,5 +141,4 @@ no navigation infrastructure is implemented (anymore).
 - Complete quest objectives when the corresponding location is dismissed? Might
   be too aggressive. Maybe you dismissed the location because you know it will
   be too slow/hard and you have other objectives you can take instead.
-- Rework Objective.elm, it makes me sadder every time I interact with it.
 - Give a type to the Property thruple returned by getProperties

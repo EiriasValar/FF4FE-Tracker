@@ -47,7 +47,7 @@ import AssocList as Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
 import List.Extra
-import Objective exposing (Objective)
+import Objective
 
 
 type alias Set a =
@@ -266,8 +266,8 @@ type Area
 
 type alias Context =
     { flags : Flags
-    , randomObjectives : Set Objective
-    , completedObjectives : Set Objective
+    , randomObjectives : Set Objective.Key
+    , completedObjectives : Set Objective.Key
     , attainedRequirements : Set Requirement
     , warpGlitchUsed : Bool
     , filterOverrides : Dict Filter FilterType
@@ -943,7 +943,7 @@ defaultFiltersFrom context =
             activeBossHunt || huntingDMist
 
         onDarkMatterHunt =
-            (List.member Objective.DarkMatterHunt <| Array.toList context.flags.objectives)
+            Objective.member Objective.DarkMatterHunt context.flags.objectives
                 && (not <| Set.member Objective.DarkMatterHunt context.completedObjectives)
                 && (not <| Set.isEmpty outstanding)
 
@@ -961,13 +961,11 @@ defaultFiltersFrom context =
         |> Set.fromList
 
 
-outstandingObjectives : Context -> Set Objective
+outstandingObjectives : Context -> Set Objective.Key
 outstandingObjectives context =
     let
         combinedObjectives =
-            context.flags.objectives
-                |> Array.toList
-                |> Set.fromList
+            Objective.keys context.flags.objectives
                 |> Set.union context.randomObjectives
     in
     if Set.size context.completedObjectives >= context.flags.requiredObjectives then

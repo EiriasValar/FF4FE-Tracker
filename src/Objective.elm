@@ -1,35 +1,27 @@
-{- Lotta unfortunate boilerplate in here, partly as a result of not being able
-   to get at all the possible values of a union type through reflection. Could
-   go the same route as Location, and just define (once) a list of records, but
-   that feels unnecessarily clunky when the records would have only two fields,
-   plus `fromString` would then have to scan the list for the given name.
--}
-
-
 module Objective exposing
-    ( BossObjective(..)
-    , CharacterObjective(..)
-    , Objective(..)
-    , QuestObjective(..)
+    ( Boss(..)
+    , Character(..)
+    , Key(..)
+    , Objective
+    , Quest(..)
     , Type(..)
     , bosses
     , characters
-    , fromString
+    , fromFlag
     , gatedQuests
     , isBoss
+    , keys
+    , member
     , quests
-    , toString
     )
 
+import Array exposing (Array)
+import Dict exposing (Dict)
+import EverySet as Set exposing (EverySet)
 
-type Objective
-    = ClassicForge
-    | ClassicGiant
-    | Fiends
-    | DarkMatterHunt
-    | GetCharacter CharacterObjective
-    | DefeatBoss BossObjective
-    | DoQuest QuestObjective
+
+type alias Set a =
+    EverySet a
 
 
 type Type
@@ -39,10 +31,25 @@ type Type
     | GatedQuest
 
 
-isBoss : Objective -> Bool
-isBoss objective =
-    case objective of
+type alias Objective =
+    { key : Key
+    , flag : String
+    , description : String
+    , isGated : Bool
+    }
+
+
+fromFlag : String -> Maybe Objective
+fromFlag flag =
+    Dict.get flag allObjectives
+
+
+isBoss : Key -> Bool
+isBoss key =
+    case key of
         Fiends ->
+            -- we'll probably never hit this case, since we explode
+            -- the Fiends objective as soon as we parse the flag
             True
 
         DefeatBoss _ ->
@@ -52,7 +59,31 @@ isBoss objective =
             False
 
 
-type CharacterObjective
+member : Key -> Array Objective -> Bool
+member key =
+    Array.toList
+        >> List.map .key
+        >> List.member key
+
+
+keys : Array Objective -> Set Key
+keys =
+    Array.toList
+        >> List.map .key
+        >> Set.fromList
+
+
+type Key
+    = ClassicForge
+    | ClassicGiant
+    | Fiends
+    | DarkMatterHunt
+    | GetCharacter Character
+    | DefeatBoss Boss
+    | DoQuest Quest
+
+
+type Character
     = Cecil
     | Kain
     | Rydia
@@ -67,25 +98,7 @@ type CharacterObjective
     | FuSoYa
 
 
-characters : List Objective
-characters =
-    [ Cecil
-    , Kain
-    , Rydia
-    , Tellah
-    , Edward
-    , Rosa
-    , Yang
-    , Palom
-    , Porom
-    , Cid
-    , Edge
-    , FuSoYa
-    ]
-        |> List.map GetCharacter
-
-
-type BossObjective
+type Boss
     = DMist
     | Officer
     | Octomamm
@@ -123,53 +136,7 @@ type BossObjective
     | Ogopogo
 
 
-bosses : List Objective
-bosses =
-    [ DMist
-    , Officer
-    , Octomamm
-    , Antlion
-    , Waterhag
-    , MomBomb
-    , Gauntlet
-    , Milon
-    , MilonZ
-    , DarkKnight
-    , Guards
-    , Karate
-    , Baigan
-    , Kainazzo
-    , DarkElf
-    , MagusSisters
-    , Valvalis
-    , Calbrena
-    , Golbez
-    , DrLugae
-    , DarkImps
-    , KQEblan
-    , Rubicant
-    , EvilWall
-    , Asura
-    , Leviatan
-    , Odin
-    , Bahamut
-    , Elements
-    , CPU
-    , PaleDim
-    , Wyvern
-    , Plague
-    , DLunars
-    , Ogopogo
-    ]
-        |> List.map DefeatBoss
-
-
-type QuestObjective
-    = Ungated UngatedQuest
-    | Gated GatedQuest
-
-
-type UngatedQuest
+type Quest
     = MistCave
     | Waterfall
     | AntlionCave
@@ -177,11 +144,7 @@ type UngatedQuest
     | Fabul
     | MtOrdeals
     | BaronInn
-    | Pass
-
-
-type GatedQuest
-    = BaronCastle
+    | BaronCastle
     | CaveMagnes
     | TowerZot
     | DwarfCastle
@@ -212,681 +175,173 @@ type GatedQuest
     | PanWake
     | PanReturn
     | PinkTail
+    | Pass
+
+
+characters : List Objective
+characters =
+    let
+        fromTuple ( key, name ) =
+            { key = GetCharacter key
+            , flag = "char_" ++ String.toLower name
+            , description = "Get " ++ name
+            , isGated = List.member key [ Edge, FuSoYa ]
+            }
+    in
+    [ ( Cecil, "Cecil" )
+    , ( Kain, "Kain" )
+    , ( Rydia, "Rydia" )
+    , ( Tellah, "Tellah" )
+    , ( Edward, "Edward" )
+    , ( Rosa, "Rosa" )
+    , ( Yang, "Yang" )
+    , ( Palom, "Palom" )
+    , ( Porom, "Porom" )
+    , ( Cid, "Cid" )
+    , ( Edge, "Edge" )
+    , ( FuSoYa, "FuSoYa" )
+    ]
+        |> List.map fromTuple
+
+
+bosses : List Objective
+bosses =
+    let
+        fromTuple ( key, flag, name ) =
+            { key = DefeatBoss key
+            , flag = "boss_" ++ flag
+            , description = "Defeat " ++ name
+            , isGated = False
+            }
+    in
+    [ ( DMist, "dmist", "D. Mist" )
+    , ( Officer, "officer", "Officer" )
+    , ( Octomamm, "octomamm", "Octomamm" )
+    , ( Antlion, "antlion", "Antlion" )
+    , ( Waterhag, "waterhag", "Waterhag" )
+    , ( MomBomb, "mombomb", "MomBomb" )
+    , ( Gauntlet, "fabulgauntlet", "the Fabul Gauntlet" )
+    , ( Milon, "milon", "Milon" )
+    , ( MilonZ, "milonz", "Milon Z." )
+    , ( DarkKnight, "mirrorcecil", "D.Knight" )
+    , ( Guards, "guard", "the Guards" )
+    , ( Karate, "karate", "Karate" )
+    , ( Baigan, "baigan", "Baigan" )
+    , ( Kainazzo, "kainazzo", "Kainazzo" )
+    , ( DarkElf, "darkelf", "the Dark Elf" )
+    , ( MagusSisters, "magus", "the Magus Sisters" )
+    , ( Valvalis, "valvalis", "Valvalis" )
+    , ( Calbrena, "calbrena", "Calbrena" )
+    , ( Golbez, "golbez", "Golbez" )
+    , ( DrLugae, "lugae", "Dr. Lugae" )
+    , ( DarkImps, "darkimp", "the Dark Imps" )
+    , ( KQEblan, "kingqueen", "K.Eblan and Q.Eblan" )
+    , ( Rubicant, "rubicant", "Rubicant" )
+    , ( EvilWall, "evilwall", "EvilWall" )
+    , ( Asura, "asura", "Asura" )
+    , ( Leviatan, "leviatan", "Leviatan" )
+    , ( Odin, "odin", "Odin" )
+    , ( Bahamut, "bahamut", "Bahamut" )
+    , ( Elements, "elements", "Elements" )
+    , ( CPU, "cpu", "CPU" )
+    , ( PaleDim, "paledim", "Pale Dim" )
+    , ( Wyvern, "wyvern", "Wyvern" )
+    , ( Plague, "plague", "Plague" )
+    , ( DLunars, "dlunar", "the D.Lunars" )
+    , ( Ogopogo, "ogopogo", "Ogopogo" )
+    ]
+        |> List.map fromTuple
 
 
 quests : List Objective
 quests =
-    List.map Ungated
-        [ MistCave
-        , Waterfall
-        , AntlionCave
-        , MtHobs
-        , Fabul
-        , MtOrdeals
-        , BaronInn
-        ]
-        ++ List.map Gated
-            [ BaronCastle
-            , CaveMagnes
-            , TowerZot
-            , DwarfCastle
-            , LowerBabil
-            , Falcon
-            , SealedCave
-            , FeymarchQueen
-            , FeymarchKing
-            , BaronBasement
-            , Giant
-            , CaveBahamut
-            , MurasameAltar
-            , WyvernAltar
-            , WhiteSpearAltar
-            , RibbonRoom
-            , MasamuneAltar
-            , Package
-            , SandRuby
-            , UnlockSewer
-            , TwinHarp
-            , Treasury
-            , MagmaKey
-            , SuperCannon
-            , UnlockSealedCave
-            , BigWhale
-            , RatTail
-            , Forge
-            , PanWake
-            , PanReturn
-            , PinkTail
+    let
+        ungated =
+            [ MistCave
+            , Waterfall
+            , AntlionCave
+            , MtHobs
+            , Fabul
+            , MtOrdeals
+            , BaronInn
+            , Pass
             ]
-        ++ [ Ungated Pass ]
-        |> List.map DoQuest
+
+        fromTuple ( key, flag, desc ) =
+            { key = DoQuest key
+            , flag = "quest_" ++ flag
+            , description = desc
+            , isGated = not <| List.member key ungated
+            }
+    in
+    [ ( MistCave, "mistcave", "Defeat the boss of the Mist Cave" )
+    , ( Waterfall, "waterfall", "Defeat the boss of the Waterfall" )
+    , ( AntlionCave, "antlionnest", "Complete the Antlion Nest" )
+    , ( MtHobs, "hobs", "Rescue the hostage on Mt. Hobs" )
+    , ( Fabul, "fabul", "Defend Fabul" )
+    , ( MtOrdeals, "ordeals", "Complete Mt. Ordeals" )
+    , ( BaronInn, "baroninn", "Defeat the bosses of Baron Inn" )
+    , ( BaronCastle, "baroncastle", "Liberate Baron Castle" )
+    , ( CaveMagnes, "magnes", "Complete Cave Magnes" )
+    , ( TowerZot, "zot", "Complete the Tower of Zot" )
+    , ( DwarfCastle, "dwarfcastle", "Defeat the bosses of Dwarf Castle" )
+    , ( LowerBabil, "lowerbabil", "Defeat the boss of Lower Bab-il" )
+    , ( Falcon, "falcon", "Launch the Falcon" )
+    , ( SealedCave, "sealedcave", "Complete the Sealed Cave" )
+    , ( FeymarchQueen, "monsterqueen", "Defeat the queen at the Town of Monsters" )
+    , ( FeymarchKing, "monsterking", "Defeat the king at the Town of Monsters" )
+    , ( BaronBasement, "baronbasement", "Defeat the Baron Castle basement throne" )
+    , ( Giant, "giant", "Complete the Giant of Bab-il" )
+    , ( CaveBahamut, "cavebahamut", "Complete Cave Bahamut" )
+    , ( MurasameAltar, "murasamealtar", "Conquer the vanilla Murasame altar" )
+    , ( WyvernAltar, "crystalaltar", "Conquer the vanilla Crystal Sword altar" )
+    , ( WhiteSpearAltar, "whitealtar", "Conquer the vanilla White Spear altar" )
+    , ( RibbonRoom, "ribbonaltar", "Conquer the vanillla Ribbon room" )
+    , ( MasamuneAltar, "masamunealtar", "Conquer the vanilla Masamune Altar" )
+    , ( Package, "burnmist", "Burn village Mist with the Package" )
+    , ( SandRuby, "curefever", "Cure the fever with the SandRuby" )
+    , ( UnlockSewer, "unlocksewer", "Unlock the sewer with the Baron Key" )
+    , ( TwinHarp, "music", "Break the Dark Elf's spell with the TwinHarp" )
+    , ( Treasury, "toroiatreasury", "Open the Toroia treasury with the Earth Crystal" )
+    , ( MagmaKey, "magma", "Drop the Magma Key into the Agart well" )
+    , ( SuperCannon, "supercannon", "Destroy the Super Cannon" )
+    , ( UnlockSealedCave, "unlocksealedcave", "Unlock the Sealed Cave" )
+    , ( BigWhale, "bigwhale", "Raise the Big Whale" )
+    , ( RatTail, "traderat", "Trade away the Rat Tail" )
+    , ( Forge, "forge", "Have Kokkol forge Legend Sword with Adamant" )
+    , ( PanWake, "wakeyang", "Wake Yang with the Pan" )
+    , ( PanReturn, "tradepan", "Return the Pan to Yang's wife" )
+    , ( PinkTail, "tradepink", "Trade away the Pink Tail" )
+    , ( Pass, "pass", "Unlock the Pass door in Toroia" )
+    ]
+        |> List.map fromTuple
 
 
 gatedQuests : List Objective
 gatedQuests =
+    List.filter .isGated quests
+
+
+classic : List Objective
+classic =
     let
-        isGated q =
-            case q of
-                DoQuest (Gated _) ->
-                    True
-
-                _ ->
-                    False
+        fromTuple ( key, flag, desc ) =
+            { key = key
+            , flag = flag
+            , description = desc
+            , isGated = False
+            }
     in
-    List.filter isGated quests
-
-
-toString : Objective -> String
-toString objective =
-    case objective of
-        ClassicForge ->
-            "Classic Forge the Crystal"
-
-        ClassicGiant ->
-            "Classic Giant%"
-
-        Fiends ->
-            "Fiends%"
-
-        DarkMatterHunt ->
-            "Dark Matter Hunt"
-
-        GetCharacter characterObjective ->
-            "Get " ++ charToString characterObjective
-
-        DefeatBoss bossObjective ->
-            "Defeat " ++ bossToString bossObjective
-
-        DoQuest questObjective ->
-            questToString questObjective
-
-
-charToString : CharacterObjective -> String
-charToString char =
-    case char of
-        Cecil ->
-            "Cecil"
-
-        Kain ->
-            "Kain"
-
-        Rydia ->
-            "Rydia"
-
-        Tellah ->
-            "Tellah"
-
-        Edward ->
-            "Edward"
-
-        Rosa ->
-            "Rosa"
-
-        Yang ->
-            "Yang"
-
-        Palom ->
-            "Palom"
-
-        Porom ->
-            "Porom"
-
-        Cid ->
-            "Cid"
-
-        Edge ->
-            "Edge"
-
-        FuSoYa ->
-            "FuSoYa"
-
-
-bossToString : BossObjective -> String
-bossToString boss =
-    case boss of
-        DMist ->
-            "D. Mist"
-
-        Officer ->
-            "Officer"
-
-        Octomamm ->
-            "Octomamm"
-
-        Antlion ->
-            "Antlion"
-
-        Waterhag ->
-            "Waterhag"
-
-        MomBomb ->
-            "MomBomb"
-
-        Gauntlet ->
-            "the Fabul Gauntlet"
-
-        Milon ->
-            "Milon"
-
-        MilonZ ->
-            "Milon Z."
-
-        DarkKnight ->
-            "D.Knight"
-
-        Guards ->
-            "the Guards"
-
-        Karate ->
-            "Karate"
-
-        Baigan ->
-            "Baigan"
-
-        Kainazzo ->
-            "Kainazzo"
-
-        DarkElf ->
-            "the Dark Elf"
-
-        MagusSisters ->
-            "the Magus Sisters"
-
-        Valvalis ->
-            "Valvalis"
-
-        Calbrena ->
-            "Calbrena"
-
-        Golbez ->
-            "Golbez"
-
-        DrLugae ->
-            "Dr. Lugae"
-
-        DarkImps ->
-            "the Dark Imps"
-
-        KQEblan ->
-            "K.Eblan and Q.Eblan"
-
-        Rubicant ->
-            "Rubicant"
-
-        EvilWall ->
-            "EvilWall"
-
-        Asura ->
-            "Asura"
-
-        Leviatan ->
-            "Leviatan"
-
-        Odin ->
-            "Odin"
-
-        Bahamut ->
-            "Bahamut"
-
-        Elements ->
-            "Elements"
-
-        CPU ->
-            "CPU"
-
-        PaleDim ->
-            "Pale Dim"
-
-        Wyvern ->
-            "Wyvern"
-
-        Plague ->
-            "Plague"
-
-        DLunars ->
-            "D.Lunars"
-
-        Ogopogo ->
-            "Ogopogo"
-
-
-questToString : QuestObjective -> String
-questToString quest =
-    case quest of
-        Ungated q ->
-            case q of
-                MistCave ->
-                    "Defeat the boss of the Mist Cave"
-
-                Waterfall ->
-                    "Defeat the boss of the Waterfall"
-
-                AntlionCave ->
-                    "Complete the Antlion Nest"
-
-                MtHobs ->
-                    "Rescue the hostage on Mt. Hobs"
-
-                Fabul ->
-                    "Defend Fabul"
-
-                MtOrdeals ->
-                    "Complete Mt. Ordeals"
-
-                BaronInn ->
-                    "Defeat the bosses of Baron Inn"
-
-                Pass ->
-                    "Unlock the Pass door in Toroia"
-
-        Gated q ->
-            case q of
-                BaronCastle ->
-                    "Liberate Baron Castle"
-
-                CaveMagnes ->
-                    "Complete Cave Magnes"
-
-                TowerZot ->
-                    "Complete the Tower of Zot"
-
-                DwarfCastle ->
-                    "Defeat the bosses of Dwarf Castle"
-
-                LowerBabil ->
-                    "Defeat the boss of Lower Bab-il"
-
-                Falcon ->
-                    "Launch the Falcon"
-
-                SealedCave ->
-                    "Complete the Sealed Cave"
-
-                FeymarchQueen ->
-                    "Defeat the queen at the Town of Monsters"
-
-                FeymarchKing ->
-                    "Defeat the king at the Town of Monsters"
-
-                BaronBasement ->
-                    "Defeat the Baron Castle basement throne"
-
-                Giant ->
-                    "Complete the Giant of Bab-il"
-
-                CaveBahamut ->
-                    "Complete Cave Bahamut"
-
-                MurasameAltar ->
-                    "Conquer the vanilla Murasame altar"
-
-                WyvernAltar ->
-                    "Conquer the vanilla Crystal Sword altar"
-
-                WhiteSpearAltar ->
-                    "Conquer the vanilla White Spear altar"
-
-                RibbonRoom ->
-                    "Conquer the vanillla Ribbon room"
-
-                MasamuneAltar ->
-                    "Conquer the vanilla Masamune Altar"
-
-                Package ->
-                    "Burn village Mist with the Package"
-
-                SandRuby ->
-                    "Cure the fever with the SandRuby"
-
-                UnlockSewer ->
-                    "Unlock the sewer with the Baron Key"
-
-                TwinHarp ->
-                    "Break the Dark Elf's spell with the TwinHarp"
-
-                Treasury ->
-                    "Open the Toroia Treasury with the Earth Crystal"
-
-                MagmaKey ->
-                    "Drop the Magma Key into the Agart well"
-
-                SuperCannon ->
-                    "Destroy the Super Cannon"
-
-                UnlockSealedCave ->
-                    "Unlock the Sealed Cave"
-
-                BigWhale ->
-                    "Raise the Big Whale"
-
-                RatTail ->
-                    "Trade away the Rat Tail"
-
-                Forge ->
-                    "Have Kokkol forge Legend Sword with Adamant"
-
-                PanWake ->
-                    "Wake Yang with the Pan"
-
-                PanReturn ->
-                    "Return the Pan to Yang's wife"
-
-                PinkTail ->
-                    "Trade away the Pink Tail"
-
-
-fromString : String -> Maybe Objective
-fromString str =
-    case String.split "_" (String.toLower str) of
-        [ "classicforge" ] ->
-            Just ClassicForge
-
-        [ "classicgiant" ] ->
-            Just ClassicGiant
-
-        [ "fiends" ] ->
-            Just Fiends
-
-        [ "dkmatter" ] ->
-            Just DarkMatterHunt
-
-        [ "char", char ] ->
-            charFromString char
-                |> Maybe.map GetCharacter
-
-        [ "boss", boss ] ->
-            bossFromString boss
-                |> Maybe.map DefeatBoss
-
-        [ "quest", quest ] ->
-            questFromString quest
-                |> Maybe.map DoQuest
-
-        _ ->
-            Nothing
-
-
-charFromString : String -> Maybe CharacterObjective
-charFromString char =
-    case char of
-        "cecil" ->
-            Just Cecil
-
-        "kain" ->
-            Just Kain
-
-        "rydia" ->
-            Just Rydia
-
-        "tellah" ->
-            Just Tellah
-
-        "edward" ->
-            Just Edward
-
-        "rosa" ->
-            Just Rosa
-
-        "yang" ->
-            Just Yang
-
-        "palom" ->
-            Just Palom
-
-        "porom" ->
-            Just Porom
-
-        "cid" ->
-            Just Cid
-
-        "edge" ->
-            Just Edge
-
-        "fusoya" ->
-            Just FuSoYa
-
-        _ ->
-            Nothing
-
-
-bossFromString : String -> Maybe BossObjective
-bossFromString boss =
-    case boss of
-        "dmist" ->
-            Just DMist
-
-        "officer" ->
-            Just Officer
-
-        "octomamm" ->
-            Just Octomamm
-
-        "antlion" ->
-            Just Antlion
-
-        "waterhag" ->
-            Just Waterhag
-
-        "mombomb" ->
-            Just MomBomb
-
-        "fabulgauntlet" ->
-            Just Gauntlet
-
-        "milon" ->
-            Just Milon
-
-        "milonz" ->
-            Just MilonZ
-
-        "mirrorcecil" ->
-            Just DarkKnight
-
-        "guard" ->
-            Just Guards
-
-        "karate" ->
-            Just Karate
-
-        "baigan" ->
-            Just Baigan
-
-        "kainazzo" ->
-            Just Kainazzo
-
-        "darkelf" ->
-            Just DarkElf
-
-        "magus" ->
-            Just MagusSisters
-
-        "valvalis" ->
-            Just Valvalis
-
-        "calbrena" ->
-            Just Calbrena
-
-        "golbez" ->
-            Just Golbez
-
-        "lugae" ->
-            Just DrLugae
-
-        "darkimp" ->
-            Just DarkImps
-
-        "kingqueen" ->
-            Just KQEblan
-
-        "rubicant" ->
-            Just Rubicant
-
-        "evilwall" ->
-            Just EvilWall
-
-        "asura" ->
-            Just Asura
-
-        "leviatan" ->
-            Just Leviatan
-
-        "odin" ->
-            Just Odin
-
-        "bahamut" ->
-            Just Bahamut
-
-        "elements" ->
-            Just Elements
-
-        "cpu" ->
-            Just CPU
-
-        "paledim" ->
-            Just PaleDim
-
-        "wyvern" ->
-            Just Wyvern
-
-        "plague" ->
-            Just Plague
-
-        "dlunar" ->
-            Just DLunars
-
-        "ogopogo" ->
-            Just Ogopogo
-
-        _ ->
-            Nothing
-
-
-questFromString : String -> Maybe QuestObjective
-questFromString quest =
-    let
-        ungated =
-            Just << Ungated
-
-        gated =
-            Just << Gated
-    in
-    case quest of
-        "mistcave" ->
-            ungated MistCave
-
-        "waterfall" ->
-            ungated Waterfall
-
-        "antlionnest" ->
-            ungated AntlionCave
-
-        "hobs" ->
-            ungated MtHobs
-
-        "fabul" ->
-            ungated Fabul
-
-        "ordeals" ->
-            ungated MtOrdeals
-
-        "baroninn" ->
-            ungated BaronInn
-
-        "baroncastle" ->
-            gated BaronCastle
-
-        "magnes" ->
-            gated CaveMagnes
-
-        "zot" ->
-            gated TowerZot
-
-        "dwarfcastle" ->
-            gated DwarfCastle
-
-        "lowerbabil" ->
-            gated LowerBabil
-
-        "falcon" ->
-            gated Falcon
-
-        "sealedcave" ->
-            gated SealedCave
-
-        "monsterqueen" ->
-            gated FeymarchQueen
-
-        "monsterking" ->
-            gated FeymarchKing
-
-        "baronbasement" ->
-            gated BaronBasement
-
-        "giant" ->
-            gated Giant
-
-        "cavebahamut" ->
-            gated CaveBahamut
-
-        "murasamealtar" ->
-            gated MurasameAltar
-
-        "crystalaltar" ->
-            gated WyvernAltar
-
-        "whitealtar" ->
-            gated WhiteSpearAltar
-
-        "ribbonaltar" ->
-            gated RibbonRoom
-
-        "masamunealtar" ->
-            gated MasamuneAltar
-
-        "burnmist" ->
-            gated Package
-
-        "curefever" ->
-            gated SandRuby
-
-        "unlocksewer" ->
-            gated UnlockSewer
-
-        "music" ->
-            gated TwinHarp
-
-        "toroiatreasury" ->
-            gated Treasury
-
-        "magma" ->
-            gated MagmaKey
-
-        "supercannon" ->
-            gated SuperCannon
-
-        "unlocksealedcave" ->
-            gated UnlockSealedCave
-
-        "bigwhale" ->
-            gated BigWhale
-
-        "traderat" ->
-            gated RatTail
-
-        "forge" ->
-            gated Forge
-
-        "wakeyang" ->
-            gated PanWake
-
-        "tradepan" ->
-            gated PanReturn
-
-        "tradepink" ->
-            gated PinkTail
-
-        "pass" ->
-            ungated Pass
-
-        _ ->
-            Nothing
+    [ ( ClassicForge, "classicforge", "Classic Forge the Crystal" )
+    , ( ClassicGiant, "classicgiant", "Classic Giant%" )
+    , ( Fiends, "fiends", "Fiends%" )
+    , ( DarkMatterHunt, "dkmatter", "Deliver 30 Dark Matter" )
+    ]
+        |> List.map fromTuple
+
+
+allObjectives : Dict String Objective
+allObjectives =
+    (classic ++ characters ++ bosses ++ quests)
+        |> List.map (\o -> ( o.flag, o ))
+        |> Dict.fromList
