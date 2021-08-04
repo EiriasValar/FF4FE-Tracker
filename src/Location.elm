@@ -310,7 +310,7 @@ getProperties_ context unwrapGatedValues (Location location) =
                     not context.flags.noFreeChars
 
                 Character Gated ->
-                    not <| context.flags.classicGiantObjective && location.key == Giant
+                    not <| Objective.member Objective.ClassicGiant context.flags.objectives && location.key == Giant
 
                 KeyItem itemClass ->
                     not (context.warpGlitchUsed && location.key == SealedCave)

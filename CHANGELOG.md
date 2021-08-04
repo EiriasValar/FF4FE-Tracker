@@ -1,3 +1,8 @@
+## Upcoming release
+
+- Refactored Objective-handling code: shouldn't have any noticeable effects
+  unless I've broken something.
+
 ## 2021-08-03
 - Free Enterprise 4.4.0 has been released: Moonveil is now a tier 7 item, up
   from tier 6.

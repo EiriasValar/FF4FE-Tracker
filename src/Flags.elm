@@ -22,7 +22,6 @@ type alias Flags =
     , requiredObjectives : Int
     , objectiveReward : Reward
     , keyItems : Set KeyItemClass
-    , classicGiantObjective : Bool
     , passExists : Bool
     , passIsKeyItem : Bool
     , passInShop : Bool
@@ -89,7 +88,6 @@ parse flagString =
             , requiredObjectives = 0
             , objectiveReward = Win
             , keyItems = Set.singleton Free
-            , classicGiantObjective = False
             , passExists = False
             , passIsKeyItem = False
             , passInShop = False
@@ -240,10 +238,7 @@ parseO opts incomingFlags =
         parseMode mode flags =
             case Objective.fromFlag mode of
                 Just objective ->
-                    { flags
-                        | classicGiantObjective = objective.key == ClassicGiant
-                        , objectives = Array.push objective flags.objectives
-                    }
+                    { flags | objectives = Array.push objective flags.objectives }
 
                 Nothing ->
                     flags

@@ -124,7 +124,6 @@ no navigation infrastructure is implemented (anymore).
 - Enable the Crystal when under Owin:crystal and the requisite number of objectives
   are completed
 - Hide the Objectives section when no objectives are active
-- Do we still need the separate classicGiantObjective flag?
 
 # TOMAYBEDOs
 - Pull some types out of Location.elm, it's getting overloaded. Though they're
