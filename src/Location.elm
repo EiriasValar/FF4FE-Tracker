@@ -47,7 +47,7 @@ import AssocList as Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
 import List.Extra
-import Objective
+import Objective exposing (Key(..))
 
 
 type alias Set a =
@@ -88,6 +88,7 @@ type Value
     | TrappedChest Int
     | Shop ShopValue
     | Requirement Requirement
+    | Objective Objective.Key
     | GatedValue Requirement Value
 
 
@@ -845,6 +846,9 @@ filterByContext class c (Locations locations) =
         filters =
             filtersFrom context
 
+        outstanding =
+            outstandingObjectives context
+
         propertiesHaveValue location =
             -- getProperties and filtersFrom have done all the heavy lifting
             -- of pruning the list of properties to just the ones appropriate
@@ -864,6 +868,10 @@ filterByContext class c (Locations locations) =
                             ( Requirement _, _ ) ->
                                 -- other Requirements are always valuable
                                 True
+
+                            ( Objective obj, _ ) ->
+                                -- outstanding objectives are valuable
+                                Set.member obj outstanding
 
                             ( Shop _, _ ) ->
                                 -- shops are always valuable
@@ -943,9 +951,7 @@ defaultFiltersFrom context =
             activeBossHunt || huntingDMist
 
         onDarkMatterHunt =
-            Objective.member Objective.DarkMatterHunt context.flags.objectives
-                && (not <| Set.member Objective.DarkMatterHunt context.completedObjectives)
-                && (not <| Set.isEmpty outstanding)
+            Set.member Objective.DarkMatterHunt outstanding
 
         trappedKeyItems =
             Set.member Trapped context.flags.keyItems
@@ -1027,6 +1033,9 @@ valueToFilter value =
             Nothing
 
         Requirement _ ->
+            Nothing
+
+        Objective _ ->
             Nothing
 
         GatedValue _ _ ->
@@ -1131,6 +1140,7 @@ surface =
                 , valvalisMDef = 255
                 }
             , Chest 4
+            , Objective <| DoQuest Objective.MistCave
             ]
       }
     , { key = MistVillage
@@ -1165,6 +1175,7 @@ surface =
                 , mag = 11
                 , valvalisMDef = 255
                 }
+            , Objective <| DoQuest Objective.Package
             ]
       }
     , { key = MistVillageMom
@@ -1180,6 +1191,7 @@ surface =
       , requirements = []
       , value =
             [ GatedValue SandRuby <| Character Gated
+            , GatedValue SandRuby <| Objective <| DoQuest Objective.SandRuby
             , Chest 1
             ]
       }
@@ -1217,6 +1229,7 @@ surface =
                 , valvalisMDef = 255
                 }
             , Chest 4
+            , Objective <| DoQuest Objective.Waterfall
             ]
       }
     , { key = Damcyan
@@ -1246,6 +1259,7 @@ surface =
             , KeyItem Main
             , KeyItem Vanilla
             , Chest 13
+            , Objective <| DoQuest Objective.AntlionCave
             ]
       }
     , { key = MtHobs
@@ -1266,6 +1280,7 @@ surface =
                 }
             , Character Gated
             , Chest 5
+            , Objective <| DoQuest Objective.MtHobs
             ]
       }
     , { key = FabulShops
@@ -1295,6 +1310,7 @@ surface =
                 }
             , KeyItem Main
             , Chest 10
+            , Objective <| DoQuest Objective.Fabul
             ]
       }
     , { key = Sheila
@@ -1305,6 +1321,7 @@ surface =
             , GatedValue (Pseudo YangTalk) (KeyItem Vanilla)
             , GatedValue (Pseudo YangBonk) (KeyItem Main)
             , GatedValue (Pseudo YangBonk) (KeyItem Vanilla)
+            , GatedValue (Pseudo YangBonk) (Objective <| DoQuest Objective.PanReturn)
             ]
       }
     , { key = Mysidia
@@ -1313,6 +1330,7 @@ surface =
       , value =
             [ Character Ungated
             , Character Ungated
+            , GatedValue DarknessCrystal <| Objective <| DoQuest Objective.BigWhale
             ]
       }
     , { key = MysidiaShops
@@ -1368,6 +1386,7 @@ surface =
                 , valvalisMDef = 254
                 }
             , Chest 4
+            , Objective <| DoQuest Objective.MtOrdeals
             ]
       }
     , { key = Baron
@@ -1402,6 +1421,8 @@ surface =
             , KeyItem Main
             , KeyItem Vanilla
             , Chest 13
+            , Objective <| DoQuest Objective.BaronInn
+            , GatedValue BaronKey <| Objective <| DoQuest Objective.UnlockSewer
             ]
       }
     , { key = BaronItemShop
@@ -1461,6 +1482,7 @@ surface =
             , KeyItem Main
             , KeyItem Vanilla
             , Chest 20
+            , Objective <| DoQuest Objective.BaronCastle
             ]
       }
     , { key = BaronBasement
@@ -1480,6 +1502,7 @@ surface =
                 , valvalisMDef = 255
                 }
             , KeyItem Summon
+            , Objective <| DoQuest Objective.BaronBasement
             ]
       }
     , { key = Toroia
@@ -1487,6 +1510,7 @@ surface =
       , requirements = []
       , value =
             [ Chest 4
+            , Objective <| DoQuest Objective.Pass
             ]
       }
     , { key = ToroiaShops
@@ -1511,6 +1535,7 @@ surface =
       , requirements = [ EarthCrystal ]
       , value =
             [ Chest 18
+            , Objective <| DoQuest Objective.Treasury
             ]
       }
     , { key = CaveMagnes
@@ -1533,6 +1558,8 @@ surface =
             , GatedValue TwinHarp <| KeyItem Main
             , GatedValue TwinHarp <| KeyItem Vanilla
             , Chest 10
+            , GatedValue TwinHarp <| Objective <| DoQuest Objective.CaveMagnes
+            , GatedValue TwinHarp <| Objective <| DoQuest Objective.TwinHarp
             ]
       }
     , { key = Zot
@@ -1570,6 +1597,7 @@ surface =
             , GatedValue EarthCrystal <| KeyItem Vanilla
             , Chest 5
             , TrappedChest 1
+            , GatedValue EarthCrystal <| Objective <| DoQuest Objective.TowerZot
             ]
       }
     , { key = Agart
@@ -1577,6 +1605,7 @@ surface =
       , requirements = []
       , value =
             [ Chest 1
+            , GatedValue MagmaKey <| Objective <| DoQuest Objective.MagmaKey
             ]
       }
     , { key = AgartShops
@@ -1606,10 +1635,12 @@ surface =
       }
     , { key = AdamantGrotto
       , name = "Adamant Grotto"
-      , requirements = [ Hook, RatTail ]
+      , requirements = [ Hook ]
       , value =
-            [ KeyItem Main
-            , KeyItem Vanilla
+            [ GatedValue RatTail <| KeyItem Main
+            , GatedValue RatTail <| KeyItem Vanilla
+            , GatedValue RatTail <| Objective <| DoQuest Objective.RatTail
+            , GatedValue PinkTail <| Objective <| DoQuest Objective.PinkTail
             ]
       }
     , { key = CastleEblan
@@ -1669,6 +1700,7 @@ surface =
             , Chest 7
             , TrappedChest 1
             , Requirement <| Pseudo Falcon
+            , Objective <| DoQuest Objective.Falcon
             ]
       }
     , { key = Giant
@@ -1702,6 +1734,8 @@ surface =
             , Character Gated
             , Chest 7
             , TrappedChest 1
+            , Objective <| DoQuest Objective.Giant
+            , Objective <| ClassicGiant
             ]
       }
     ]
@@ -1742,6 +1776,7 @@ underground =
             , KeyItem Vanilla
             , KeyItem Warp -- also Vanilla
             , Chest 18
+            , Objective <| DoQuest Objective.DwarfCastle
             ]
       }
     , { key = DwarfCastleShops
@@ -1773,6 +1808,7 @@ underground =
             , KeyItem Vanilla
             , Chest 12
             , TrappedChest 4
+            , Objective <| DoQuest Objective.LowerBabil
             ]
       }
     , { key = LowerBabilCannon
@@ -1793,6 +1829,7 @@ underground =
                 }
             , KeyItem Main
             , KeyItem Vanilla
+            , Objective <| DoQuest Objective.SuperCannon
             ]
       }
     , { key = SylphCave
@@ -1804,6 +1841,7 @@ underground =
             , GatedValue Pan (KeyItem Summon)
             , Chest 25
             , TrappedChest 7
+            , GatedValue Pan <| Objective <| DoQuest Objective.PanWake
             ]
       }
     , { key = Feymarch
@@ -1842,6 +1880,7 @@ underground =
                 , valvalisMDef = 255
                 }
             , KeyItem Summon
+            , Objective <| DoQuest Objective.FeymarchKing
             ]
       }
     , { key = FeymarchQueen
@@ -1861,6 +1900,7 @@ underground =
                 , valvalisMDef = 255
                 }
             , KeyItem Summon
+            , Objective <| DoQuest Objective.FeymarchQueen
             ]
       }
     , { key = Tomra
@@ -1898,6 +1938,8 @@ underground =
                 , valvalisMDef = 255
                 }
             , Chest 19
+            , Objective <| DoQuest Objective.SealedCave
+            , Objective <| DoQuest Objective.UnlockSealedCave
             ]
       }
     , { key = Kokkol
@@ -1905,6 +1947,10 @@ underground =
       , requirements = []
       , value =
             [ Chest 4
+
+            -- TODO
+            -- , GatedValue [ LegendSword, Adamant ] <| Objective <| DoQuest Objective.Forge
+            -- , GatedValue [ LegendSword, Adamant ] <| Objective ClassicForge
             ]
       }
     , { key = KokkolShop
@@ -1946,6 +1992,7 @@ moon =
                 }
             , KeyItem Summon
             , Chest 4
+            , Objective <| DoQuest Objective.CaveBahamut
             ]
       }
     , { key = LunarPath
@@ -1982,6 +2029,7 @@ moon =
                 , valvalisMDef = 255
                 }
             , KeyItem MoonBoss
+            , Objective <| DoQuest Objective.MurasameAltar
             ]
       }
     , { key = WyvernAltar
@@ -2001,6 +2049,7 @@ moon =
                 , valvalisMDef = 255
                 }
             , KeyItem MoonBoss
+            , Objective <| DoQuest Objective.WyvernAltar
             ]
       }
     , { key = WhiteSpearAltar
@@ -2020,6 +2069,7 @@ moon =
                 , valvalisMDef = 255
                 }
             , KeyItem MoonBoss
+            , Objective <| DoQuest Objective.WhiteSpearAltar
             ]
       }
     , { key = RibbonRoom
@@ -2039,6 +2089,7 @@ moon =
                 , valvalisMDef = 255
                 }
             , KeyItem MoonBoss
+            , Objective <| DoQuest Objective.RibbonRoom
             ]
       }
     , { key = MasamuneAltar
@@ -2058,6 +2109,7 @@ moon =
                 , valvalisMDef = 255
                 }
             , KeyItem MoonBoss
+            , Objective <| DoQuest Objective.MasamuneAltar
             ]
       }
     ]
