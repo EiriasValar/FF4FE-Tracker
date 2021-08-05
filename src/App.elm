@@ -562,7 +562,11 @@ viewObjective objective completed randomIndex =
             ]
         , onClick (ToggleObjective objective.key)
         ]
-        [ span [ class "icon state" ] []
+        [ Icon.objective.img
+            [ class "icon state"
+            , class Icon.objective.class
+            , title Icon.objective.title
+            ]
         , span [ class "text" ] [ text objective.description ]
         , case ( completed, randomIndex ) of
             ( False, Just index ) ->

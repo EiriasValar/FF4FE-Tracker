@@ -6,6 +6,7 @@ module Icon exposing
     , fromValue
     , kainazzo
     , no
+    , objective
     , toImg
     , valvalis
     )
@@ -108,6 +109,19 @@ toImg icon =
     icon.img [ Html.Attributes.class icon.class, Html.Attributes.title icon.title ]
 
 
+objective : Icon msg
+objective =
+    { class = "objective-icon"
+    , title = "Objective"
+    , img = img "img/sprites/Crystal-still.png"
+    }
+
+
+no : Html msg
+no =
+    Html.img [ Html.Attributes.class "no", src "img/no.png" ] []
+
+
 character : Icon msg
 character =
     { class = "character"
@@ -178,11 +192,6 @@ visible =
     , title = "Dismissed locations"
     , img = img "img/sprites/SecurityEye.gif"
     }
-
-
-no : Html msg
-no =
-    Html.img [ Html.Attributes.class "no", src "img/no.png" ] []
 
 
 weapon : Icon msg
