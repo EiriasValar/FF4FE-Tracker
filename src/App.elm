@@ -107,7 +107,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         flagString =
-            "Kmain/summon/moon Sstandard Gwarp Nkey O1:char_kain/2:quest_antlionnest/random:3,char,boss/req:4"
+            "Kmain/summon/moon Sstandard Gwarp Nkey O1:char_kain/2:quest_antlionnest/random:3/req:4"
 
         flags =
             Flags.parse flagString
@@ -232,8 +232,23 @@ innerUpdate msg model =
 
                         _ ->
                             identity
+
+                -- ditto for Objectives
+                updateObjectives =
+                    case Location.getProperty key index locations of
+                        Just ( Unseen, Location.Objective objective ) ->
+                            Set.remove objective
+
+                        Just ( Dismissed, Location.Objective objective ) ->
+                            Set.insert objective
+
+                        _ ->
+                            identity
             in
-            { newModel | locations = locations }
+            { newModel
+                | locations = locations
+                , completedObjectives = updateObjectives newModel.completedObjectives
+            }
                 |> updateRequirements
 
         -- when we attain a new requirement, add it to the set and un-dismiss
@@ -802,10 +817,25 @@ viewMenu menu =
 
 
 viewProperty : Location.Context -> Location -> ( Int, Status, Value ) -> Html Msg
-viewProperty context location ( index, status, value ) =
+viewProperty context location ( index, s, value ) =
     let
         key =
             Location.getKey location
+
+        status =
+            case value of
+                Location.Objective objective ->
+                    -- ignore the status of the property, and use the status
+                    -- of the objective instead; this is hacky and breaks
+                    -- when an objective gets toggled both ways
+                    if Set.member objective context.completedObjectives then
+                        Dismissed
+
+                    else
+                        Unseen
+
+                _ ->
+                    s
 
         extraClass =
             case value of

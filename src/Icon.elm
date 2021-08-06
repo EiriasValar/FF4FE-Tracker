@@ -80,6 +80,9 @@ fromValue value =
         Requirement (Pseudo Falcon) ->
             Just falcon
 
+        Objective _ ->
+            Just objective
+
         Shop Weapon ->
             Just weapon
 

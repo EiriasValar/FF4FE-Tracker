@@ -110,7 +110,6 @@ no navigation infrastructure is implemented (anymore).
 
 # TODO features
 - Type-to-filter random objective selection
-- Treat locations as having value when we have quest objectives for completing them
 - Accommodate streaming better (customizable background colour?)
 - Expand the shop weapon and armour items into short submenus?
 
@@ -129,8 +128,10 @@ no navigation infrastructure is implemented (anymore).
   another Pseudo value which is enabled by having both items, rather than adding
   broad support for multiple-requirement gates?
 - Make it clearer why dismissed locations reappear because of a gated objective's
-  requirement being met. Show the same crystal icon as the objectives? Might also
-  want to check off key items on dismiss, though that gets hairy.
+  requirement being met? Checking off other value at the location on dismiss is
+  undesirable (too many cases where you might dismiss a location without getting
+  all its value). Completing the objective on location dismiss would be wrong for
+  the same reason.
 
 # TOMAYBEDOs
 - Pull some types out of Location.elm, it's getting overloaded. Though they're

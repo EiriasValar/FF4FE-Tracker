@@ -302,6 +302,9 @@ getProperties context location =
 getProperties_ : Context -> Bool -> Location -> List ( Int, Status, Value )
 getProperties_ context unwrapGatedValues (Location location) =
     let
+        objectives =
+            combinedObjectives context
+
         -- certain values don't exist under certain flags
         -- note the free key item from Edward has its own key item class rather than
         -- being special-cased here
@@ -311,13 +314,18 @@ getProperties_ context unwrapGatedValues (Location location) =
                     not context.flags.noFreeChars
 
                 Character Gated ->
-                    not <| Objective.member Objective.ClassicGiant context.flags.objectives && location.key == Giant
+                    not <| Set.member Objective.ClassicGiant objectives && location.key == Giant
 
                 KeyItem itemClass ->
                     not (context.warpGlitchUsed && location.key == SealedCave)
                         -- under Kvanilla, Baron Castle only has a key item if it's the Pass
                         && not (location.key == BaronCastle && itemClass == Vanilla && not context.flags.passIsKeyItem)
                         && Set.member itemClass context.flags.keyItems
+
+                Objective obj ->
+                    -- Objective value exists as long as it's in our objectives,
+                    -- regardless of whether or not we've completed it
+                    Set.member obj objectives
 
                 GatedValue required v ->
                     case ( context.flags.pushBToJump, location.key, v ) of
@@ -967,18 +975,19 @@ defaultFiltersFrom context =
         |> Set.fromList
 
 
+combinedObjectives : Context -> Set Objective.Key
+combinedObjectives context =
+    Objective.keys context.flags.objectives
+        |> Set.union context.randomObjectives
+
+
 outstandingObjectives : Context -> Set Objective.Key
 outstandingObjectives context =
-    let
-        combinedObjectives =
-            Objective.keys context.flags.objectives
-                |> Set.union context.randomObjectives
-    in
     if Set.size context.completedObjectives >= context.flags.requiredObjectives then
         Set.empty
 
     else
-        Set.diff combinedObjectives context.completedObjectives
+        Set.diff (combinedObjectives context) context.completedObjectives
 
 
 areaAccessible : Set Requirement -> Location -> Bool
