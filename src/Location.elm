@@ -257,6 +257,7 @@ type PseudoRequirement
     | YangTalk
     | YangBonk
     | Falcon
+    | Forge
 
 
 type Area
@@ -300,8 +301,23 @@ getProperties context location =
 
 
 getProperties_ : Context -> Bool -> Location -> List ( Int, Status, Value )
-getProperties_ context unwrapGatedValues (Location location) =
+getProperties_ c unwrapGatedValues (Location location) =
     let
+        -- use a pseudo value to handle the only case of two key items together
+        -- gating something (in the case of the Hook and Tails, the Hook gates
+        -- the location while the Tails individually gate value), rather than
+        -- complicating everything else to allow for multiple gating
+        -- requirements
+        context =
+            { c
+                | attainedRequirements =
+                    if Set.member LegendSword c.attainedRequirements && Set.member Adamant c.attainedRequirements then
+                        Set.insert (Pseudo Forge) c.attainedRequirements
+
+                    else
+                        c.attainedRequirements
+            }
+
         objectives =
             combinedObjectives context
 
@@ -1956,10 +1972,8 @@ underground =
       , requirements = []
       , value =
             [ Chest 4
-
-            -- TODO
-            -- , GatedValue [ LegendSword, Adamant ] <| Objective <| DoQuest Objective.Forge
-            -- , GatedValue [ LegendSword, Adamant ] <| Objective ClassicForge
+            , GatedValue (Pseudo Forge) (Objective <| DoQuest Objective.Forge)
+            , GatedValue (Pseudo Forge) (Objective ClassicForge)
             ]
       }
     , { key = KokkolShop

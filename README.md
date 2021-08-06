@@ -123,10 +123,6 @@ no navigation infrastructure is implemented (anymore).
 - Enable the Crystal when under Owin:crystal and the requisite number of objectives
   are completed
 - Hide the Objectives section when no objectives are active
-- Handle the Forge objective as value for the Kokkol location: can't currently
-  gate a value by multiple things. If this is the only use-case, maybe add
-  another Pseudo value which is enabled by having both items, rather than adding
-  broad support for multiple-requirement gates?
 - Make it clearer why dismissed locations reappear because of a gated objective's
   requirement being met? Checking off other value at the location on dismiss is
   undesirable (too many cases where you might dismiss a location without getting
