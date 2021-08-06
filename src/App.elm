@@ -518,7 +518,7 @@ view model =
             ]
         , div [ id "footer" ]
             [ text "Documentation, credits, and contact info can be found in "
-            , a [ href "https://github.com/EiriasValar/FF4FE-Tracker", target "_blank" ]
+            , a [ href "https://github.com/EiriasValar/FF4FE-Tracker/tree/release#readme", target "_blank" ]
                 [ text "the GitHub repo" ]
             ]
         ]
