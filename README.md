@@ -57,6 +57,11 @@ Checking off value icons is generally just for your reference, and has no impact
 - `Upper Bab-il`: Checking off the airship Falcon indicates you've reached the Underground via this location: Underground locations can now be shown. (This is automatically checked off if you dismiss the location entirely.)
 - `Dwarf Castle`: If `Gwarp` is on, a faded-out second Key Item icon is shown, representing the key item check in the `Sealed Cave`, which can be reached from this location via the warp glitch. Checking it off tells the tracker that you've done this, and that there's therefore no longer a key item check to be had in the `Sealed Cave`.
 - `Sylph Cave`: A Yang icon is shown; checking it off when you've talked to Yang in his bed enables a key item check with `Sheila` in Fabul. A second Yang icon appears when the `Pan` is acquired: bonk him with it and check the icon to enable `Sheila`'s second key item check. (Dismissing the whole location will also automatically check whichever Yang icons are present.) Since you may need to visit this location more than once, it will un-dismiss itself when you acquire the `Pan`.
+- **Quest objectives**: If you have uncompleted quest objectives, the locations that hold those quests will show an Objective value icon (the same Crystal icon as is used in the Objectives section). Toggling this icon will toggle the corresponding objective, and vice-versa. Dismissing the location as a whole will _not_ automatically mark the objective as complete, as there are plausible scenarios where you'd dismiss a quest location due to skipping it rather than completing it.
+
+  A dismissed location that contains a quest that's gated by a key item will un-dismiss itself when that item is acquired. This may lead to misleading situations in terms of the other value icons shown: e.g. you may complete the Baron Inn checks early in a run, and dismiss the Baron Town location as a result; if you have the quest to unlock the Baron Sewer, when you later gain the Baron Key, the Baron Town location will reappear due to the quest, but will still show all its previous value icons as well (unless you checked them off manually). This is again because it's not reasonable for the tracker to assume that dismissing a location means you obtained all its value.
+
+  There's also currently no automatic connection between the special icons for bonking Yang and launching the Falcon, and the corresponding quest objectives. For now you'll just have to put up with two clicks.
 
 ### Boss stats
 
@@ -126,6 +131,9 @@ no navigation infrastructure is implemented (anymore).
   gated values?
 - Should Property just be a record type? The two-payload type is a pain to
   unpack and update, and writing methods for it would be weird.
+- Connect special value icons (the Falcon and YangBonk) to their associated
+  quest objectives. This may require a refactor.
+- Connect defeating D.Mist with the D.Mist boss hunt objective.
 
 # TOMAYBEDOs
 - Pull some types out of Location.elm, it's getting overloaded. Though they're
@@ -149,3 +157,8 @@ no navigation infrastructure is implemented (anymore).
   ago after doing the Inn, then you get the Baron Key and Baron Town reappears
   because of the Unlock the Sewer objective, it seems misleading that it again
   shows boss/character/key item value that you already collected.
+
+  Consider leaving the locations in the Dismissed state but displaying them anyway
+  (i.e. struck out, as though the Dismissed filter was on)
+- Create a Locations dictionary keyed on (Value? Objective?) so we don't have to
+  scan the whole list looking for Objective properties to update
