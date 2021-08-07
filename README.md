@@ -122,12 +122,13 @@ no navigation infrastructure is implemented (anymore).
 - Bvanilla + Nkey + no boss hunt objectives = Mist Cave is the only boss with value
 - Enable the Crystal when under Owin:crystal and the requisite number of objectives
   are completed
-- Hide the Objectives section when no objectives are active
 - Make it clearer why dismissed locations reappear because of a gated objective's
   requirement being met? Checking off other value at the location on dismiss is
   undesirable (too many cases where you might dismiss a location without getting
   all its value). Completing the objective on location dismiss would be wrong for
   the same reason.
+- Move Baron weapon and armour shops into the same location as the item shop as
+  gated values?
 
 # TOMAYBEDOs
 - Pull some types out of Location.elm, it's getting overloaded. Though they're

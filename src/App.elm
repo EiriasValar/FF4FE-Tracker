@@ -545,27 +545,31 @@ viewObjectives model =
         random i o =
             viewEditableObjective i o model.completedObjectives model.flags.randomObjectiveTypes
     in
-    div [ id "objectives" ]
-        [ h2 []
-            [ text "Objectives"
-            , span
-                [ class "progress"
-                , classList [ ( "complete", numCompleted >= numRequired ) ]
+    div [ id "objectives" ] <|
+        if model.flags.requiredObjectives > 0 then
+            [ h2 []
+                [ text "Objectives"
+                , span
+                    [ class "progress"
+                    , classList [ ( "complete", numCompleted >= numRequired ) ]
+                    ]
+                    [ text <|
+                        "("
+                            ++ String.fromInt numCompleted
+                            ++ "/"
+                            ++ String.fromInt numRequired
+                            ++ " to "
+                            ++ Flags.rewardToString model.flags.objectiveReward
+                            ++ ")"
+                    ]
                 ]
-                [ text <|
-                    "("
-                        ++ String.fromInt numCompleted
-                        ++ "/"
-                        ++ String.fromInt numRequired
-                        ++ " to "
-                        ++ Flags.rewardToString model.flags.objectiveReward
-                        ++ ")"
-                ]
+            , ul [ class "objectives" ] <|
+                viewArray fixed model.flags.objectives
+                    ++ viewArray random model.randomObjectives
             ]
-        , ul [ class "objectives" ] <|
-            viewArray fixed model.flags.objectives
-                ++ viewArray random model.randomObjectives
-        ]
+
+        else
+            []
 
 
 viewObjective : Objective -> Bool -> Maybe Int -> Html Msg

@@ -6,6 +6,7 @@
   such locations when we gain an item that gates those objectives. Some sharp
   edges on this at the moment, including the fact that you can get the location
   objective icons into a state where they'll seem to ignore the next click.
+- Hide the Objectives section when there aren't any.
 
 ## 2021-08-03
 - Free Enterprise 4.4.0 has been released: Moonveil is now a tier 7 item, up

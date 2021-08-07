@@ -1415,7 +1415,7 @@ surface =
             ]
       }
     , { key = Baron
-      , name = "Baron Inn"
+      , name = "Baron Town"
       , requirements = []
       , value =
             [ Boss
