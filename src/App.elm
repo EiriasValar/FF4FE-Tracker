@@ -27,6 +27,7 @@ import Location
         , ConsumableItems
         , Filter(..)
         , FilterType(..)
+        , IndexedProperty
         , Location
         , Locations
         , PseudoRequirement(..)
@@ -350,16 +351,16 @@ innerUpdate msg model =
                 requirements =
                     newLocation
                         |> Location.getProperties (getContext newModel)
-                        |> List.filterMap
-                            (\( _, _, value ) ->
-                                case value of
-                                    Requirement req ->
-                                        Just req
-
-                                    _ ->
-                                        Nothing
-                            )
+                        |> List.filterMap (.value >> getRequirement)
                         |> Set.fromList
+
+                getRequirement value =
+                    case value of
+                        Requirement req ->
+                            Just req
+
+                        _ ->
+                            Nothing
             in
             case Location.getStatus newLocation of
                 Dismissed ->
@@ -820,26 +821,26 @@ viewMenu menu =
                 ]
 
 
-viewProperty : Location.Context -> Location -> ( Int, Status, Value ) -> Html Msg
-viewProperty context location ( index, s, value ) =
+viewProperty : Location.Context -> Location -> IndexedProperty -> Html Msg
+viewProperty context location property =
     let
         key =
             Location.getKey location
 
-        status =
-            case value of
+        { index, status, value } =
+            case property.value of
                 Location.Objective objective ->
                     -- ignore the status of the property, and use the status
                     -- of the objective instead; this is hacky and breaks
                     -- when an objective gets toggled both ways
                     if Set.member objective context.completedObjectives then
-                        Dismissed
+                        { property | status = Dismissed }
 
                     else
-                        Unseen
+                        { property | status = Unseen }
 
                 _ ->
-                    s
+                    property
 
         extraClass =
             case value of

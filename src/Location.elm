@@ -7,6 +7,7 @@ module Location exposing
     , Context
     , Filter(..)
     , FilterType(..)
+    , IndexedProperty
     , Key(..)
     , Location
     , Locations
@@ -71,6 +72,13 @@ type alias Data =
 
 type Property
     = Property Status Value
+
+
+type alias IndexedProperty =
+    { index : Int
+    , status : Status
+    , value : Value
+    }
 
 
 type Status
@@ -292,15 +300,14 @@ getArea (Location location) =
 
 
 {-| Returns all the Location's properties that exist given the context,
-regardless of their Status, minus any that have been filtered out. The Int
-is the index of the property within the location, for use with toggleProperty.
+regardless of their Status, minus any that have been filtered out.
 -}
-getProperties : Context -> Location -> List ( Int, Status, Value )
+getProperties : Context -> Location -> List IndexedProperty
 getProperties context location =
     getProperties_ context True location
 
 
-getProperties_ : Context -> Bool -> Location -> List ( Int, Status, Value )
+getProperties_ : Context -> Bool -> Location -> List IndexedProperty
 getProperties_ c unwrapGatedValues (Location location) =
     let
         -- use a pseudo value to handle the only case of two key items together
@@ -406,15 +413,18 @@ getProperties_ c unwrapGatedValues (Location location) =
                 _ ->
                     value
 
-        toTuple ( index, Property status value ) =
-            ( index, status, unwrapGatedValue value )
+        toRecord ( index, Property status value ) =
+            { index = index
+            , status = status
+            , value = unwrapGatedValue value
+            }
     in
     location.properties
         -- extract indices before doing any filtering so they're accurate
         |> Array.toIndexedList
         |> List.filter (\( _, Property _ value ) -> exists value)
         |> List.filter (Tuple.second >> notFilteredOut)
-        |> List.map toTuple
+        |> List.map toRecord
 
 
 {-| For the given property index, returns a list – filtered by the given Context
@@ -807,24 +817,25 @@ undismissByGatingRequirement : Context -> Requirement -> Locations -> Locations
 undismissByGatingRequirement context requirement (Locations locations) =
     let
         updateLocation ((Location l) as location) =
-            if hasGatedValue location then
+            if hasMatchingGatedValue location then
                 Location { l | status = Unseen }
 
             else
                 location
 
-        hasGatedValue : Location -> Bool
-        hasGatedValue =
+        hasMatchingGatedValue : Location -> Bool
+        hasMatchingGatedValue =
             getProperties_ context False
-                >> List.any
-                    (\( _, _, value ) ->
-                        case value of
-                            GatedValue req _ ->
-                                req == requirement
+                >> List.any (.value >> isMatchingGatedValue)
 
-                            _ ->
-                                False
-                    )
+        isMatchingGatedValue : Value -> Bool
+        isMatchingGatedValue value =
+            case value of
+                GatedValue req _ ->
+                    req == requirement
+
+                _ ->
+                    False
     in
     Locations <| Dict.map (always updateLocation) locations
 
@@ -873,43 +884,36 @@ filterByContext class c (Locations locations) =
         outstanding =
             outstandingObjectives context
 
-        propertiesHaveValue location =
-            -- getProperties and filtersFrom have done all the heavy lifting
-            -- of pruning the list of properties to just the ones appropriate
-            -- to the context we're in
-            getProperties context location
-                |> List.any
-                    (\( _, status, value ) ->
-                        case ( value, valueToFilter value ) of
-                            ( Requirement (Pseudo Falcon), _ ) ->
-                                -- the Falcon only has value if we don't have a
-                                -- way underground yet – but if our underground
-                                -- access IS the Falcon being checked off,
-                                -- continue to treat it as valuable so the
-                                -- location doesn't disappear
-                                status == Dismissed || not undergroundAccess
+        propertyHasValue { status, value } =
+            case ( value, valueToFilter value ) of
+                ( Requirement (Pseudo Falcon), _ ) ->
+                    -- the Falcon only has value if we don't have a
+                    -- way underground yet – but if our underground
+                    -- access IS the Falcon being checked off,
+                    -- continue to treat it as valuable so the
+                    -- location doesn't disappear
+                    status == Dismissed || not undergroundAccess
 
-                            ( Requirement _, _ ) ->
-                                -- other Requirements are always valuable
-                                True
+                ( Requirement _, _ ) ->
+                    -- other Requirements are always valuable
+                    True
 
-                            ( Objective obj, _ ) ->
-                                -- outstanding objectives are valuable
-                                Set.member obj outstanding
+                ( Objective obj, _ ) ->
+                    -- outstanding objectives are valuable
+                    Set.member obj outstanding
 
-                            ( Shop _, _ ) ->
-                                -- shops are always valuable
-                                True
+                ( Shop _, _ ) ->
+                    -- shops are always valuable
+                    True
 
-                            ( _, Just filter ) ->
-                                -- anything else is valuable if it's in the set of
-                                -- positive filters
-                                Set.member filter filters
+                ( _, Just filter ) ->
+                    -- anything else is valuable if it's in the set of
+                    -- positive filters
+                    Set.member filter filters
 
-                            _ ->
-                                -- anything else is likely invisible metadata
-                                False
-                    )
+                _ ->
+                    -- anything else is likely invisible metadata
+                    False
 
         isRelevant ((Location l) as location) =
             if not <| isClass class location then
@@ -922,7 +926,7 @@ filterByContext class c (Locations locations) =
                     |> (==) Show
 
             else
-                propertiesHaveValue location
+                List.any propertyHasValue (getProperties context location)
                     && areaAccessible attainedRequirements location
                     && (context.flags.pushBToJump && Set.member l.key jumpable || requirementsMet attainedRequirements location)
     in
