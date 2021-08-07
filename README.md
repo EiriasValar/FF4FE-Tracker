@@ -122,13 +122,10 @@ no navigation infrastructure is implemented (anymore).
 - Bvanilla + Nkey + no boss hunt objectives = Mist Cave is the only boss with value
 - Enable the Crystal when under Owin:crystal and the requisite number of objectives
   are completed
-- Make it clearer why dismissed locations reappear because of a gated objective's
-  requirement being met? Checking off other value at the location on dismiss is
-  undesirable (too many cases where you might dismiss a location without getting
-  all its value). Completing the objective on location dismiss would be wrong for
-  the same reason.
 - Move Baron weapon and armour shops into the same location as the item shop as
   gated values?
+- Should Property just be a record type? The two-payload type is a pain to
+  unpack and update, and writing methods for it would be weird.
 
 # TOMAYBEDOs
 - Pull some types out of Location.elm, it's getting overloaded. Though they're
@@ -145,3 +142,10 @@ no navigation infrastructure is implemented (anymore).
 - Complete quest objectives when the corresponding location is dismissed? Might
   be too aggressive. Maybe you dismissed the location because you know it will
   be too slow/hard and you have other objectives you can take instead.
+- Somehow make it clearer why dismissed locations reappear because of a gated
+  objective's requirement being met? Checking off other value at the location on
+  dismiss is undesirable: too many cases where you might dismiss a location
+  without getting all its value. But if you dismissed Baron Town half an hour
+  ago after doing the Inn, then you get the Baron Key and Baron Town reappears
+  because of the Unlock the Sewer objective, it seems misleading that it again
+  shows boss/character/key item value that you already collected.

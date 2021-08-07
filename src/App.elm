@@ -276,14 +276,17 @@ innerUpdate msg model =
     case msg of
         ToggleObjective objective ->
             let
-                fn =
+                ( fn, complete ) =
                     if Set.member objective model.completedObjectives then
-                        Set.remove
+                        ( Set.remove, False )
 
                     else
-                        Set.insert
+                        ( Set.insert, True )
             in
-            { model | completedObjectives = fn objective model.completedObjectives }
+            { model
+                | completedObjectives = fn objective model.completedObjectives
+                , locations = Location.objectiveToggled objective complete model.locations
+            }
 
         SetRandomObjective index objective ->
             { model | randomObjectives = Array.set index (Set objective) model.randomObjectives }
@@ -822,25 +825,10 @@ viewMenu menu =
 
 
 viewProperty : Location.Context -> Location -> IndexedProperty -> Html Msg
-viewProperty context location property =
+viewProperty context location { index, status, value } =
     let
         key =
             Location.getKey location
-
-        { index, status, value } =
-            case property.value of
-                Location.Objective objective ->
-                    -- ignore the status of the property, and use the status
-                    -- of the objective instead; this is hacky and breaks
-                    -- when an objective gets toggled both ways
-                    if Set.member objective context.completedObjectives then
-                        { property | status = Dismissed }
-
-                    else
-                        { property | status = Unseen }
-
-                _ ->
-                    property
 
         extraClass =
             case value of

@@ -32,6 +32,7 @@ module Location exposing
     , groupByArea
     , insert
     , isPseudo
+    , objectiveToggled
     , setText
     , statusToString
     , toggleItem
@@ -836,6 +837,47 @@ undismissByGatingRequirement context requirement (Locations locations) =
 
                 _ ->
                     False
+    in
+    Locations <| Dict.map (always updateLocation) locations
+
+
+{-| Call when an objective is completed or uncompleted to accordingly update
+the status of any matching Objective (or GatedValue Objective) properties.
+-}
+objectiveToggled : Objective.Key -> Bool -> Locations -> Locations
+objectiveToggled objective complete (Locations locations) =
+    let
+        updateLocation (Location l) =
+            -- forgo getProperties: we want to keep the objectives
+            -- in sync even when they don't (currently) "exist"
+            Location { l | properties = Array.map updateProperty l.properties }
+
+        updateProperty (Property status value) =
+            -- this feels very laborious
+            let
+                newStatus =
+                    case value of
+                        Objective o ->
+                            statusFor o
+
+                        GatedValue _ (Objective o) ->
+                            statusFor o
+
+                        _ ->
+                            status
+
+                statusFor o =
+                    case ( objective == o, complete ) of
+                        ( True, True ) ->
+                            Dismissed
+
+                        ( True, False ) ->
+                            Unseen
+
+                        ( False, _ ) ->
+                            status
+            in
+            Property newStatus value
     in
     Locations <| Dict.map (always updateLocation) locations
 

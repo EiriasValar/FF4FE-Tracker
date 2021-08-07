@@ -3,9 +3,7 @@
 - Refactor Objective-handling code: shouldn't have any noticeable effects
   unless I've broken something.
 - Mark locations that contain our quest objectives, and automatically un-dismiss
-  such locations when we gain an item that gates those objectives. Some sharp
-  edges on this at the moment, including the fact that you can get the location
-  objective icons into a state where they'll seem to ignore the next click.
+  such locations when we gain an item that gates those objectives.
 - Hide the Objectives section when there aren't any.
 
 ## 2021-08-03
