@@ -93,7 +93,6 @@ h4 {
 }
 
 .objective .icon.state {
-  content: url("img/sprites/Crystal-still.png");
   filter: grayscale(100%) opacity(50%);
   margin-right: 0.5em;
   height: 1.25em;
@@ -264,6 +263,10 @@ h4 {
   height: 20px;
 }
 
+#checks .locations .objective-icon img {
+  width: unset;
+}
+  
 #checks .locations .icon.dismissed>img {
   filter: opacity(25%); 
 }

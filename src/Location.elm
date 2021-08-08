@@ -7,6 +7,7 @@ module Location exposing
     , Context
     , Filter(..)
     , FilterType(..)
+    , IndexedProperty
     , Key(..)
     , Location
     , Locations
@@ -31,6 +32,7 @@ module Location exposing
     , groupByArea
     , insert
     , isPseudo
+    , objectiveToggled
     , setText
     , statusToString
     , toggleItem
@@ -47,7 +49,7 @@ import AssocList as Dict exposing (Dict)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
 import List.Extra
-import Objective exposing (Objective)
+import Objective exposing (Key(..))
 
 
 type alias Set a =
@@ -73,6 +75,13 @@ type Property
     = Property Status Value
 
 
+type alias IndexedProperty =
+    { index : Int
+    , status : Status
+    , value : Value
+    }
+
+
 type Status
     = Unseen
     | Seen
@@ -88,6 +97,7 @@ type Value
     | TrappedChest Int
     | Shop ShopValue
     | Requirement Requirement
+    | Objective Objective.Key
     | GatedValue Requirement Value
 
 
@@ -256,6 +266,7 @@ type PseudoRequirement
     | YangTalk
     | YangBonk
     | Falcon
+    | Forge
 
 
 type Area
@@ -266,8 +277,8 @@ type Area
 
 type alias Context =
     { flags : Flags
-    , randomObjectives : Set Objective
-    , completedObjectives : Set Objective
+    , randomObjectives : Set Objective.Key
+    , completedObjectives : Set Objective.Key
     , attainedRequirements : Set Requirement
     , warpGlitchUsed : Bool
     , filterOverrides : Dict Filter FilterType
@@ -290,17 +301,34 @@ getArea (Location location) =
 
 
 {-| Returns all the Location's properties that exist given the context,
-regardless of their Status, minus any that have been filtered out. The Int
-is the index of the property within the location, for use with toggleProperty.
+regardless of their Status, minus any that have been filtered out.
 -}
-getProperties : Context -> Location -> List ( Int, Status, Value )
+getProperties : Context -> Location -> List IndexedProperty
 getProperties context location =
     getProperties_ context True location
 
 
-getProperties_ : Context -> Bool -> Location -> List ( Int, Status, Value )
-getProperties_ context unwrapGatedValues (Location location) =
+getProperties_ : Context -> Bool -> Location -> List IndexedProperty
+getProperties_ c unwrapGatedValues (Location location) =
     let
+        -- use a pseudo value to handle the only case of two key items together
+        -- gating something (in the case of the Hook and Tails, the Hook gates
+        -- the location while the Tails individually gate value), rather than
+        -- complicating everything else to allow for multiple gating
+        -- requirements
+        context =
+            { c
+                | attainedRequirements =
+                    if Set.member LegendSword c.attainedRequirements && Set.member Adamant c.attainedRequirements then
+                        Set.insert (Pseudo Forge) c.attainedRequirements
+
+                    else
+                        c.attainedRequirements
+            }
+
+        objectives =
+            combinedObjectives context
+
         -- certain values don't exist under certain flags
         -- note the free key item from Edward has its own key item class rather than
         -- being special-cased here
@@ -310,13 +338,18 @@ getProperties_ context unwrapGatedValues (Location location) =
                     not context.flags.noFreeChars
 
                 Character Gated ->
-                    not <| context.flags.classicGiantObjective && location.key == Giant
+                    not <| Set.member Objective.ClassicGiant objectives && location.key == Giant
 
                 KeyItem itemClass ->
                     not (context.warpGlitchUsed && location.key == SealedCave)
                         -- under Kvanilla, Baron Castle only has a key item if it's the Pass
                         && not (location.key == BaronCastle && itemClass == Vanilla && not context.flags.passIsKeyItem)
                         && Set.member itemClass context.flags.keyItems
+
+                Objective obj ->
+                    -- Objective value exists as long as it's in our objectives,
+                    -- regardless of whether or not we've completed it
+                    Set.member obj objectives
 
                 GatedValue required v ->
                     case ( context.flags.pushBToJump, location.key, v ) of
@@ -381,15 +414,18 @@ getProperties_ context unwrapGatedValues (Location location) =
                 _ ->
                     value
 
-        toTuple ( index, Property status value ) =
-            ( index, status, unwrapGatedValue value )
+        toRecord ( index, Property status value ) =
+            { index = index
+            , status = status
+            , value = unwrapGatedValue value
+            }
     in
     location.properties
         -- extract indices before doing any filtering so they're accurate
         |> Array.toIndexedList
         |> List.filter (\( _, Property _ value ) -> exists value)
         |> List.filter (Tuple.second >> notFilteredOut)
-        |> List.map toTuple
+        |> List.map toRecord
 
 
 {-| For the given property index, returns a list – filtered by the given Context
@@ -782,24 +818,66 @@ undismissByGatingRequirement : Context -> Requirement -> Locations -> Locations
 undismissByGatingRequirement context requirement (Locations locations) =
     let
         updateLocation ((Location l) as location) =
-            if hasGatedValue location then
+            if hasMatchingGatedValue location then
                 Location { l | status = Unseen }
 
             else
                 location
 
-        hasGatedValue : Location -> Bool
-        hasGatedValue =
+        hasMatchingGatedValue : Location -> Bool
+        hasMatchingGatedValue =
             getProperties_ context False
-                >> List.any
-                    (\( _, _, value ) ->
-                        case value of
-                            GatedValue req _ ->
-                                req == requirement
+                >> List.any (.value >> isMatchingGatedValue)
 
-                            _ ->
-                                False
-                    )
+        isMatchingGatedValue : Value -> Bool
+        isMatchingGatedValue value =
+            case value of
+                GatedValue req _ ->
+                    req == requirement
+
+                _ ->
+                    False
+    in
+    Locations <| Dict.map (always updateLocation) locations
+
+
+{-| Call when an objective is completed or uncompleted to accordingly update
+the status of any matching Objective (or GatedValue Objective) properties.
+-}
+objectiveToggled : Objective.Key -> Bool -> Locations -> Locations
+objectiveToggled objective complete (Locations locations) =
+    let
+        updateLocation (Location l) =
+            -- forgo getProperties: we want to keep the objectives
+            -- in sync even when they don't (currently) "exist"
+            Location { l | properties = Array.map updateProperty l.properties }
+
+        updateProperty (Property status value) =
+            -- this feels very laborious
+            let
+                newStatus =
+                    case value of
+                        Objective o ->
+                            statusFor o
+
+                        GatedValue _ (Objective o) ->
+                            statusFor o
+
+                        _ ->
+                            status
+
+                statusFor o =
+                    case ( objective == o, complete ) of
+                        ( True, True ) ->
+                            Dismissed
+
+                        ( True, False ) ->
+                            Unseen
+
+                        ( False, _ ) ->
+                            status
+            in
+            Property newStatus value
     in
     Locations <| Dict.map (always updateLocation) locations
 
@@ -845,39 +923,39 @@ filterByContext class c (Locations locations) =
         filters =
             filtersFrom context
 
-        propertiesHaveValue location =
-            -- getProperties and filtersFrom have done all the heavy lifting
-            -- of pruning the list of properties to just the ones appropriate
-            -- to the context we're in
-            getProperties context location
-                |> List.any
-                    (\( _, status, value ) ->
-                        case ( value, valueToFilter value ) of
-                            ( Requirement (Pseudo Falcon), _ ) ->
-                                -- the Falcon only has value if we don't have a
-                                -- way underground yet – but if our underground
-                                -- access IS the Falcon being checked off,
-                                -- continue to treat it as valuable so the
-                                -- location doesn't disappear
-                                status == Dismissed || not undergroundAccess
+        outstanding =
+            outstandingObjectives context
 
-                            ( Requirement _, _ ) ->
-                                -- other Requirements are always valuable
-                                True
+        propertyHasValue { status, value } =
+            case ( value, valueToFilter value ) of
+                ( Requirement (Pseudo Falcon), _ ) ->
+                    -- the Falcon only has value if we don't have a
+                    -- way underground yet – but if our underground
+                    -- access IS the Falcon being checked off,
+                    -- continue to treat it as valuable so the
+                    -- location doesn't disappear
+                    status == Dismissed || not undergroundAccess
 
-                            ( Shop _, _ ) ->
-                                -- shops are always valuable
-                                True
+                ( Requirement _, _ ) ->
+                    -- other Requirements are always valuable
+                    True
 
-                            ( _, Just filter ) ->
-                                -- anything else is valuable if it's in the set of
-                                -- positive filters
-                                Set.member filter filters
+                ( Objective obj, _ ) ->
+                    -- outstanding objectives are valuable
+                    Set.member obj outstanding
 
-                            _ ->
-                                -- anything else is likely invisible metadata
-                                False
-                    )
+                ( Shop _, _ ) ->
+                    -- shops are always valuable
+                    True
+
+                ( _, Just filter ) ->
+                    -- anything else is valuable if it's in the set of
+                    -- positive filters
+                    Set.member filter filters
+
+                _ ->
+                    -- anything else is likely invisible metadata
+                    False
 
         isRelevant ((Location l) as location) =
             if not <| isClass class location then
@@ -890,7 +968,7 @@ filterByContext class c (Locations locations) =
                     |> (==) Show
 
             else
-                propertiesHaveValue location
+                List.any propertyHasValue (getProperties context location)
                     && areaAccessible attainedRequirements location
                     && (context.flags.pushBToJump && Set.member l.key jumpable || requirementsMet attainedRequirements location)
     in
@@ -943,9 +1021,7 @@ defaultFiltersFrom context =
             activeBossHunt || huntingDMist
 
         onDarkMatterHunt =
-            (List.member Objective.DarkMatterHunt <| Array.toList context.flags.objectives)
-                && (not <| Set.member Objective.DarkMatterHunt context.completedObjectives)
-                && (not <| Set.isEmpty outstanding)
+            Set.member Objective.DarkMatterHunt outstanding
 
         trappedKeyItems =
             Set.member Trapped context.flags.keyItems
@@ -961,20 +1037,19 @@ defaultFiltersFrom context =
         |> Set.fromList
 
 
-outstandingObjectives : Context -> Set Objective
+combinedObjectives : Context -> Set Objective.Key
+combinedObjectives context =
+    Objective.keys context.flags.objectives
+        |> Set.union context.randomObjectives
+
+
+outstandingObjectives : Context -> Set Objective.Key
 outstandingObjectives context =
-    let
-        combinedObjectives =
-            context.flags.objectives
-                |> Array.toList
-                |> Set.fromList
-                |> Set.union context.randomObjectives
-    in
     if Set.size context.completedObjectives >= context.flags.requiredObjectives then
         Set.empty
 
     else
-        Set.diff combinedObjectives context.completedObjectives
+        Set.diff (combinedObjectives context) context.completedObjectives
 
 
 areaAccessible : Set Requirement -> Location -> Bool
@@ -1029,6 +1104,9 @@ valueToFilter value =
             Nothing
 
         Requirement _ ->
+            Nothing
+
+        Objective _ ->
             Nothing
 
         GatedValue _ _ ->
@@ -1133,6 +1211,7 @@ surface =
                 , valvalisMDef = 255
                 }
             , Chest 4
+            , Objective <| DoQuest Objective.MistCave
             ]
       }
     , { key = MistVillage
@@ -1167,6 +1246,7 @@ surface =
                 , mag = 11
                 , valvalisMDef = 255
                 }
+            , Objective <| DoQuest Objective.Package
             ]
       }
     , { key = MistVillageMom
@@ -1182,6 +1262,7 @@ surface =
       , requirements = []
       , value =
             [ GatedValue SandRuby <| Character Gated
+            , GatedValue SandRuby <| Objective <| DoQuest Objective.SandRuby
             , Chest 1
             ]
       }
@@ -1219,6 +1300,7 @@ surface =
                 , valvalisMDef = 255
                 }
             , Chest 4
+            , Objective <| DoQuest Objective.Waterfall
             ]
       }
     , { key = Damcyan
@@ -1248,6 +1330,7 @@ surface =
             , KeyItem Main
             , KeyItem Vanilla
             , Chest 13
+            , Objective <| DoQuest Objective.AntlionCave
             ]
       }
     , { key = MtHobs
@@ -1268,6 +1351,7 @@ surface =
                 }
             , Character Gated
             , Chest 5
+            , Objective <| DoQuest Objective.MtHobs
             ]
       }
     , { key = FabulShops
@@ -1297,6 +1381,7 @@ surface =
                 }
             , KeyItem Main
             , Chest 10
+            , Objective <| DoQuest Objective.Fabul
             ]
       }
     , { key = Sheila
@@ -1307,6 +1392,7 @@ surface =
             , GatedValue (Pseudo YangTalk) (KeyItem Vanilla)
             , GatedValue (Pseudo YangBonk) (KeyItem Main)
             , GatedValue (Pseudo YangBonk) (KeyItem Vanilla)
+            , GatedValue (Pseudo YangBonk) (Objective <| DoQuest Objective.PanReturn)
             ]
       }
     , { key = Mysidia
@@ -1315,6 +1401,7 @@ surface =
       , value =
             [ Character Ungated
             , Character Ungated
+            , GatedValue DarknessCrystal <| Objective <| DoQuest Objective.BigWhale
             ]
       }
     , { key = MysidiaShops
@@ -1370,10 +1457,11 @@ surface =
                 , valvalisMDef = 254
                 }
             , Chest 4
+            , Objective <| DoQuest Objective.MtOrdeals
             ]
       }
     , { key = Baron
-      , name = "Baron Inn"
+      , name = "Baron Town"
       , requirements = []
       , value =
             [ Boss
@@ -1404,6 +1492,8 @@ surface =
             , KeyItem Main
             , KeyItem Vanilla
             , Chest 13
+            , Objective <| DoQuest Objective.BaronInn
+            , GatedValue BaronKey <| Objective <| DoQuest Objective.UnlockSewer
             ]
       }
     , { key = BaronItemShop
@@ -1463,6 +1553,7 @@ surface =
             , KeyItem Main
             , KeyItem Vanilla
             , Chest 20
+            , Objective <| DoQuest Objective.BaronCastle
             ]
       }
     , { key = BaronBasement
@@ -1482,6 +1573,7 @@ surface =
                 , valvalisMDef = 255
                 }
             , KeyItem Summon
+            , Objective <| DoQuest Objective.BaronBasement
             ]
       }
     , { key = Toroia
@@ -1489,6 +1581,7 @@ surface =
       , requirements = []
       , value =
             [ Chest 4
+            , Objective <| DoQuest Objective.Pass
             ]
       }
     , { key = ToroiaShops
@@ -1513,6 +1606,7 @@ surface =
       , requirements = [ EarthCrystal ]
       , value =
             [ Chest 18
+            , Objective <| DoQuest Objective.Treasury
             ]
       }
     , { key = CaveMagnes
@@ -1535,6 +1629,8 @@ surface =
             , GatedValue TwinHarp <| KeyItem Main
             , GatedValue TwinHarp <| KeyItem Vanilla
             , Chest 10
+            , GatedValue TwinHarp <| Objective <| DoQuest Objective.CaveMagnes
+            , GatedValue TwinHarp <| Objective <| DoQuest Objective.TwinHarp
             ]
       }
     , { key = Zot
@@ -1572,6 +1668,7 @@ surface =
             , GatedValue EarthCrystal <| KeyItem Vanilla
             , Chest 5
             , TrappedChest 1
+            , GatedValue EarthCrystal <| Objective <| DoQuest Objective.TowerZot
             ]
       }
     , { key = Agart
@@ -1579,6 +1676,7 @@ surface =
       , requirements = []
       , value =
             [ Chest 1
+            , GatedValue MagmaKey <| Objective <| DoQuest Objective.MagmaKey
             ]
       }
     , { key = AgartShops
@@ -1608,10 +1706,12 @@ surface =
       }
     , { key = AdamantGrotto
       , name = "Adamant Grotto"
-      , requirements = [ Hook, RatTail ]
+      , requirements = [ Hook ]
       , value =
-            [ KeyItem Main
-            , KeyItem Vanilla
+            [ GatedValue RatTail <| KeyItem Main
+            , GatedValue RatTail <| KeyItem Vanilla
+            , GatedValue RatTail <| Objective <| DoQuest Objective.RatTail
+            , GatedValue PinkTail <| Objective <| DoQuest Objective.PinkTail
             ]
       }
     , { key = CastleEblan
@@ -1671,6 +1771,7 @@ surface =
             , Chest 7
             , TrappedChest 1
             , Requirement <| Pseudo Falcon
+            , Objective <| DoQuest Objective.Falcon
             ]
       }
     , { key = Giant
@@ -1704,6 +1805,8 @@ surface =
             , Character Gated
             , Chest 7
             , TrappedChest 1
+            , Objective <| DoQuest Objective.Giant
+            , Objective <| ClassicGiant
             ]
       }
     ]
@@ -1744,6 +1847,7 @@ underground =
             , KeyItem Vanilla
             , KeyItem Warp -- also Vanilla
             , Chest 18
+            , Objective <| DoQuest Objective.DwarfCastle
             ]
       }
     , { key = DwarfCastleShops
@@ -1775,6 +1879,7 @@ underground =
             , KeyItem Vanilla
             , Chest 12
             , TrappedChest 4
+            , Objective <| DoQuest Objective.LowerBabil
             ]
       }
     , { key = LowerBabilCannon
@@ -1795,6 +1900,7 @@ underground =
                 }
             , KeyItem Main
             , KeyItem Vanilla
+            , Objective <| DoQuest Objective.SuperCannon
             ]
       }
     , { key = SylphCave
@@ -1806,6 +1912,7 @@ underground =
             , GatedValue Pan (KeyItem Summon)
             , Chest 25
             , TrappedChest 7
+            , GatedValue Pan <| Objective <| DoQuest Objective.PanWake
             ]
       }
     , { key = Feymarch
@@ -1844,6 +1951,7 @@ underground =
                 , valvalisMDef = 255
                 }
             , KeyItem Summon
+            , Objective <| DoQuest Objective.FeymarchKing
             ]
       }
     , { key = FeymarchQueen
@@ -1863,6 +1971,7 @@ underground =
                 , valvalisMDef = 255
                 }
             , KeyItem Summon
+            , Objective <| DoQuest Objective.FeymarchQueen
             ]
       }
     , { key = Tomra
@@ -1900,6 +2009,8 @@ underground =
                 , valvalisMDef = 255
                 }
             , Chest 19
+            , Objective <| DoQuest Objective.SealedCave
+            , Objective <| DoQuest Objective.UnlockSealedCave
             ]
       }
     , { key = Kokkol
@@ -1907,6 +2018,8 @@ underground =
       , requirements = []
       , value =
             [ Chest 4
+            , GatedValue (Pseudo Forge) (Objective <| DoQuest Objective.Forge)
+            , GatedValue (Pseudo Forge) (Objective ClassicForge)
             ]
       }
     , { key = KokkolShop
@@ -1948,6 +2061,7 @@ moon =
                 }
             , KeyItem Summon
             , Chest 4
+            , Objective <| DoQuest Objective.CaveBahamut
             ]
       }
     , { key = LunarPath
@@ -1984,6 +2098,7 @@ moon =
                 , valvalisMDef = 255
                 }
             , KeyItem MoonBoss
+            , Objective <| DoQuest Objective.MurasameAltar
             ]
       }
     , { key = WyvernAltar
@@ -2003,6 +2118,7 @@ moon =
                 , valvalisMDef = 255
                 }
             , KeyItem MoonBoss
+            , Objective <| DoQuest Objective.WyvernAltar
             ]
       }
     , { key = WhiteSpearAltar
@@ -2022,6 +2138,7 @@ moon =
                 , valvalisMDef = 255
                 }
             , KeyItem MoonBoss
+            , Objective <| DoQuest Objective.WhiteSpearAltar
             ]
       }
     , { key = RibbonRoom
@@ -2041,6 +2158,7 @@ moon =
                 , valvalisMDef = 255
                 }
             , KeyItem MoonBoss
+            , Objective <| DoQuest Objective.RibbonRoom
             ]
       }
     , { key = MasamuneAltar
@@ -2060,6 +2178,7 @@ moon =
                 , valvalisMDef = 255
                 }
             , KeyItem MoonBoss
+            , Objective <| DoQuest Objective.MasamuneAltar
             ]
       }
     ]

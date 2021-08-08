@@ -1,3 +1,12 @@
+## 2021-08-07
+
+- Refactor Objective-handling code: shouldn't have any noticeable effects
+  unless I've broken something.
+- Mark locations that contain our quest objectives, and automatically un-dismiss
+  such locations when we gain an item that gates those objectives. There are
+  still a few rough edges on this; please see the README for more details.
+- Hide the Objectives section when there aren't any.
+
 ## 2021-08-03
 - Free Enterprise 4.4.0 has been released: Moonveil is now a tier 7 item, up
   from tier 6.

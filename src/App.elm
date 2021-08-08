@@ -27,6 +27,7 @@ import Location
         , ConsumableItems
         , Filter(..)
         , FilterType(..)
+        , IndexedProperty
         , Location
         , Locations
         , PseudoRequirement(..)
@@ -49,7 +50,7 @@ type alias Model =
     { flagString : String
     , flags : Flags
     , randomObjectives : Array RandomObjective
-    , completedObjectives : Set Objective
+    , completedObjectives : Set Objective.Key
     , attainedRequirements : Set Requirement
     , locations : Locations
     , locationFilterOverrides : Dict Filter FilterType
@@ -77,7 +78,7 @@ type ShopMenuContent
 
 
 type Msg
-    = ToggleObjective Objective
+    = ToggleObjective Objective.Key
     | SetRandomObjective Int Objective
     | UnsetRandomObjective Int
     | DropdownMsg Int Dropdown.State
@@ -107,7 +108,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         flagString =
-            "Kmain/summon/moon Sstandard Gwarp Nkey O1:char_kain/2:quest_antlionnest/random:3,char,boss/req:4"
+            "Kmain/summon/moon Sstandard Gwarp Nkey O1:char_kain/2:quest_antlionnest/random:3/req:4"
 
         flags =
             Flags.parse flagString
@@ -232,8 +233,23 @@ innerUpdate msg model =
 
                         _ ->
                             identity
+
+                -- ditto for Objectives
+                updateObjectives =
+                    case Location.getProperty key index locations of
+                        Just ( Unseen, Location.Objective objective ) ->
+                            Set.remove objective
+
+                        Just ( Dismissed, Location.Objective objective ) ->
+                            Set.insert objective
+
+                        _ ->
+                            identity
             in
-            { newModel | locations = locations }
+            { newModel
+                | locations = locations
+                , completedObjectives = updateObjectives newModel.completedObjectives
+            }
                 |> updateRequirements
 
         -- when we attain a new requirement, add it to the set and un-dismiss
@@ -260,14 +276,17 @@ innerUpdate msg model =
     case msg of
         ToggleObjective objective ->
             let
-                fn =
+                ( fn, complete ) =
                     if Set.member objective model.completedObjectives then
-                        Set.remove
+                        ( Set.remove, False )
 
                     else
-                        Set.insert
+                        ( Set.insert, True )
             in
-            { model | completedObjectives = fn objective model.completedObjectives }
+            { model
+                | completedObjectives = fn objective model.completedObjectives
+                , locations = Location.objectiveToggled objective complete model.locations
+            }
 
         SetRandomObjective index objective ->
             { model | randomObjectives = Array.set index (Set objective) model.randomObjectives }
@@ -335,16 +354,16 @@ innerUpdate msg model =
                 requirements =
                     newLocation
                         |> Location.getProperties (getContext newModel)
-                        |> List.filterMap
-                            (\( _, _, value ) ->
-                                case value of
-                                    Requirement req ->
-                                        Just req
-
-                                    _ ->
-                                        Nothing
-                            )
+                        |> List.filterMap (.value >> getRequirement)
                         |> Set.fromList
+
+                getRequirement value =
+                    case value of
+                        Requirement req ->
+                            Just req
+
+                        _ ->
+                            Nothing
             in
             case Location.getStatus newLocation of
                 Dismissed ->
@@ -424,11 +443,8 @@ innerUpdate msg model =
 
                 -- uncomplete any objectives that no longer exist
                 completedObjectives =
-                    randomObjectives
-                        |> Array.toList
-                        |> List.filterMap randomObjectiveToMaybe
-                        |> List.append (Array.toList flags.objectives)
-                        |> Set.fromList
+                    randomObjectiveKeys randomObjectives
+                        |> Set.union (Objective.keys flags.objectives)
                         |> Set.intersect model.completedObjectives
 
                 -- filter out chests when they're all empty, unless they've
@@ -506,7 +522,7 @@ view model =
             ]
         , div [ id "footer" ]
             [ text "Documentation, credits, and contact info can be found in "
-            , a [ href "https://github.com/EiriasValar/FF4FE-Tracker", target "_blank" ]
+            , a [ href "https://github.com/EiriasValar/FF4FE-Tracker/tree/release#readme", target "_blank" ]
                 [ text "the GitHub repo" ]
             ]
         ]
@@ -522,36 +538,42 @@ viewObjectives model =
         numRequired =
             model.flags.requiredObjectives
 
-        fixed =
-            model.flags.objectives
-                |> Array.map (\o -> viewObjective o (Set.member o model.completedObjectives) Nothing)
-                |> Array.toList
+        viewArray : (Int -> a -> b) -> Array a -> List b
+        viewArray fn =
+            Array.indexedMap fn
+                >> Array.toList
 
-        random =
-            model.randomObjectives
-                |> Array.indexedMap (\i o -> viewEditableObjective i o model.completedObjectives model.flags.randomObjectiveTypes)
-                |> Array.toList
+        fixed _ o =
+            viewObjective o (Set.member o.key model.completedObjectives) Nothing
+
+        random i o =
+            viewEditableObjective i o model.completedObjectives model.flags.randomObjectiveTypes
     in
-    div [ id "objectives" ]
-        [ h2 []
-            [ text "Objectives"
-            , span
-                [ class "progress"
-                , classList [ ( "complete", numCompleted >= numRequired ) ]
+    div [ id "objectives" ] <|
+        if model.flags.requiredObjectives > 0 then
+            [ h2 []
+                [ text "Objectives"
+                , span
+                    [ class "progress"
+                    , classList [ ( "complete", numCompleted >= numRequired ) ]
+                    ]
+                    [ text <|
+                        "("
+                            ++ String.fromInt numCompleted
+                            ++ "/"
+                            ++ String.fromInt numRequired
+                            ++ " to "
+                            ++ Flags.rewardToString model.flags.objectiveReward
+                            ++ ")"
+                    ]
                 ]
-                [ text <|
-                    "("
-                        ++ String.fromInt numCompleted
-                        ++ "/"
-                        ++ String.fromInt numRequired
-                        ++ " to "
-                        ++ Flags.rewardToString model.flags.objectiveReward
-                        ++ ")"
-                ]
+            , ul [ class "objectives" ] <|
+                viewArray fixed model.flags.objectives
+                    ++ viewArray random model.randomObjectives
             ]
-        , ul [ class "objectives" ]
-            (fixed ++ random)
-        ]
+
+        else
+            []
 
 
 viewObjective : Objective -> Bool -> Maybe Int -> Html Msg
@@ -561,10 +583,14 @@ viewObjective objective completed randomIndex =
             [ ( "objective", True )
             , ( "completed", completed )
             ]
-        , onClick (ToggleObjective objective)
+        , onClick (ToggleObjective objective.key)
         ]
-        [ span [ class "icon state" ] []
-        , span [ class "text" ] [ text <| Objective.toString objective ]
+        [ Icon.objective.img
+            [ class "icon state"
+            , class Icon.objective.class
+            , title Icon.objective.title
+            ]
+        , span [ class "text" ] [ text objective.description ]
         , case ( completed, randomIndex ) of
             ( False, Just index ) ->
                 -- we're unlikely to want to delete a completed objective, and in the
@@ -576,14 +602,14 @@ viewObjective objective completed randomIndex =
         ]
 
 
-viewEditableObjective : Int -> RandomObjective -> Set Objective -> Set Objective.Type -> Html Msg
+viewEditableObjective : Int -> RandomObjective -> Set Objective.Key -> Set Objective.Type -> Html Msg
 viewEditableObjective index randomObjective completedObjectives objectiveTypes =
     let
         item : Objective -> DropdownItem Msg
         item objective =
             Dropdown.buttonItem
                 [ onClick <| SetRandomObjective index objective ]
-                [ text <| Objective.toString objective ]
+                [ text objective.description ]
 
         section : Objective.Type -> String -> List Objective -> List (DropdownItem Msg)
         section objectiveType header objectives =
@@ -596,7 +622,7 @@ viewEditableObjective index randomObjective completedObjectives objectiveTypes =
     in
     case randomObjective of
         Set objective ->
-            viewObjective objective (Set.member objective completedObjectives) (Just index)
+            viewObjective objective (Set.member objective.key completedObjectives) (Just index)
 
         Unset dropdown ->
             li [ class "objective unset" ]
@@ -798,8 +824,8 @@ viewMenu menu =
                 ]
 
 
-viewProperty : Location.Context -> Location -> ( Int, Status, Value ) -> Html Msg
-viewProperty context location ( index, status, value ) =
+viewProperty : Location.Context -> Location -> IndexedProperty -> Html Msg
+viewProperty context location { index, status, value } =
     let
         key =
             Location.getKey location
@@ -998,14 +1024,20 @@ updateRandomObjectives flags objectives =
         objectives
 
 
-randomObjectiveToMaybe : RandomObjective -> Maybe Objective
-randomObjectiveToMaybe o =
-    case o of
-        Set objective ->
-            Just objective
+randomObjectiveKeys : Array RandomObjective -> Set Objective.Key
+randomObjectiveKeys =
+    let
+        toMaybeKey o =
+            case o of
+                Set objective ->
+                    Just objective.key
 
-        Unset _ ->
-            Nothing
+                Unset _ ->
+                    Nothing
+    in
+    Array.toList
+        >> List.filterMap toMaybeKey
+        >> Set.fromList
 
 
 getContext : Model -> Location.Context
@@ -1019,7 +1051,7 @@ getContext =
 getContextFor : Location.Class -> Model -> Location.Context
 getContextFor locClass model =
     { flags = model.flags
-    , randomObjectives = model.randomObjectives |> Array.toList |> List.filterMap randomObjectiveToMaybe |> Set.fromList
+    , randomObjectives = randomObjectiveKeys model.randomObjectives
     , completedObjectives = model.completedObjectives
     , attainedRequirements = model.attainedRequirements
     , warpGlitchUsed = model.warpGlitchUsed

@@ -8,7 +8,7 @@ module Flags exposing
 
 import Array exposing (Array)
 import EverySet as Set exposing (EverySet)
-import Objective exposing (BossObjective(..), Objective(..))
+import Objective exposing (Boss(..), Key(..), Objective)
 
 
 type alias Set a =
@@ -22,7 +22,6 @@ type alias Flags =
     , requiredObjectives : Int
     , objectiveReward : Reward
     , keyItems : Set KeyItemClass
-    , classicGiantObjective : Bool
     , passExists : Bool
     , passIsKeyItem : Bool
     , passInShop : Bool
@@ -89,7 +88,6 @@ parse flagString =
             , requiredObjectives = 0
             , objectiveReward = Win
             , keyItems = Set.singleton Free
-            , classicGiantObjective = False
             , passExists = False
             , passIsKeyItem = False
             , passInShop = False
@@ -138,23 +136,27 @@ parse flagString =
         -- when the Fiends mode objective is on, the game treats it as six separate objectives
         fixupFiends flags =
             let
-                objectives =
-                    if flags.objectives |> Array.toList |> List.member Fiends then
-                        [ DefeatBoss Milon
-                        , DefeatBoss MilonZ
-                        , DefeatBoss Kainazzo
-                        , DefeatBoss Valvalis
-                        , DefeatBoss Rubicant
-                        , DefeatBoss Elements
-                        ]
+                fiends =
+                    [ DefeatBoss Milon
+                    , DefeatBoss MilonZ
+                    , DefeatBoss Kainazzo
+                    , DefeatBoss Valvalis
+                    , DefeatBoss Rubicant
+                    , DefeatBoss Elements
+                    ]
+
+                expandFiends objective objectives =
+                    if objective.key == Fiends then
+                        -- insert the individual objectives instead of the Fiends objective
+                        Objective.bosses
+                            |> List.filter (.key >> memberOf fiends)
                             |> Array.fromList
-                            |> Array.append flags.objectives
-                            |> Array.filter ((/=) Fiends)
+                            |> Array.append objectives
 
                     else
-                        flags.objectives
+                        Array.push objective objectives
             in
-            { flags | objectives = objectives }
+            { flags | objectives = Array.foldl expandFiends Array.empty flags.objectives }
 
         -- Kvanilla excludes Kmain/summon/moon, and Kmain must be on
         -- if Kvanilla isn't
@@ -234,12 +236,9 @@ parseO : String -> Flags -> Flags
 parseO opts incomingFlags =
     let
         parseMode mode flags =
-            case Objective.fromString mode of
+            case Objective.fromFlag mode of
                 Just objective ->
-                    { flags
-                        | classicGiantObjective = objective == ClassicGiant
-                        , objectives = Array.push objective flags.objectives
-                    }
+                    { flags | objectives = Array.push objective flags.objectives }
 
                 Nothing ->
                     flags
@@ -298,7 +297,7 @@ parseO opts incomingFlags =
                     incomingFlags
 
         [ num, objectiveStr ] ->
-            case ( String.toInt num, Objective.fromString objectiveStr ) of
+            case ( String.toInt num, Objective.fromFlag objectiveStr ) of
                 ( Just _, Just objective ) ->
                     -- since we want to parse in one pass, ignore the given
                     -- numbers and assume the objectives are in order
@@ -460,3 +459,8 @@ parseOther switch flags =
 
         _ ->
             flags
+
+
+memberOf : List a -> a -> Bool
+memberOf xs x =
+    List.member x xs
