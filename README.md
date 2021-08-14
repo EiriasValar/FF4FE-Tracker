@@ -117,6 +117,7 @@ no navigation infrastructure is implemented (anymore).
 - Type-to-filter random objective selection
 - Accommodate streaming better (customizable background colour?)
 - Expand the shop weapon and armour items into short submenus?
+- Make the location area groupings collapsible
 
 # TODO housekeeping
 - Consistent icon handling
