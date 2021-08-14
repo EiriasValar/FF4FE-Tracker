@@ -1,5 +1,8 @@
-## 2021-08-07
+## 2021-08-13
+- Fix bug where Toroia was displaying the Pass objective regardless of whether
+  you had the Pass yet. Thanks to Illiena for the report!
 
+## 2021-08-07
 - Refactor Objective-handling code: shouldn't have any noticeable effects
   unless I've broken something.
 - Mark locations that contain our quest objectives, and automatically un-dismiss

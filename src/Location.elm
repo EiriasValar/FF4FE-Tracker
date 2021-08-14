@@ -106,7 +106,7 @@ type CharacterType
     | Gated
 
 
-{-| Most stats are sourced from the FF3FE Boss Scaling Stats doc:
+{-| Most stats are sourced from the FF4FE Boss Scaling Stats doc:
 <https://docs.google.com/spreadsheets/d/1hJZsbzStQfMCQUFzjW9pbdLhJ99wLu1QY-5cmp7Peqg/edit>
 The actual stats will vary depending on the boss who appears in a spot; I've
 tried to populate them with "representative" values for a "normal" boss. The
@@ -1581,7 +1581,7 @@ surface =
       , requirements = []
       , value =
             [ Chest 4
-            , Objective <| DoQuest Objective.Pass
+            , GatedValue (Pseudo Pass) <| Objective <| DoQuest Objective.Pass
             ]
       }
     , { key = ToroiaShops
