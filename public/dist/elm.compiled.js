@@ -5680,6 +5680,7 @@ var $author$project$Location$MysidiaShops = 16;
 var $author$project$Location$Package = {$: 0};
 var $author$project$Objective$Package = 24;
 var $author$project$Objective$PanReturn = 36;
+var $author$project$Location$Pass = 0;
 var $author$project$Objective$Pass = 38;
 var $author$project$Location$PinkTail = {$: 16};
 var $author$project$Objective$PinkTail = 37;
@@ -6060,8 +6061,11 @@ var $author$project$Location$surface = _List_fromArray(
 		dy: _List_fromArray(
 			[
 				$author$project$Location$Chest(4),
+				A2(
+				$author$project$Location$GatedValue,
+				$author$project$Location$Pseudo(0),
 				$author$project$Location$Objective(
-				$author$project$Objective$DoQuest(38))
+					$author$project$Objective$DoQuest(38)))
 			])
 	},
 		{
@@ -10277,7 +10281,6 @@ var $author$project$App$viewFilters = F2(
 			A2($elm$core$List$map, viewFilter, filters));
 	});
 var $author$project$Location$Crystal = {$: 8};
-var $author$project$Location$Pass = 0;
 var $author$project$Location$Spoon = {$: 15};
 var $author$project$App$ToggleRequirement = function (a) {
 	return {$: 4, a: a};
