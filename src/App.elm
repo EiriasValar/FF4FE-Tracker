@@ -247,6 +247,7 @@ innerUpdate msg model =
                 , completedObjectives = updateObjectives newModel.completedObjectives
             }
                 |> updateRequirements
+                |> updateCrystal
 
         -- when we attain a new requirement, add it to the set and un-dismiss
         -- any locations for which it gates value
@@ -274,12 +275,31 @@ innerUpdate msg model =
                 | completedObjectives = Set.insert objective newModel.completedObjectives
                 , locations = Location.objectiveToggled objective True newModel.locations
             }
+                |> updateCrystal
 
         removeObjective objective newModel =
             { newModel
                 | completedObjectives = Set.remove objective newModel.completedObjectives
                 , locations = Location.objectiveToggled objective False newModel.locations
             }
+                |> updateCrystal
+
+        -- if the Crystal is rewarded from completing objectives rather than being found, keep
+        -- it in sync with our objectives
+        updateCrystal newModel =
+            let
+                fn =
+                    if newModel.flags.objectiveReward == Flags.Crystal then
+                        if Set.size newModel.completedObjectives >= newModel.flags.requiredObjectives then
+                            Set.insert Crystal
+
+                        else
+                            Set.remove Crystal
+
+                    else
+                        identity
+            in
+            { newModel | attainedRequirements = fn newModel.attainedRequirements }
     in
     case msg of
         ToggleObjective objective ->
@@ -481,6 +501,7 @@ innerUpdate msg model =
                 , locationFilterOverrides = locationFilterOverrides
                 , shopMenu = Nothing
             }
+                |> updateCrystal
 
         DoNothing ->
             model
@@ -647,15 +668,30 @@ viewKeyItems flags attained =
     let
         req : Requirement -> Html Msg
         req requirement =
+            req_ requirement False
+
+        req_ : Requirement -> Bool -> Html Msg
+        req_ requirement readonly =
             case Icon.fromRequirement requirement of
                 Just icon ->
-                    icon.img
+                    let
+                        readonlyAttr =
+                            if readonly then
+                                [ title <| icon.title ++ " (can't be toggled directly)"
+                                , class "readonly"
+                                ]
+
+                            else
+                                [ title icon.title
+                                , onClick <| ToggleRequirement requirement
+                                ]
+                    in
+                    icon.img <|
                         [ class "requirement"
                         , class icon.class
                         , classList [ ( "disabled", not <| Set.member requirement attained ) ]
-                        , title icon.title
-                        , onClick (ToggleRequirement requirement)
                         ]
+                            ++ readonlyAttr
 
                 Nothing ->
                     div [] []
@@ -668,7 +704,11 @@ viewKeyItems flags attained =
                 |> Set.size
     in
     div [ class "requirements" ]
-        [ req Crystal
+        [ if flags.objectiveReward == Flags.Crystal then
+            req_ Crystal True
+
+          else
+            req_ Crystal False
         , displayCellIf flags.passExists <|
             req (Pseudo Pass)
         , req Hook

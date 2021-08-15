@@ -1,6 +1,7 @@
 module Flags exposing
     ( Flags
     , KeyItemClass(..)
+    , Reward(..)
     , ShopRandomization(..)
     , parse
     , rewardToString

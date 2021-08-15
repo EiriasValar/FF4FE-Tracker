@@ -26,6 +26,8 @@ If you encounter a valid flag that the tracker doesn't respect, it may not be im
 
 Click on the icons for key items as you obtain them; the list of available locations will expand as area-gating key items are obtained. Items that don't exist under the given flags (no `Pass` without a `P...` flag, no `Pink Tail` under `Kvanilla`) aren't shown.
 
+If `Owin:crystal` is on, the `Crystal` item can't be found normally, and is instead automatically acquired on completing the required number of objectives. As a result, under that flag the `Crystal` key item icon can't be manually toggled; it will automatically light up when sufficient objectives are marked as complete.
+
 The `D.Mist` icon is shown when `Nkey` is in effect: when you find and defeat the Mist Dragon/D.Mist boss, you can mark it to a) remember that you've done it, b) cause a Mist Village location to appear to remind you to collect your potential key item, and c) keep the tracker apprised of whether you're still hunting for any bosses.
 
 The total number of key items collected is shown in the lower-right (unless `-exp:nokeybonus` is on) to make it easier to tell at a glance how close you are to receiving double experience for reaching 10 key items. (As a reminder, the `Pass` does not count towards this total, even when `Pkey` is on.)
@@ -126,8 +128,6 @@ no navigation infrastructure is implemented (anymore).
 - Make Statuses more intuitive; Dismissed meaning On for shops and items is weird
 - Add CSS linting
 - Bvanilla + Nkey + no boss hunt objectives = Mist Cave is the only boss with value
-- Enable the Crystal when under Owin:crystal and the requisite number of objectives
-  are completed
 - Should Property just be a record type? The two-payload type is a pain to
   unpack and update, and writing methods for it would be weird.
 - Connect special value icons (the Falcon and YangBonk) to their associated

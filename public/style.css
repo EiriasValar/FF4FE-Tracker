@@ -134,13 +134,17 @@ h4 {
   cursor: pointer;
 }
 
+.requirement.readonly {
+  cursor: auto;
+}
+
 .requirement.disabled {
   filter: grayscale(100%) opacity(50%);
 }
 
 .requirement.total {
   color: white;
-  cursor: default;
+  cursor: auto;
   display: flex;
   align-items: center;
   justify-content: center;
