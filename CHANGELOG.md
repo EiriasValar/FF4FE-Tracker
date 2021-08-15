@@ -1,6 +1,8 @@
 ## Upcoming
 - Mark objectives as complete when their locations are dismissed, since that's
   pretty much always what you want to have happen.
+- Combine the two Baron shop locations into one, with the weapon and armour
+  shop icons being gated by the Baron Key.
 
 ## 2021-08-13
 - Fix bug where Toroia was displaying the Pass objective regardless of whether

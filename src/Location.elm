@@ -100,8 +100,7 @@ type Key
     | MysidiaShops
     | MtOrdeals
     | Baron
-    | BaronItemShop
-    | BaronWeaponShop
+    | BaronShop
     | BaronSewer
     | BaronCastle
     | BaronBasement
@@ -253,10 +252,24 @@ getProperties_ c unwrapGatedValues (Location location) =
 
                 Shop shopValue ->
                     let
+                        baronNightShop =
+                            case shopValue of
+                                Weapon ->
+                                    True
+
+                                Armour ->
+                                    True
+
+                                Other _ ->
+                                    True
+
+                                _ ->
+                                    False
+
                         passesNightMode =
                             not context.flags.nightMode
                                 || (location.area /= Surface)
-                                || (location.key == BaronWeaponShop)
+                                || (location.key == BaronShop && baronNightShop)
                                 || (location.key == CaveEblanShops)
                                 || (location.key == ToroiaShops && (not <| List.member shopValue [ Weapon, Armour ]))
 
@@ -288,6 +301,16 @@ getProperties_ c unwrapGatedValues (Location location) =
                 |> Maybe.withDefault Show
                 |> (/=) Hide
 
+        -- if the only thing in the list is Shop Other, hide it; none of the
+        -- other Shop types exist, so there's no point having a text field
+        fixupShopOther list =
+            case list of
+                [ ( _, Property _ (Shop (Other _)) ) ] ->
+                    []
+
+                _ ->
+                    list
+
         unwrapGatedValue value =
             case ( unwrapGatedValues, value ) of
                 ( True, GatedValue _ v ) ->
@@ -307,6 +330,7 @@ getProperties_ c unwrapGatedValues (Location location) =
         |> Array.toIndexedList
         |> List.filter (\( _, Property _ value ) -> exists value)
         |> List.filter (Tuple.second >> notFilteredOut)
+        |> fixupShopOther
         |> List.map toRecord
 
 
@@ -1281,22 +1305,13 @@ surface =
             , GatedValue BaronKey <| Objective <| DoQuest Objective.UnlockSewer
             ]
       }
-    , { key = BaronItemShop
+    , { key = BaronShop
       , name = "Baron"
       , requirements = []
       , value =
-            [ Shop Item
-            ]
-      }
-    , { key = BaronWeaponShop
-      , name = "Baron"
-      , requirements = [ BaronKey ]
-      , value =
-            [ Shop Weapon
-            , Shop Armour
-
-            -- not worth the hassle!
-            -- , Chest 2
+            [ GatedValue BaronKey <| Shop Weapon
+            , GatedValue BaronKey <| Shop Armour
+            , Shop Item
             ]
       }
     , { key = BaronSewer
@@ -1975,7 +1990,7 @@ vanillaShops =
     [ ( KaipoShops, [ "Life", "Tent", "Status-healing" ] )
     , ( FabulShops, [ "Life", "Tent", "Status-healing" ] )
     , ( MysidiaShops, [ "Cure2", "Life", "Tent", "Cabin", "Status-healing" ] )
-    , ( BaronItemShop, [ "Life", "Tent", "Status-healing" ] )
+    , ( BaronShop, [ "Life", "Tent", "Status-healing" ] )
     , ( ToroiaShops, [ "Life", "Tent", "Status-healing" ] )
     , ( AgartShops, [ "Life", "Tent", "Status-healing" ] )
     , ( SilveraShops, [ "Status-healing" ] )

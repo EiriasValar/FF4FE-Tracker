@@ -128,8 +128,6 @@ no navigation infrastructure is implemented (anymore).
 - Bvanilla + Nkey + no boss hunt objectives = Mist Cave is the only boss with value
 - Enable the Crystal when under Owin:crystal and the requisite number of objectives
   are completed
-- Move Baron weapon and armour shops into the same location as the item shop as
-  gated values?
 - Should Property just be a record type? The two-payload type is a pain to
   unpack and update, and writing methods for it would be weird.
 - Connect special value icons (the Falcon and YangBonk) to their associated
