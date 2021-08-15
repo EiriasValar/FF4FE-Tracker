@@ -26,8 +26,10 @@ module Location exposing
     , getItems
     , getKey
     , getName
+    , getObjective
     , getProperties
     , getProperty
+    , getRequirement
     , getStatus
     , groupByArea
     , insert
@@ -1124,6 +1126,26 @@ countable value =
 
         TrappedChest c ->
             Just c
+
+        _ ->
+            Nothing
+
+
+getRequirement : Value -> Maybe Requirement
+getRequirement value =
+    case value of
+        Requirement req ->
+            Just req
+
+        _ ->
+            Nothing
+
+
+getObjective : Value -> Maybe Objective.Key
+getObjective value =
+    case value of
+        Objective obj ->
+            Just obj
 
         _ ->
             Nothing

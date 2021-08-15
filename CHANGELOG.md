@@ -1,3 +1,7 @@
+## Upcoming
+- Mark objectives as complete when their locations are dismissed, since that's
+  pretty much always what you want to have happen.
+
 ## 2021-08-13
 - Fix bug where Toroia was displaying the Pass objective regardless of whether
   you had the Pass yet. Thanks to Illiena for the report!

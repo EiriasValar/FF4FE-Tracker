@@ -272,21 +272,26 @@ innerUpdate msg model =
 
         removeRequirement requirement newModel =
             { newModel | attainedRequirements = Set.remove requirement model.attainedRequirements }
+
+        attainObjective objective newModel =
+            { newModel
+                | completedObjectives = Set.insert objective newModel.completedObjectives
+                , locations = Location.objectiveToggled objective True newModel.locations
+            }
+
+        removeObjective objective newModel =
+            { newModel
+                | completedObjectives = Set.remove objective newModel.completedObjectives
+                , locations = Location.objectiveToggled objective False newModel.locations
+            }
     in
     case msg of
         ToggleObjective objective ->
-            let
-                ( fn, complete ) =
-                    if Set.member objective model.completedObjectives then
-                        ( Set.remove, False )
+            if Set.member objective model.completedObjectives then
+                removeObjective objective model
 
-                    else
-                        ( Set.insert, True )
-            in
-            { model
-                | completedObjectives = fn objective model.completedObjectives
-                , locations = Location.objectiveToggled objective complete model.locations
-            }
+            else
+                attainObjective objective model
 
         SetRandomObjective index objective ->
             { model | randomObjectives = Array.set index (Set objective) model.randomObjectives }
@@ -350,28 +355,28 @@ innerUpdate msg model =
                 newModel =
                     { model | locations = Location.insert newLocation model.locations }
 
+                properties =
+                    Location.getProperties (getContext newModel) newLocation
+
                 -- collect any Requirements this location awards as value
                 requirements =
-                    newLocation
-                        |> Location.getProperties (getContext newModel)
-                        |> List.filterMap (.value >> getRequirement)
-                        |> Set.fromList
+                    properties
+                        |> List.filterMap (.value >> Location.getRequirement)
 
-                getRequirement value =
-                    case value of
-                        Requirement req ->
-                            Just req
-
-                        _ ->
-                            Nothing
+                -- and do likewise for Objectives
+                objectives =
+                    properties
+                        |> List.filterMap (.value >> Location.getObjective)
             in
             case Location.getStatus newLocation of
                 Dismissed ->
-                    -- attain the rewarded requirements
-                    Set.foldl attainRequirement newModel requirements
+                    -- attain the rewarded requirements and objectives
+                    newModel
+                        |> modelFoldl attainRequirement requirements
+                        |> modelFoldl attainObjective objectives
 
                 _ ->
-                    -- don't unattain the rewarded requirements on Unseen; they
+                    -- don't unattain the rewarded values on Unseen: they
                     -- can be manually unchecked where appropriate
                     newModel
 
@@ -1086,6 +1091,11 @@ displayCellIf predicate html =
 with : b -> a -> ( a, b )
 with b a =
     ( a, b )
+
+
+modelFoldl : (a -> Model -> Model) -> List a -> Model -> Model
+modelFoldl fn list model =
+    List.foldl fn model list
 
 
 onRightClick : msg -> Html.Attribute msg

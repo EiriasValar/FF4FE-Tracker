@@ -54,14 +54,14 @@ Value icons can be clicked to mark them as individually completed. In the case o
 ### Special Value icons
 
 Checking off value icons is generally just for your reference, and has no impact on the tracker's logic – with the following exceptions:
-- `Upper Bab-il`: Checking off the airship Falcon indicates you've reached the Underground via this location: Underground locations can now be shown. (This is automatically checked off if you dismiss the location entirely.)
+- `Upper Bab-il`: Checking off the airship Falcon indicates you've reached the Underground via this location: Underground locations can now be shown. This is automatically checked off if you dismiss the location entirely.
 - `Dwarf Castle`: If `Gwarp` is on, a faded-out second Key Item icon is shown, representing the key item check in the `Sealed Cave`, which can be reached from this location via the warp glitch. Checking it off tells the tracker that you've done this, and that there's therefore no longer a key item check to be had in the `Sealed Cave`.
-- `Sylph Cave`: A Yang icon is shown; checking it off when you've talked to Yang in his bed enables a key item check with `Sheila` in Fabul. A second Yang icon appears when the `Pan` is acquired: bonk him with it and check the icon to enable `Sheila`'s second key item check. (Dismissing the whole location will also automatically check whichever Yang icons are present.) Since you may need to visit this location more than once, it will un-dismiss itself when you acquire the `Pan`.
-- **Quest objectives**: If you have uncompleted quest objectives, the locations that hold those quests will show an Objective value icon (the same Crystal icon as is used in the Objectives section). Toggling this icon will toggle the corresponding objective, and vice-versa. Dismissing the location as a whole will _not_ automatically mark the objective as complete, as there are plausible scenarios where you'd dismiss a quest location due to skipping it rather than completing it.
+- `Sylph Cave`: A Yang icon is shown; checking it off when you've talked to Yang in his bed enables a key item check with `Sheila` in Fabul. A second Yang icon appears when the `Pan` is acquired: bonk him with it and check the icon to enable `Sheila`'s second key item check. Dismissing the whole location will also automatically check whichever Yang icons are present. Since you may need to visit this location more than once, it will un-dismiss itself when you acquire the `Pan`.
+- **Quest objectives**: If you have uncompleted quest objectives, the locations that hold those quests will show an Objective value icon (the same Crystal icon as is used in the Objectives section). Toggling this icon will toggle the corresponding objective, and vice-versa; dismissing the location as a whole will automatically mark any available objectives as complete.
 
-  A dismissed location that contains a quest that's gated by a key item will un-dismiss itself when that item is acquired. This may lead to misleading situations in terms of the other value icons shown: e.g. you may complete the Baron Inn checks early in a run, and dismiss the Baron Town location as a result; if you have the quest to unlock the Baron Sewer, when you later gain the Baron Key, the Baron Town location will reappear due to the quest, but will still show all its previous value icons as well (unless you checked them off manually). This is again because it's not reasonable for the tracker to assume that dismissing a location means you obtained all its value.
+  A dismissed location that contains a quest that's gated by a key item will un-dismiss itself when that item is acquired. This may lead to misleading situations in terms of the other value icons shown: e.g. you may complete the Baron Inn checks early in a run, and dismiss the Baron Town location as a result; if you have the quest to unlock the Baron Sewer, when you later gain the Baron Key, the Baron Town location will reappear due to the quest, but will still show all its previous value icons as well (unless you checked them off manually). This is because it's not reasonable for the tracker to assume that dismissing a location means you obtained all its value.
 
-  There's also currently no automatic connection between the special icons for bonking Yang and launching the Falcon, and the corresponding quest objectives. For now you'll just have to put up with two clicks.
+  There's also no automatic connection between the special icons for bonking Yang and launching the Falcon, and the corresponding quest objectives: toggling one doesn't toggle the other (though dismissing the location will mark both as done).
 
 ### Boss stats
 
@@ -148,9 +148,6 @@ no navigation infrastructure is implemented (anymore).
 - Resizing a shop's textarea input doesn't persist, neither between different
   shops, nor when closing and reopening the same shop. Suppressing the ability
   to resize feels unfriendly to the user, but is it useful without persistence?
-- Complete quest objectives when the corresponding location is dismissed? Might
-  be too aggressive. Maybe you dismissed the location because you know it will
-  be too slow/hard and you have other objectives you can take instead.
 - Somehow make it clearer why dismissed locations reappear because of a gated
   objective's requirement being met? Checking off other value at the location on
   dismiss is undesirable: too many cases where you might dismiss a location
