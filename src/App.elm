@@ -13,6 +13,7 @@ import Bootstrap.Dropdown as Dropdown exposing (DropdownItem)
 import Browser
 import Browser.Dom
 import Browser.Events
+import ConsumableItems exposing (ConsumableItem, ConsumableItems)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
 import Html exposing (Html, a, div, h2, h4, hr, li, span, text, textarea, ul)
@@ -20,26 +21,21 @@ import Html.Attributes exposing (autocomplete, class, classList, cols, href, id,
 import Html.Events exposing (onClick, onInput)
 import Icon
 import Json.Decode
-import Location
-    exposing
-        ( BossStats
-        , ConsumableItem
-        , ConsumableItems
-        , Filter(..)
-        , FilterType(..)
-        , IndexedProperty
-        , Location
-        , Locations
-        , PseudoRequirement(..)
-        , Requirement(..)
-        , ShopValue(..)
-        , Status(..)
-        , Value(..)
-        )
+import Location exposing (IndexedProperty, Location, Locations)
 import Maybe.Extra
 import Objective exposing (Objective)
+import Requirement exposing (PseudoRequirement(..), Requirement(..))
+import Status exposing (Status(..))
 import String.Extra
 import Task
+import Value
+    exposing
+        ( BossStats
+        , Filter(..)
+        , FilterType(..)
+        , ShopValue(..)
+        , Value(..)
+        )
 
 
 type alias Set a =
@@ -84,7 +80,7 @@ type Msg
     | DropdownMsg Int Dropdown.State
     | ToggleRequirement Requirement
     | ToggleFilter Location.Class Filter
-    | ToggleLocationStatus Location Location.Status
+    | ToggleLocationStatus Location Status
     | ToggleProperty Location.Key Int
     | HardToggleProperty Location.Key Int
     | ToggleWarpGlitchUsed Location.Key Int
@@ -237,10 +233,10 @@ innerUpdate msg model =
                 -- ditto for Objectives
                 updateObjectives =
                     case Location.getProperty key index locations of
-                        Just ( Unseen, Location.Objective objective ) ->
+                        Just ( Unseen, Value.Objective objective ) ->
                             Set.remove objective
 
-                        Just ( Dismissed, Location.Objective objective ) ->
+                        Just ( Dismissed, Value.Objective objective ) ->
                             Set.insert objective
 
                         _ ->
@@ -361,12 +357,12 @@ innerUpdate msg model =
                 -- collect any Requirements this location awards as value
                 requirements =
                     properties
-                        |> List.filterMap (.value >> Location.getRequirement)
+                        |> List.filterMap (.value >> Value.requirement)
 
                 -- and do likewise for Objectives
                 objectives =
                     properties
-                        |> List.filterMap (.value >> Location.getObjective)
+                        |> List.filterMap (.value >> Value.objective)
             in
             case Location.getStatus newLocation of
                 Dismissed ->
@@ -668,7 +664,7 @@ viewKeyItems flags attained =
             -- we care about this number for the 10 key items experience bonus, so
             -- don't count the things that aren't real key items
             attained
-                |> Set.filter (not << Location.isPseudo)
+                |> Set.filter (not << Requirement.isPseudo)
                 |> Set.size
     in
     div [ class "requirements" ]
@@ -779,7 +775,7 @@ viewLocation : Maybe ShopMenu -> Location.Context -> Location -> List (Html Msg)
 viewLocation shopMenu context location =
     [ span
         [ class "name"
-        , class <| Location.statusToString <| Location.getStatus location
+        , class <| Status.toString <| Location.getStatus location
         , onClick <| ToggleLocationStatus location Dismissed
         , onRightClick <| ToggleLocationStatus location Seen
         ]
@@ -801,7 +797,7 @@ viewMenu menu =
         viewItem ( itemIndex, item ) =
             div
                 [ class "shop-item"
-                , class <| Location.statusToString item.status
+                , class <| Status.toString item.status
 
                 -- prevent propagation so toggling an item doesn't
                 -- also trigger closing the menu
@@ -884,7 +880,7 @@ viewProperty context location { index, status, value } =
                     onClick <| ToggleProperty key index
 
         count =
-            case ( Location.countable value, status ) of
+            case ( Value.countable value, status ) of
                 ( Just total, SeenSome seen ) ->
                     total - seen
 
@@ -900,7 +896,7 @@ viewProperty context location { index, status, value } =
                 [ class "icon"
                 , class icon.class
                 , class extraClass
-                , class <| Location.statusToString status
+                , class <| Status.toString status
                 , title <|
                     case value of
                         KeyItem Warp ->

@@ -137,11 +137,6 @@ no navigation infrastructure is implemented (anymore).
 - Connect defeating D.Mist with the D.Mist boss hunt objective.
 
 # TOMAYBEDOs
-- Pull some types out of Location.elm, it's getting overloaded. Though they're
-  all pretty interdependent. Don't want a bunch of 20-line modules per type;
-  also don't want a meaningless Types.elm. Not seeing any obvious delineations.
-  Tried moving Locations and its methods into their own module, but that winds
-  up doubling the surface area of Location.
 - Keyboard navigation?
 - Remove elm-bootstrap
 - Switch to compiled CSS

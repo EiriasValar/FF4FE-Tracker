@@ -1,24 +1,13 @@
 module Location exposing
     ( Area
-    , BossStats
     , Class(..)
-    , ConsumableItem
-    , ConsumableItems
     , Context
-    , Filter(..)
-    , FilterType(..)
     , IndexedProperty
     , Key(..)
     , Location
     , Locations
-    , PseudoRequirement(..)
-    , Requirement(..)
-    , ShopValue(..)
-    , Status(..)
-    , Value(..)
     , all
     , areaToString
-    , countable
     , filterByContext
     , filterItems
     , get
@@ -26,17 +15,13 @@ module Location exposing
     , getItems
     , getKey
     , getName
-    , getObjective
     , getProperties
     , getProperty
-    , getRequirement
     , getStatus
     , groupByArea
     , insert
-    , isPseudo
     , objectiveToggled
     , setText
-    , statusToString
     , toggleItem
     , toggleProperty
     , toggleStatus
@@ -48,10 +33,21 @@ module Location exposing
 import Array exposing (Array)
 import Array.Extra
 import AssocList as Dict exposing (Dict)
+import ConsumableItems exposing (ConsumableItem, ConsumableItems)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
 import List.Extra
 import Objective exposing (Key(..))
+import Requirement exposing (PseudoRequirement(..), Requirement(..))
+import Status exposing (Status(..))
+import Value
+    exposing
+        ( CharacterType(..)
+        , Filter(..)
+        , FilterType(..)
+        , ShopValue(..)
+        , Value(..)
+        )
 
 
 type alias Set a =
@@ -82,91 +78,6 @@ type alias IndexedProperty =
     , status : Status
     , value : Value
     }
-
-
-type Status
-    = Unseen
-    | Seen
-    | SeenSome Int
-    | Dismissed
-
-
-type Value
-    = Character CharacterType
-    | Boss BossStats
-    | KeyItem KeyItemClass
-    | Chest Int -- excluding trapped chests
-    | TrappedChest Int
-    | Shop ShopValue
-    | Requirement Requirement
-    | Objective Objective.Key
-    | GatedValue Requirement Value
-
-
-type CharacterType
-    = Ungated
-    | Gated
-
-
-{-| Most stats are sourced from the FF4FE Boss Scaling Stats doc:
-<https://docs.google.com/spreadsheets/d/1hJZsbzStQfMCQUFzjW9pbdLhJ99wLu1QY-5cmp7Peqg/edit>
-The actual stats will vary depending on the boss who appears in a spot; I've
-tried to populate them with "representative" values for a "normal" boss. The
-Magic stats in particular are very hand-wavy.
-
-Valvalis' MDef is from Inven's Valvalis Reference:
-<https://docs.google.com/spreadsheets/d/1tVQFvlQ_4oWCn0EE9d7QAGrYW3w2IbZzuO2MWuUC8ww/edit>
-
--}
-type alias BossStats =
-    { hp : Int
-    , exp : Int
-    , gp : Int
-    , atkMult : Int
-    , hit : Int
-    , atk : Int
-    , minSpeed : Int
-    , maxSpeed : Int
-    , mag : Int
-    , valvalisMDef : Int
-    }
-
-
-type ShopValue
-    = Weapon
-    | Armour
-    | Item -- pseudo-value for Location definition; gets expanded into Healing/JItem
-    | Healing ConsumableItems
-    | JItem ConsumableItems
-    | Other String
-
-
-{-| Opaque so we can enforce filtering
--}
-type ConsumableItems
-    = ConsumableItems (Array ConsumableItem)
-
-
-type alias ConsumableItem =
-    { name : String
-    , tier : Int
-    , isJItem : Bool
-    , status : Status
-    }
-
-
-type Filter
-    = Characters
-    | Bosses
-    | KeyItems
-    | Chests
-    | TrappedChests
-    | Checked
-
-
-type FilterType
-    = Show
-    | Hide
 
 
 type Key
@@ -238,37 +149,6 @@ type Key
 type Class
     = Checks
     | Shops
-
-
-type Requirement
-    = Package
-    | SandRuby
-    | BaronKey
-    | LucaKey
-    | MagmaKey
-    | TowerKey
-    | DarknessCrystal
-    | EarthCrystal
-    | Crystal
-    | Hook
-    | TwinHarp
-    | Pan
-    | RatTail
-    | Adamant
-    | LegendSword
-    | Spoon
-    | PinkTail
-    | Pseudo PseudoRequirement
-
-
-type PseudoRequirement
-    = Pass
-    | MistDragon
-    | UndergroundAccess
-    | YangTalk
-    | YangBonk
-    | Falcon
-    | Forge
 
 
 type Area
@@ -403,7 +283,7 @@ getProperties_ c unwrapGatedValues (Location location) =
                     True
 
         notFilteredOut (Property _ value) =
-            valueToFilter value
+            Value.toFilter value
                 |> Maybe.andThen (\filter -> Dict.get filter context.filterOverrides)
                 |> Maybe.withDefault Show
                 |> (/=) Hide
@@ -457,7 +337,7 @@ type ShopType
 Location.
 -}
 filterItems : Context -> Location -> ConsumableItems -> List ( Int, ConsumableItem )
-filterItems { flags } (Location location) (ConsumableItems items) =
+filterItems { flags } (Location location) items =
     let
         shopType =
             if location.key == KokkolShop then
@@ -519,9 +399,7 @@ filterItems { flags } (Location location) (ConsumableItems items) =
                     _ ->
                         True
     in
-    items
-        |> Array.toIndexedList
-        |> List.filter (Tuple.second >> exists)
+    ConsumableItems.filter exists items
 
 
 getStatus : Location -> Status
@@ -533,7 +411,7 @@ toggleStatus : Context -> Status -> Location -> Location
 toggleStatus context status (Location location) =
     let
         newStatus =
-            toggleStatus_ status location.status
+            Status.toggle status location.status
 
         properties =
             if newStatus == Dismissed then
@@ -623,7 +501,7 @@ toggleProperty index hard (Location location) =
         Just (Property status value) ->
             let
                 newStatus =
-                    case ( hard, countable value, status ) of
+                    case ( hard, Value.countable value, status ) of
                         ( False, Just total, Unseen ) ->
                             if total > 1 then
                                 SeenSome 1
@@ -676,22 +554,22 @@ toggleItem valueIndex itemIndex (Location location) =
                             ( status, value )
 
                 fromItems : ConsumableItems -> ( Status, ConsumableItems )
-                fromItems (ConsumableItems items) =
+                fromItems items =
                     let
                         newItems =
-                            Array.Extra.update
+                            ConsumableItems.update
                                 itemIndex
-                                (\item -> { item | status = toggleStatus_ Dismissed item.status })
+                                (\item -> { item | status = Status.toggle Dismissed item.status })
                                 items
 
                         newStatus_ =
-                            if newItems |> Array.toList |> List.any (.status >> (==) Dismissed) then
+                            if ConsumableItems.anyDismissed newItems then
                                 Dismissed
 
                             else
                                 Unseen
                     in
-                    ( newStatus_, ConsumableItems newItems )
+                    ( newStatus_, newItems )
             in
             Property newStatus newValue
     in
@@ -724,45 +602,6 @@ setText valueIndex newText (Location location) =
             Property newStatus newValue
     in
     Location { location | properties = Array.Extra.update valueIndex set location.properties }
-
-
-statusToString : Status -> String
-statusToString status =
-    case status of
-        Unseen ->
-            "unseen"
-
-        Seen ->
-            "seen"
-
-        SeenSome _ ->
-            "seen-some"
-
-        Dismissed ->
-            "dismissed"
-
-
-{-| "Toggle" the existing status with respect to the given "on" state: if they're the
-same, toggle "off" (to Unseen); otherwise, set to "on".
-
-This is to accommodate treating either Seen or Dismissed as the "on" state,
-while also being able to switch directly from one to the other.
-
-    Unseen |> statusToggle Dismissed
-    --> Dismissed
-    Dismissed |> statusToggle Dismissed
-    --> Unseen
-    Dismissed |> statusToggle Seen
-    --> Seen
-
--}
-toggleStatus_ : Status -> Status -> Status
-toggleStatus_ on existing =
-    if on == existing then
-        Unseen
-
-    else
-        on
 
 
 areaToString : Area -> String
@@ -929,7 +768,7 @@ filterByContext class c (Locations locations) =
             outstandingObjectives context
 
         propertyHasValue { status, value } =
-            case ( value, valueToFilter value ) of
+            case ( value, Value.toFilter value ) of
                 ( Requirement (Pseudo Falcon), _ ) ->
                     -- the Falcon only has value if we don't have a
                     -- way underground yet – but if our underground
@@ -1073,84 +912,6 @@ requirementsMet attained (Location location) =
         |> Set.isEmpty
 
 
-isPseudo : Requirement -> Bool
-isPseudo requirement =
-    case requirement of
-        Pseudo _ ->
-            True
-
-        _ ->
-            False
-
-
-valueToFilter : Value -> Maybe Filter
-valueToFilter value =
-    -- This seems silly. Is this silly?
-    case value of
-        Character _ ->
-            Just Characters
-
-        Boss _ ->
-            Just Bosses
-
-        KeyItem _ ->
-            Just KeyItems
-
-        Chest _ ->
-            Just Chests
-
-        TrappedChest _ ->
-            Just TrappedChests
-
-        Shop _ ->
-            Nothing
-
-        Requirement _ ->
-            Nothing
-
-        Objective _ ->
-            Nothing
-
-        GatedValue _ _ ->
-            -- we could unwrap the gated value and call `valueToFilter` on it,
-            -- but we actually shouldn't ever wind up calling this on a
-            -- GatedValue; leave it Nothing so we notice if we do
-            Nothing
-
-
-countable : Value -> Maybe Int
-countable value =
-    case value of
-        Chest c ->
-            Just c
-
-        TrappedChest c ->
-            Just c
-
-        _ ->
-            Nothing
-
-
-getRequirement : Value -> Maybe Requirement
-getRequirement value =
-    case value of
-        Requirement req ->
-            Just req
-
-        _ ->
-            Nothing
-
-
-getObjective : Value -> Maybe Objective.Key
-getObjective value =
-    case value of
-        Objective obj ->
-            Just obj
-
-        _ ->
-            Nothing
-
-
 all : Locations
 all =
     let
@@ -1165,7 +926,9 @@ all =
         expandShop value =
             case value of
                 Shop Item ->
-                    [ Shop <| Healing healingItems, Shop <| JItem jItems ]
+                    [ Shop <| Healing ConsumableItems.healingItems
+                    , Shop <| JItem ConsumableItems.jItems
+                    ]
 
                 _ ->
                     [ value ]
@@ -2204,78 +1967,6 @@ moon =
             ]
       }
     ]
-
-
-healingItems : ConsumableItems
-healingItems =
-    [ { name = "Cure2"
-      , tier = 3
-      }
-    , { name = "Cure3"
-      , tier = 4
-      }
-    , { name = "Life"
-      , tier = 2
-      }
-    , { name = "Tent"
-      , tier = 2
-      }
-    , { name = "Cabin"
-      , tier = 4
-      }
-    , { name = "Ether"
-      , tier = 3
-      }
-    , { name = "Status-healing"
-      , tier = 1
-      }
-    ]
-        |> List.map
-            (\{ name, tier } ->
-                { name = name
-                , tier = tier
-                , isJItem = False
-                , status = Unseen
-                }
-            )
-        |> Array.fromList
-        |> ConsumableItems
-
-
-jItems : ConsumableItems
-jItems =
-    [ { name = "Bacchus"
-      , tier = 5
-      }
-    , { name = "Coffin"
-      , tier = 5
-      }
-    , { name = "Hourglass"
-      , tier = 5
-      }
-    , { name = "Moonveil"
-      , tier = 7
-      }
-    , { name = "Siren"
-      , tier = 5
-      }
-    , { name = "Starveil"
-      , tier = 2
-      }
-    , { name = "Vampire"
-      , tier = 4
-      }
-    ]
-        |> List.map
-            (\{ name, tier } ->
-                { name = name
-                , tier = tier
-                , isJItem = True
-                , status = Unseen
-                }
-            )
-        |> Array.fromList
-        |> ConsumableItems
 
 
 vanillaShops : Dict Key (Set String)
