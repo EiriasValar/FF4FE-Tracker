@@ -64,6 +64,7 @@ Checking off value icons is generally just for your reference, and has no impact
   A dismissed location that contains a quest that's gated by a key item will un-dismiss itself when that item is acquired. This may lead to misleading situations in terms of the other value icons shown: e.g. you may complete the Baron Inn checks early in a run, and dismiss the Baron Town location as a result; if you have the quest to unlock the Baron Sewer, when you later gain the Baron Key, the Baron Town location will reappear due to the quest, but will still show all its previous value icons as well (unless you checked them off manually). This is because it's not reasonable for the tracker to assume that dismissing a location means you obtained all its value.
 
   There's also no automatic connection between the special icons for bonking Yang and launching the Falcon, and the corresponding quest objectives: toggling one doesn't toggle the other (though dismissing the location will mark both as done).
+- **Boss hunt objectives**: If the `Bvanilla` flag is on (i.e. bosses aren't randomized), objective value icons for any boss hunt objectives you have will appear in those bosses' vanilla locations. These behave in the same way as Quest objectives, detailed above. Otherwise, we have no idea which boss objectives are in which locations, so these will not appear.
 
 ### Boss stats
 
@@ -120,6 +121,8 @@ no navigation infrastructure is implemented (anymore).
 - Accommodate streaming better (customizable background colour?)
 - Expand the shop weapon and armour items into short submenus?
 - Make the location area groupings collapsible
+- More consistent section styling; frames around every section, or would that be
+  too busy?
 
 # TODO housekeeping
 - Consistent icon handling
@@ -127,7 +130,6 @@ no navigation infrastructure is implemented (anymore).
 - Close the Shop Other textarea onBlur (without breaking the toggle)
 - Make Statuses more intuitive; Dismissed meaning On for shops and items is weird
 - Add CSS linting
-- Bvanilla + Nkey + no boss hunt objectives = Mist Cave is the only boss with value
 - Should Property just be a record type? The two-payload type is a pain to
   unpack and update, and writing methods for it would be weird.
 - Connect special value icons (the Falcon and YangBonk) to their associated
@@ -152,4 +154,6 @@ no navigation infrastructure is implemented (anymore).
   Consider leaving the locations in the Dismissed state but displaying them anyway
   (i.e. struck out, as though the Dismissed filter was on)
 - Create a Locations dictionary keyed on (Value? Objective?) so we don't have to
-  scan the whole list looking for Objective properties to update
+  scan the whole list looking for Objective properties to update.
+- Add a filter for Objective value, if I can think of a real-world scenario in
+  which you'd want to filter out objectives.

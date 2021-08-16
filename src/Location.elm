@@ -227,6 +227,10 @@ getProperties_ c unwrapGatedValues (Location location) =
                         && not (location.key == BaronCastle && itemClass == Vanilla && not context.flags.passIsKeyItem)
                         && Set.member itemClass context.flags.keyItems
 
+                Objective (DefeatBoss obj) ->
+                    -- Boss objectives only exist at known locations when under Bvanilla
+                    context.flags.vanillaBosses && Set.member (DefeatBoss obj) objectives
+
                 Objective obj ->
                     -- Objective value exists as long as it's in our objectives,
                     -- regardless of whether or not we've completed it
@@ -832,6 +836,9 @@ filterByContext class c (Locations locations) =
                     |> Maybe.withDefault Hide
                     |> (==) Show
 
+            else if context.flags.vanillaBosses && l.key == MistCave && huntingDMist context then
+                True
+
             else
                 List.any propertyHasValue (getProperties context location)
                     && areaAccessible attainedRequirements location
@@ -864,8 +871,10 @@ defaultFiltersFrom context =
             outstandingObjectives context
 
         {- True if, based on the given Context, bosses may be intrisically
-           valuable. Namely, if there are Boss Hunt objectives to fullfil, or a D.Mist
-           to find when the Nkey flag is on.
+           valuable. Namely, if there are Boss Hunt objectives to fullfil, or a
+           D.Mist to find when the Nkey flag is on. If Bvanilla is on, _bosses_
+           don't have value: the specific boss hunt objectives in the locations
+           do.
         -}
         bossesHaveValue =
             let
@@ -874,16 +883,8 @@ defaultFiltersFrom context =
                         |> Set.filter Objective.isBoss
                         |> Set.isEmpty
                         |> not
-
-                -- Finding D.Mist is interesting if the Free key item is turned off and we
-                -- haven't already found it. Technically it may also stop being interesting
-                -- if we've already attained Go Mode without it, but at that point *most* of
-                -- what we track stops being interesting.
-                huntingDMist =
-                    (not <| Set.member Flags.Free context.flags.keyItems)
-                        && (not <| Set.member (Pseudo MistDragon) context.attainedRequirements)
             in
-            activeBossHunt || huntingDMist
+            not context.flags.vanillaBosses && (activeBossHunt || huntingDMist context)
 
         onDarkMatterHunt =
             Set.member Objective.DarkMatterHunt outstanding
@@ -915,6 +916,14 @@ outstandingObjectives context =
 
     else
         Set.diff (combinedObjectives context) context.completedObjectives
+
+
+huntingDMist : Context -> Bool
+huntingDMist context =
+    not <|
+        (Set.member Flags.Free context.flags.keyItems
+            || Set.member (Pseudo MistDragon) context.attainedRequirements
+        )
 
 
 areaAccessible : Set Requirement -> Location -> Bool
@@ -1019,6 +1028,7 @@ surface =
                 , mag = 10
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.DMist
             , Chest 4
             , Objective <| DoQuest Objective.MistCave
             ]
@@ -1055,6 +1065,7 @@ surface =
                 , mag = 11
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Officer
             , Objective <| DoQuest Objective.Package
             ]
       }
@@ -1108,6 +1119,7 @@ surface =
                 , mag = 10
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Octomamm
             , Chest 4
             , Objective <| DoQuest Objective.Waterfall
             ]
@@ -1136,6 +1148,7 @@ surface =
                 , mag = 1
                 , valvalisMDef = 170
                 }
+            , Objective <| DefeatBoss Objective.Antlion
             , KeyItem Main
             , KeyItem Vanilla
             , Chest 13
@@ -1158,6 +1171,7 @@ surface =
                 , mag = 5
                 , valvalisMDef = 174
                 }
+            , Objective <| DefeatBoss Objective.MomBomb
             , Character Gated
             , Chest 5
             , Objective <| DoQuest Objective.MtHobs
@@ -1188,6 +1202,7 @@ surface =
                 , mag = 15
                 , valvalisMDef = 254
                 }
+            , Objective <| DefeatBoss Objective.Gauntlet
             , KeyItem Main
             , Chest 10
             , Objective <| DoQuest Objective.Fabul
@@ -1239,6 +1254,7 @@ surface =
                 , mag = 14
                 , valvalisMDef = 0
                 }
+            , Objective <| DefeatBoss Objective.Milon
             , Boss
                 { hp = 3000
                 , exp = 4000
@@ -1251,6 +1267,7 @@ surface =
                 , mag = 31
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.MilonZ
             , KeyItem Main
             , KeyItem Vanilla
             , Boss
@@ -1265,6 +1282,7 @@ surface =
                 , mag = 17
                 , valvalisMDef = 254
                 }
+            , Objective <| DefeatBoss Objective.DarkKnight
             , Chest 4
             , Objective <| DoQuest Objective.MtOrdeals
             ]
@@ -1285,6 +1303,7 @@ surface =
                 , mag = 26
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Guards
             , Boss
                 { hp = 4000
                 , exp = 0
@@ -1297,6 +1316,7 @@ surface =
                 , mag = 31
                 , valvalisMDef = 0
                 }
+            , Objective <| DefeatBoss Objective.Karate
             , Character Gated
             , KeyItem Main
             , KeyItem Vanilla
@@ -1337,6 +1357,7 @@ surface =
                 , mag = 9
                 , valvalisMDef = 254
                 }
+            , Objective <| DefeatBoss Objective.Baigan
             , Boss
                 { hp = 4000
                 , exp = 5500
@@ -1349,6 +1370,7 @@ surface =
                 , mag = 29
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Kainazzo
             , Character Gated
             , KeyItem Main
             , KeyItem Vanilla
@@ -1372,6 +1394,7 @@ surface =
                 , mag = 95
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Odin
             , KeyItem Summon
             , Objective <| DoQuest Objective.BaronBasement
             ]
@@ -1426,6 +1449,7 @@ surface =
                     , mag = 15
                     , valvalisMDef = 255
                     }
+            , GatedValue TwinHarp <| Objective <| DefeatBoss Objective.DarkElf
             , GatedValue TwinHarp <| KeyItem Main
             , GatedValue TwinHarp <| KeyItem Vanilla
             , Chest 10
@@ -1449,6 +1473,7 @@ surface =
                 , mag = 11
                 , valvalisMDef = 254
                 }
+            , Objective <| DefeatBoss Objective.MagusSisters
             , GatedValue EarthCrystal <| Character Gated
             , GatedValue EarthCrystal <| Character Gated
             , GatedValue EarthCrystal <|
@@ -1464,6 +1489,7 @@ surface =
                     , mag = 63
                     , valvalisMDef = 255
                     }
+            , GatedValue EarthCrystal <| Objective <| DefeatBoss Objective.Valvalis
             , GatedValue EarthCrystal <| KeyItem Main
             , GatedValue EarthCrystal <| KeyItem Vanilla
             , Chest 5
@@ -1556,6 +1582,7 @@ surface =
                 , mag = 15
                 , valvalisMDef = 0
                 }
+            , Objective <| DefeatBoss Objective.KQEblan
             , Boss
                 { hp = 25200
                 , exp = 25000
@@ -1568,6 +1595,7 @@ surface =
                 , mag = 16
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Rubicant
             , Chest 7
             , TrappedChest 1
             , Requirement <| Pseudo Falcon
@@ -1590,6 +1618,7 @@ surface =
                 , mag = 15
                 , valvalisMDef = 86
                 }
+            , Objective <| DefeatBoss Objective.Elements
             , Boss
                 { hp = 24000
                 , exp = 150000
@@ -1602,6 +1631,7 @@ surface =
                 , mag = 127
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.CPU
             , Character Gated
             , Chest 7
             , TrappedChest 1
@@ -1630,6 +1660,7 @@ underground =
                 , mag = 41
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Calbrena
             , Character Gated
             , Boss
                 { hp = 3002
@@ -1643,6 +1674,7 @@ underground =
                 , mag = 1
                 , valvalisMDef = 0
                 }
+            , Objective <| DefeatBoss Objective.Golbez
             , KeyItem Main
             , KeyItem Vanilla
             , KeyItem Warp -- also Vanilla
@@ -1675,6 +1707,7 @@ underground =
                 , mag = 7
                 , valvalisMDef = 0
                 }
+            , Objective <| DefeatBoss Objective.DrLugae
             , KeyItem Main
             , KeyItem Vanilla
             , Chest 12
@@ -1698,6 +1731,7 @@ underground =
                 , mag = 16
                 , valvalisMDef = 0
                 }
+            , Objective <| DefeatBoss Objective.DarkImps
             , KeyItem Main
             , KeyItem Vanilla
             , Objective <| DoQuest Objective.SuperCannon
@@ -1750,6 +1784,7 @@ underground =
                 , mag = 34
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Leviatan
             , KeyItem Summon
             , Objective <| DoQuest Objective.FeymarchKing
             ]
@@ -1770,6 +1805,7 @@ underground =
                 , mag = 69
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Asura
             , KeyItem Summon
             , Objective <| DoQuest Objective.FeymarchQueen
             ]
@@ -1808,6 +1844,7 @@ underground =
                 , mag = 79
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.EvilWall
             , Chest 19
             , Objective <| DoQuest Objective.SealedCave
             , Objective <| DoQuest Objective.UnlockSealedCave
@@ -1859,6 +1896,7 @@ moon =
                 , mag = 17
                 , valvalisMDef = 170
                 }
+            , Objective <| DefeatBoss Objective.Bahamut
             , KeyItem Summon
             , Chest 4
             , Objective <| DoQuest Objective.CaveBahamut
@@ -1897,6 +1935,7 @@ moon =
                 , mag = 31
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.PaleDim
             , KeyItem MoonBoss
             , Objective <| DoQuest Objective.MurasameAltar
             ]
@@ -1917,6 +1956,7 @@ moon =
                 , mag = 8
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Wyvern
             , KeyItem MoonBoss
             , Objective <| DoQuest Objective.WyvernAltar
             ]
@@ -1937,6 +1977,7 @@ moon =
                 , mag = 96
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Plague
             , KeyItem MoonBoss
             , Objective <| DoQuest Objective.WhiteSpearAltar
             ]
@@ -1957,6 +1998,7 @@ moon =
                 , mag = 36
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.DLunars
             , KeyItem MoonBoss
             , Objective <| DoQuest Objective.RibbonRoom
             ]
@@ -1977,6 +2019,7 @@ moon =
                 , mag = 127
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Ogopogo
             , KeyItem MoonBoss
             , Objective <| DoQuest Objective.MasamuneAltar
             ]

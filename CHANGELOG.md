@@ -5,6 +5,8 @@
   shop icons being gated by the Baron Key.
 - Manage the state of the Crystal key item automatically when under
   `Owin:crystal`, based on objective completion.
+- Handle `Bvanilla`: show boss hunt objectives in their vanilla locations, and
+  treat Mist Cave as valuable (under `Nkey`).
 
 ## 2021-08-13
 - Fix bug where Toroia was displaying the Pass objective regardless of whether
