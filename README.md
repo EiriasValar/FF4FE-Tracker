@@ -26,6 +26,8 @@ If you encounter a valid flag that the tracker doesn't respect, it may not be im
 
 Click on the icons for key items as you obtain them; the list of available locations will expand as area-gating key items are obtained. Items that don't exist under the given flags (no `Pass` without a `P...` flag, no `Pink Tail` under `Kvanilla`) aren't shown.
 
+If `Owin:crystal` is on, the `Crystal` item can't be found normally, and is instead automatically acquired on completing the required number of objectives. As a result, under that flag the `Crystal` key item icon can't be manually toggled; it will automatically light up when sufficient objectives are marked as complete.
+
 The `D.Mist` icon is shown when `Nkey` is in effect: when you find and defeat the Mist Dragon/D.Mist boss, you can mark it to a) remember that you've done it, b) cause a Mist Village location to appear to remind you to collect your potential key item, and c) keep the tracker apprised of whether you're still hunting for any bosses.
 
 The total number of key items collected is shown in the lower-right (unless `-exp:nokeybonus` is on) to make it easier to tell at a glance how close you are to receiving double experience for reaching 10 key items. (As a reminder, the `Pass` does not count towards this total, even when `Pkey` is on.)
@@ -54,14 +56,15 @@ Value icons can be clicked to mark them as individually completed. In the case o
 ### Special Value icons
 
 Checking off value icons is generally just for your reference, and has no impact on the tracker's logic – with the following exceptions:
-- `Upper Bab-il`: Checking off the airship Falcon indicates you've reached the Underground via this location: Underground locations can now be shown. (This is automatically checked off if you dismiss the location entirely.)
+- `Upper Bab-il`: Checking off the airship Falcon indicates you've reached the Underground via this location: Underground locations can now be shown. This is automatically checked off if you dismiss the location entirely.
 - `Dwarf Castle`: If `Gwarp` is on, a faded-out second Key Item icon is shown, representing the key item check in the `Sealed Cave`, which can be reached from this location via the warp glitch. Checking it off tells the tracker that you've done this, and that there's therefore no longer a key item check to be had in the `Sealed Cave`.
-- `Sylph Cave`: A Yang icon is shown; checking it off when you've talked to Yang in his bed enables a key item check with `Sheila` in Fabul. A second Yang icon appears when the `Pan` is acquired: bonk him with it and check the icon to enable `Sheila`'s second key item check. (Dismissing the whole location will also automatically check whichever Yang icons are present.) Since you may need to visit this location more than once, it will un-dismiss itself when you acquire the `Pan`.
-- **Quest objectives**: If you have uncompleted quest objectives, the locations that hold those quests will show an Objective value icon (the same Crystal icon as is used in the Objectives section). Toggling this icon will toggle the corresponding objective, and vice-versa. Dismissing the location as a whole will _not_ automatically mark the objective as complete, as there are plausible scenarios where you'd dismiss a quest location due to skipping it rather than completing it.
+- `Sylph Cave`: A Yang icon is shown; checking it off when you've talked to Yang in his bed enables a key item check with `Sheila` in Fabul. A second Yang icon appears when the `Pan` is acquired: bonk him with it and check the icon to enable `Sheila`'s second key item check. Dismissing the whole location will also automatically check whichever Yang icons are present. Since you may need to visit this location more than once, it will un-dismiss itself when you acquire the `Pan`.
+- **Quest objectives**: If you have uncompleted quest objectives, the locations that hold those quests will show an Objective value icon (the same Crystal icon as is used in the Objectives section). Toggling this icon will toggle the corresponding objective, and vice-versa; dismissing the location as a whole will automatically mark any available objectives as complete.
 
-  A dismissed location that contains a quest that's gated by a key item will un-dismiss itself when that item is acquired. This may lead to misleading situations in terms of the other value icons shown: e.g. you may complete the Baron Inn checks early in a run, and dismiss the Baron Town location as a result; if you have the quest to unlock the Baron Sewer, when you later gain the Baron Key, the Baron Town location will reappear due to the quest, but will still show all its previous value icons as well (unless you checked them off manually). This is again because it's not reasonable for the tracker to assume that dismissing a location means you obtained all its value.
+  A dismissed location that contains a quest that's gated by a key item will un-dismiss itself when that item is acquired. This may lead to misleading situations in terms of the other value icons shown: e.g. you may complete the Baron Inn checks early in a run, and dismiss the Baron Town location as a result; if you have the quest to unlock the Baron Sewer, when you later gain the Baron Key, the Baron Town location will reappear due to the quest, but will still show all its previous value icons as well (unless you checked them off manually). This is because it's not reasonable for the tracker to assume that dismissing a location means you obtained all its value.
 
-  There's also currently no automatic connection between the special icons for bonking Yang and launching the Falcon, and the corresponding quest objectives. For now you'll just have to put up with two clicks.
+  There's also no automatic connection between the special icons for bonking Yang and launching the Falcon, and the corresponding quest objectives: toggling one doesn't toggle the other (though dismissing the location will mark both as done).
+- **Boss hunt objectives**: If the `Bvanilla` flag is on (i.e. bosses aren't randomized), objective value icons for any boss hunt objectives you have will appear in those bosses' vanilla locations. These behave in the same way as Quest objectives, detailed above. Otherwise, we have no idea which boss objectives are in which locations, so these will not appear.
 
 ### Boss stats
 
@@ -118,6 +121,8 @@ no navigation infrastructure is implemented (anymore).
 - Accommodate streaming better (customizable background colour?)
 - Expand the shop weapon and armour items into short submenus?
 - Make the location area groupings collapsible
+- More consistent section styling; frames around every section, or would that be
+  too busy?
 
 # TODO housekeeping
 - Consistent icon handling
@@ -125,11 +130,6 @@ no navigation infrastructure is implemented (anymore).
 - Close the Shop Other textarea onBlur (without breaking the toggle)
 - Make Statuses more intuitive; Dismissed meaning On for shops and items is weird
 - Add CSS linting
-- Bvanilla + Nkey + no boss hunt objectives = Mist Cave is the only boss with value
-- Enable the Crystal when under Owin:crystal and the requisite number of objectives
-  are completed
-- Move Baron weapon and armour shops into the same location as the item shop as
-  gated values?
 - Should Property just be a record type? The two-payload type is a pain to
   unpack and update, and writing methods for it would be weird.
 - Connect special value icons (the Falcon and YangBonk) to their associated
@@ -137,20 +137,12 @@ no navigation infrastructure is implemented (anymore).
 - Connect defeating D.Mist with the D.Mist boss hunt objective.
 
 # TOMAYBEDOs
-- Pull some types out of Location.elm, it's getting overloaded. Though they're
-  all pretty interdependent. Don't want a bunch of 20-line modules per type;
-  also don't want a meaningless Types.elm. Not seeing any obvious delineations.
-  Tried moving Locations and its methods into their own module, but that winds
-  up doubling the surface area of Location.
 - Keyboard navigation?
 - Remove elm-bootstrap
 - Switch to compiled CSS
 - Resizing a shop's textarea input doesn't persist, neither between different
   shops, nor when closing and reopening the same shop. Suppressing the ability
   to resize feels unfriendly to the user, but is it useful without persistence?
-- Complete quest objectives when the corresponding location is dismissed? Might
-  be too aggressive. Maybe you dismissed the location because you know it will
-  be too slow/hard and you have other objectives you can take instead.
 - Somehow make it clearer why dismissed locations reappear because of a gated
   objective's requirement being met? Checking off other value at the location on
   dismiss is undesirable: too many cases where you might dismiss a location
@@ -162,4 +154,6 @@ no navigation infrastructure is implemented (anymore).
   Consider leaving the locations in the Dismissed state but displaying them anyway
   (i.e. struck out, as though the Dismissed filter was on)
 - Create a Locations dictionary keyed on (Value? Objective?) so we don't have to
-  scan the whole list looking for Objective properties to update
+  scan the whole list looking for Objective properties to update.
+- Add a filter for Objective value, if I can think of a real-world scenario in
+  which you'd want to filter out objectives.

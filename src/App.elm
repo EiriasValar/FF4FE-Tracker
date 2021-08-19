@@ -13,6 +13,7 @@ import Bootstrap.Dropdown as Dropdown exposing (DropdownItem)
 import Browser
 import Browser.Dom
 import Browser.Events
+import ConsumableItems exposing (ConsumableItem, ConsumableItems)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
 import Html exposing (Html, a, div, h2, h4, hr, li, span, text, textarea, ul)
@@ -20,26 +21,21 @@ import Html.Attributes exposing (autocomplete, class, classList, cols, href, id,
 import Html.Events exposing (onClick, onInput)
 import Icon
 import Json.Decode
-import Location
-    exposing
-        ( BossStats
-        , ConsumableItem
-        , ConsumableItems
-        , Filter(..)
-        , FilterType(..)
-        , IndexedProperty
-        , Location
-        , Locations
-        , PseudoRequirement(..)
-        , Requirement(..)
-        , ShopValue(..)
-        , Status(..)
-        , Value(..)
-        )
+import Location exposing (IndexedProperty, Location, Locations)
 import Maybe.Extra
 import Objective exposing (Objective)
+import Requirement exposing (PseudoRequirement(..), Requirement(..))
+import Status exposing (Status(..))
 import String.Extra
 import Task
+import Value
+    exposing
+        ( BossStats
+        , Filter(..)
+        , FilterType(..)
+        , ShopValue(..)
+        , Value(..)
+        )
 
 
 type alias Set a =
@@ -84,7 +80,7 @@ type Msg
     | DropdownMsg Int Dropdown.State
     | ToggleRequirement Requirement
     | ToggleFilter Location.Class Filter
-    | ToggleLocationStatus Location Location.Status
+    | ToggleLocationStatus Location Status
     | ToggleProperty Location.Key Int
     | HardToggleProperty Location.Key Int
     | ToggleWarpGlitchUsed Location.Key Int
@@ -237,10 +233,10 @@ innerUpdate msg model =
                 -- ditto for Objectives
                 updateObjectives =
                     case Location.getProperty key index locations of
-                        Just ( Unseen, Location.Objective objective ) ->
+                        Just ( Unseen, Value.Objective objective ) ->
                             Set.remove objective
 
-                        Just ( Dismissed, Location.Objective objective ) ->
+                        Just ( Dismissed, Value.Objective objective ) ->
                             Set.insert objective
 
                         _ ->
@@ -251,6 +247,7 @@ innerUpdate msg model =
                 , completedObjectives = updateObjectives newModel.completedObjectives
             }
                 |> updateRequirements
+                |> updateCrystal
 
         -- when we attain a new requirement, add it to the set and un-dismiss
         -- any locations for which it gates value
@@ -272,21 +269,45 @@ innerUpdate msg model =
 
         removeRequirement requirement newModel =
             { newModel | attainedRequirements = Set.remove requirement model.attainedRequirements }
+
+        attainObjective objective newModel =
+            { newModel
+                | completedObjectives = Set.insert objective newModel.completedObjectives
+                , locations = Location.objectiveToggled objective True newModel.locations
+            }
+                |> updateCrystal
+
+        removeObjective objective newModel =
+            { newModel
+                | completedObjectives = Set.remove objective newModel.completedObjectives
+                , locations = Location.objectiveToggled objective False newModel.locations
+            }
+                |> updateCrystal
+
+        -- if the Crystal is rewarded from completing objectives rather than being found, keep
+        -- it in sync with our objectives
+        updateCrystal newModel =
+            let
+                fn =
+                    if newModel.flags.objectiveReward == Flags.Crystal then
+                        if Set.size newModel.completedObjectives >= newModel.flags.requiredObjectives then
+                            Set.insert Crystal
+
+                        else
+                            Set.remove Crystal
+
+                    else
+                        identity
+            in
+            { newModel | attainedRequirements = fn newModel.attainedRequirements }
     in
     case msg of
         ToggleObjective objective ->
-            let
-                ( fn, complete ) =
-                    if Set.member objective model.completedObjectives then
-                        ( Set.remove, False )
+            if Set.member objective model.completedObjectives then
+                removeObjective objective model
 
-                    else
-                        ( Set.insert, True )
-            in
-            { model
-                | completedObjectives = fn objective model.completedObjectives
-                , locations = Location.objectiveToggled objective complete model.locations
-            }
+            else
+                attainObjective objective model
 
         SetRandomObjective index objective ->
             { model | randomObjectives = Array.set index (Set objective) model.randomObjectives }
@@ -350,28 +371,28 @@ innerUpdate msg model =
                 newModel =
                     { model | locations = Location.insert newLocation model.locations }
 
+                properties =
+                    Location.getProperties (getContext newModel) newLocation
+
                 -- collect any Requirements this location awards as value
                 requirements =
-                    newLocation
-                        |> Location.getProperties (getContext newModel)
-                        |> List.filterMap (.value >> getRequirement)
-                        |> Set.fromList
+                    properties
+                        |> List.filterMap (.value >> Value.requirement)
 
-                getRequirement value =
-                    case value of
-                        Requirement req ->
-                            Just req
-
-                        _ ->
-                            Nothing
+                -- and do likewise for Objectives
+                objectives =
+                    properties
+                        |> List.filterMap (.value >> Value.objective)
             in
             case Location.getStatus newLocation of
                 Dismissed ->
-                    -- attain the rewarded requirements
-                    Set.foldl attainRequirement newModel requirements
+                    -- attain the rewarded requirements and objectives
+                    newModel
+                        |> modelFoldl attainRequirement requirements
+                        |> modelFoldl attainObjective objectives
 
                 _ ->
-                    -- don't unattain the rewarded requirements on Unseen; they
+                    -- don't unattain the rewarded values on Unseen: they
                     -- can be manually unchecked where appropriate
                     newModel
 
@@ -480,6 +501,7 @@ innerUpdate msg model =
                 , locationFilterOverrides = locationFilterOverrides
                 , shopMenu = Nothing
             }
+                |> updateCrystal
 
         DoNothing ->
             model
@@ -646,15 +668,30 @@ viewKeyItems flags attained =
     let
         req : Requirement -> Html Msg
         req requirement =
+            req_ requirement False
+
+        req_ : Requirement -> Bool -> Html Msg
+        req_ requirement readonly =
             case Icon.fromRequirement requirement of
                 Just icon ->
-                    icon.img
+                    let
+                        readonlyAttr =
+                            if readonly then
+                                [ title <| icon.title ++ " (can't be toggled directly)"
+                                , class "readonly"
+                                ]
+
+                            else
+                                [ title icon.title
+                                , onClick <| ToggleRequirement requirement
+                                ]
+                    in
+                    icon.img <|
                         [ class "requirement"
                         , class icon.class
                         , classList [ ( "disabled", not <| Set.member requirement attained ) ]
-                        , title icon.title
-                        , onClick (ToggleRequirement requirement)
                         ]
+                            ++ readonlyAttr
 
                 Nothing ->
                     div [] []
@@ -663,11 +700,15 @@ viewKeyItems flags attained =
             -- we care about this number for the 10 key items experience bonus, so
             -- don't count the things that aren't real key items
             attained
-                |> Set.filter (not << Location.isPseudo)
+                |> Set.filter (not << Requirement.isPseudo)
                 |> Set.size
     in
     div [ class "requirements" ]
-        [ req Crystal
+        [ if flags.objectiveReward == Flags.Crystal then
+            req_ Crystal True
+
+          else
+            req_ Crystal False
         , displayCellIf flags.passExists <|
             req (Pseudo Pass)
         , req Hook
@@ -774,7 +815,7 @@ viewLocation : Maybe ShopMenu -> Location.Context -> Location -> List (Html Msg)
 viewLocation shopMenu context location =
     [ span
         [ class "name"
-        , class <| Location.statusToString <| Location.getStatus location
+        , class <| Status.toString <| Location.getStatus location
         , onClick <| ToggleLocationStatus location Dismissed
         , onRightClick <| ToggleLocationStatus location Seen
         ]
@@ -796,7 +837,7 @@ viewMenu menu =
         viewItem ( itemIndex, item ) =
             div
                 [ class "shop-item"
-                , class <| Location.statusToString item.status
+                , class <| Status.toString item.status
 
                 -- prevent propagation so toggling an item doesn't
                 -- also trigger closing the menu
@@ -879,7 +920,7 @@ viewProperty context location { index, status, value } =
                     onClick <| ToggleProperty key index
 
         count =
-            case ( Location.countable value, status ) of
+            case ( Value.countable value, status ) of
                 ( Just total, SeenSome seen ) ->
                     total - seen
 
@@ -895,7 +936,7 @@ viewProperty context location { index, status, value } =
                 [ class "icon"
                 , class icon.class
                 , class extraClass
-                , class <| Location.statusToString status
+                , class <| Status.toString status
                 , title <|
                     case value of
                         KeyItem Warp ->
@@ -1086,6 +1127,11 @@ displayCellIf predicate html =
 with : b -> a -> ( a, b )
 with b a =
     ( a, b )
+
+
+modelFoldl : (a -> Model -> Model) -> List a -> Model -> Model
+modelFoldl fn list model =
+    List.foldl fn model list
 
 
 onRightClick : msg -> Html.Attribute msg

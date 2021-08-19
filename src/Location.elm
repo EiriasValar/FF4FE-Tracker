@@ -1,24 +1,13 @@
 module Location exposing
     ( Area
-    , BossStats
     , Class(..)
-    , ConsumableItem
-    , ConsumableItems
     , Context
-    , Filter(..)
-    , FilterType(..)
     , IndexedProperty
     , Key(..)
     , Location
     , Locations
-    , PseudoRequirement(..)
-    , Requirement(..)
-    , ShopValue(..)
-    , Status(..)
-    , Value(..)
     , all
     , areaToString
-    , countable
     , filterByContext
     , filterItems
     , get
@@ -31,10 +20,8 @@ module Location exposing
     , getStatus
     , groupByArea
     , insert
-    , isPseudo
     , objectiveToggled
     , setText
-    , statusToString
     , toggleItem
     , toggleProperty
     , toggleStatus
@@ -46,10 +33,21 @@ module Location exposing
 import Array exposing (Array)
 import Array.Extra
 import AssocList as Dict exposing (Dict)
+import ConsumableItems exposing (ConsumableItem, ConsumableItems)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
 import List.Extra
 import Objective exposing (Key(..))
+import Requirement exposing (PseudoRequirement(..), Requirement(..))
+import Status exposing (Status(..))
+import Value
+    exposing
+        ( CharacterType(..)
+        , Filter(..)
+        , FilterType(..)
+        , ShopValue(..)
+        , Value(..)
+        )
 
 
 type alias Set a =
@@ -82,91 +80,6 @@ type alias IndexedProperty =
     }
 
 
-type Status
-    = Unseen
-    | Seen
-    | SeenSome Int
-    | Dismissed
-
-
-type Value
-    = Character CharacterType
-    | Boss BossStats
-    | KeyItem KeyItemClass
-    | Chest Int -- excluding trapped chests
-    | TrappedChest Int
-    | Shop ShopValue
-    | Requirement Requirement
-    | Objective Objective.Key
-    | GatedValue Requirement Value
-
-
-type CharacterType
-    = Ungated
-    | Gated
-
-
-{-| Most stats are sourced from the FF4FE Boss Scaling Stats doc:
-<https://docs.google.com/spreadsheets/d/1hJZsbzStQfMCQUFzjW9pbdLhJ99wLu1QY-5cmp7Peqg/edit>
-The actual stats will vary depending on the boss who appears in a spot; I've
-tried to populate them with "representative" values for a "normal" boss. The
-Magic stats in particular are very hand-wavy.
-
-Valvalis' MDef is from Inven's Valvalis Reference:
-<https://docs.google.com/spreadsheets/d/1tVQFvlQ_4oWCn0EE9d7QAGrYW3w2IbZzuO2MWuUC8ww/edit>
-
--}
-type alias BossStats =
-    { hp : Int
-    , exp : Int
-    , gp : Int
-    , atkMult : Int
-    , hit : Int
-    , atk : Int
-    , minSpeed : Int
-    , maxSpeed : Int
-    , mag : Int
-    , valvalisMDef : Int
-    }
-
-
-type ShopValue
-    = Weapon
-    | Armour
-    | Item -- pseudo-value for Location definition; gets expanded into Healing/JItem
-    | Healing ConsumableItems
-    | JItem ConsumableItems
-    | Other String
-
-
-{-| Opaque so we can enforce filtering
--}
-type ConsumableItems
-    = ConsumableItems (Array ConsumableItem)
-
-
-type alias ConsumableItem =
-    { name : String
-    , tier : Int
-    , isJItem : Bool
-    , status : Status
-    }
-
-
-type Filter
-    = Characters
-    | Bosses
-    | KeyItems
-    | Chests
-    | TrappedChests
-    | Checked
-
-
-type FilterType
-    = Show
-    | Hide
-
-
 type Key
     = MistCave
     | MistVillage
@@ -187,8 +100,7 @@ type Key
     | MysidiaShops
     | MtOrdeals
     | Baron
-    | BaronItemShop
-    | BaronWeaponShop
+    | BaronShop
     | BaronSewer
     | BaronCastle
     | BaronBasement
@@ -236,37 +148,6 @@ type Key
 type Class
     = Checks
     | Shops
-
-
-type Requirement
-    = Package
-    | SandRuby
-    | BaronKey
-    | LucaKey
-    | MagmaKey
-    | TowerKey
-    | DarknessCrystal
-    | EarthCrystal
-    | Crystal
-    | Hook
-    | TwinHarp
-    | Pan
-    | RatTail
-    | Adamant
-    | LegendSword
-    | Spoon
-    | PinkTail
-    | Pseudo PseudoRequirement
-
-
-type PseudoRequirement
-    = Pass
-    | MistDragon
-    | UndergroundAccess
-    | YangTalk
-    | YangBonk
-    | Falcon
-    | Forge
 
 
 type Area
@@ -346,6 +227,10 @@ getProperties_ c unwrapGatedValues (Location location) =
                         && not (location.key == BaronCastle && itemClass == Vanilla && not context.flags.passIsKeyItem)
                         && Set.member itemClass context.flags.keyItems
 
+                Objective (DefeatBoss obj) ->
+                    -- Boss objectives only exist at known locations when under Bvanilla
+                    context.flags.vanillaBosses && Set.member (DefeatBoss obj) objectives
+
                 Objective obj ->
                     -- Objective value exists as long as it's in our objectives,
                     -- regardless of whether or not we've completed it
@@ -371,10 +256,24 @@ getProperties_ c unwrapGatedValues (Location location) =
 
                 Shop shopValue ->
                     let
+                        baronNightShop =
+                            case shopValue of
+                                Weapon ->
+                                    True
+
+                                Armour ->
+                                    True
+
+                                Other _ ->
+                                    True
+
+                                _ ->
+                                    False
+
                         passesNightMode =
                             not context.flags.nightMode
                                 || (location.area /= Surface)
-                                || (location.key == BaronWeaponShop)
+                                || (location.key == BaronShop && baronNightShop)
                                 || (location.key == CaveEblanShops)
                                 || (location.key == ToroiaShops && (not <| List.member shopValue [ Weapon, Armour ]))
 
@@ -401,10 +300,20 @@ getProperties_ c unwrapGatedValues (Location location) =
                     True
 
         notFilteredOut (Property _ value) =
-            valueToFilter value
+            Value.toFilter value
                 |> Maybe.andThen (\filter -> Dict.get filter context.filterOverrides)
                 |> Maybe.withDefault Show
                 |> (/=) Hide
+
+        -- if the only thing in the list is Shop Other, hide it; none of the
+        -- other Shop types exist, so there's no point having a text field
+        fixupShopOther list =
+            case list of
+                [ ( _, Property _ (Shop (Other _)) ) ] ->
+                    []
+
+                _ ->
+                    list
 
         unwrapGatedValue value =
             case ( unwrapGatedValues, value ) of
@@ -425,6 +334,7 @@ getProperties_ c unwrapGatedValues (Location location) =
         |> Array.toIndexedList
         |> List.filter (\( _, Property _ value ) -> exists value)
         |> List.filter (Tuple.second >> notFilteredOut)
+        |> fixupShopOther
         |> List.map toRecord
 
 
@@ -455,7 +365,7 @@ type ShopType
 Location.
 -}
 filterItems : Context -> Location -> ConsumableItems -> List ( Int, ConsumableItem )
-filterItems { flags } (Location location) (ConsumableItems items) =
+filterItems { flags } (Location location) items =
     let
         shopType =
             if location.key == KokkolShop then
@@ -517,9 +427,7 @@ filterItems { flags } (Location location) (ConsumableItems items) =
                     _ ->
                         True
     in
-    items
-        |> Array.toIndexedList
-        |> List.filter (Tuple.second >> exists)
+    ConsumableItems.filter exists items
 
 
 getStatus : Location -> Status
@@ -531,7 +439,7 @@ toggleStatus : Context -> Status -> Location -> Location
 toggleStatus context status (Location location) =
     let
         newStatus =
-            toggleStatus_ status location.status
+            Status.toggle status location.status
 
         properties =
             if newStatus == Dismissed then
@@ -621,7 +529,7 @@ toggleProperty index hard (Location location) =
         Just (Property status value) ->
             let
                 newStatus =
-                    case ( hard, countable value, status ) of
+                    case ( hard, Value.countable value, status ) of
                         ( False, Just total, Unseen ) ->
                             if total > 1 then
                                 SeenSome 1
@@ -674,22 +582,22 @@ toggleItem valueIndex itemIndex (Location location) =
                             ( status, value )
 
                 fromItems : ConsumableItems -> ( Status, ConsumableItems )
-                fromItems (ConsumableItems items) =
+                fromItems items =
                     let
                         newItems =
-                            Array.Extra.update
+                            ConsumableItems.update
                                 itemIndex
-                                (\item -> { item | status = toggleStatus_ Dismissed item.status })
+                                (\item -> { item | status = Status.toggle Dismissed item.status })
                                 items
 
                         newStatus_ =
-                            if newItems |> Array.toList |> List.any (.status >> (==) Dismissed) then
+                            if ConsumableItems.anyDismissed newItems then
                                 Dismissed
 
                             else
                                 Unseen
                     in
-                    ( newStatus_, ConsumableItems newItems )
+                    ( newStatus_, newItems )
             in
             Property newStatus newValue
     in
@@ -722,45 +630,6 @@ setText valueIndex newText (Location location) =
             Property newStatus newValue
     in
     Location { location | properties = Array.Extra.update valueIndex set location.properties }
-
-
-statusToString : Status -> String
-statusToString status =
-    case status of
-        Unseen ->
-            "unseen"
-
-        Seen ->
-            "seen"
-
-        SeenSome _ ->
-            "seen-some"
-
-        Dismissed ->
-            "dismissed"
-
-
-{-| "Toggle" the existing status with respect to the given "on" state: if they're the
-same, toggle "off" (to Unseen); otherwise, set to "on".
-
-This is to accommodate treating either Seen or Dismissed as the "on" state,
-while also being able to switch directly from one to the other.
-
-    Unseen |> statusToggle Dismissed
-    --> Dismissed
-    Dismissed |> statusToggle Dismissed
-    --> Unseen
-    Dismissed |> statusToggle Seen
-    --> Seen
-
--}
-toggleStatus_ : Status -> Status -> Status
-toggleStatus_ on existing =
-    if on == existing then
-        Unseen
-
-    else
-        on
 
 
 areaToString : Area -> String
@@ -927,7 +796,7 @@ filterByContext class c (Locations locations) =
             outstandingObjectives context
 
         propertyHasValue { status, value } =
-            case ( value, valueToFilter value ) of
+            case ( value, Value.toFilter value ) of
                 ( Requirement (Pseudo Falcon), _ ) ->
                     -- the Falcon only has value if we don't have a
                     -- way underground yet – but if our underground
@@ -967,6 +836,9 @@ filterByContext class c (Locations locations) =
                     |> Maybe.withDefault Hide
                     |> (==) Show
 
+            else if context.flags.vanillaBosses && l.key == MistCave && huntingDMist context then
+                True
+
             else
                 List.any propertyHasValue (getProperties context location)
                     && areaAccessible attainedRequirements location
@@ -999,8 +871,10 @@ defaultFiltersFrom context =
             outstandingObjectives context
 
         {- True if, based on the given Context, bosses may be intrisically
-           valuable. Namely, if there are Boss Hunt objectives to fullfil, or a D.Mist
-           to find when the Nkey flag is on.
+           valuable. Namely, if there are Boss Hunt objectives to fullfil, or a
+           D.Mist to find when the Nkey flag is on. If Bvanilla is on, _bosses_
+           don't have value: the specific boss hunt objectives in the locations
+           do.
         -}
         bossesHaveValue =
             let
@@ -1009,16 +883,8 @@ defaultFiltersFrom context =
                         |> Set.filter Objective.isBoss
                         |> Set.isEmpty
                         |> not
-
-                -- Finding D.Mist is interesting if the Free key item is turned off and we
-                -- haven't already found it. Technically it may also stop being interesting
-                -- if we've already attained Go Mode without it, but at that point *most* of
-                -- what we track stops being interesting.
-                huntingDMist =
-                    (not <| Set.member Flags.Free context.flags.keyItems)
-                        && (not <| Set.member (Pseudo MistDragon) context.attainedRequirements)
             in
-            activeBossHunt || huntingDMist
+            not context.flags.vanillaBosses && (activeBossHunt || huntingDMist context)
 
         onDarkMatterHunt =
             Set.member Objective.DarkMatterHunt outstanding
@@ -1052,6 +918,14 @@ outstandingObjectives context =
         Set.diff (combinedObjectives context) context.completedObjectives
 
 
+huntingDMist : Context -> Bool
+huntingDMist context =
+    not <|
+        (Set.member Flags.Free context.flags.keyItems
+            || Set.member (Pseudo MistDragon) context.attainedRequirements
+        )
+
+
 areaAccessible : Set Requirement -> Location -> Bool
 areaAccessible attained (Location location) =
     case location.area of
@@ -1071,64 +945,6 @@ requirementsMet attained (Location location) =
         |> Set.isEmpty
 
 
-isPseudo : Requirement -> Bool
-isPseudo requirement =
-    case requirement of
-        Pseudo _ ->
-            True
-
-        _ ->
-            False
-
-
-valueToFilter : Value -> Maybe Filter
-valueToFilter value =
-    -- This seems silly. Is this silly?
-    case value of
-        Character _ ->
-            Just Characters
-
-        Boss _ ->
-            Just Bosses
-
-        KeyItem _ ->
-            Just KeyItems
-
-        Chest _ ->
-            Just Chests
-
-        TrappedChest _ ->
-            Just TrappedChests
-
-        Shop _ ->
-            Nothing
-
-        Requirement _ ->
-            Nothing
-
-        Objective _ ->
-            Nothing
-
-        GatedValue _ _ ->
-            -- we could unwrap the gated value and call `valueToFilter` on it,
-            -- but we actually shouldn't ever wind up calling this on a
-            -- GatedValue; leave it Nothing so we notice if we do
-            Nothing
-
-
-countable : Value -> Maybe Int
-countable value =
-    case value of
-        Chest c ->
-            Just c
-
-        TrappedChest c ->
-            Just c
-
-        _ ->
-            Nothing
-
-
 all : Locations
 all =
     let
@@ -1143,7 +959,9 @@ all =
         expandShop value =
             case value of
                 Shop Item ->
-                    [ Shop <| Healing healingItems, Shop <| JItem jItems ]
+                    [ Shop <| Healing ConsumableItems.healingItems
+                    , Shop <| JItem ConsumableItems.jItems
+                    ]
 
                 _ ->
                     [ value ]
@@ -1210,6 +1028,7 @@ surface =
                 , mag = 10
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.DMist
             , Chest 4
             , Objective <| DoQuest Objective.MistCave
             ]
@@ -1246,6 +1065,7 @@ surface =
                 , mag = 11
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Officer
             , Objective <| DoQuest Objective.Package
             ]
       }
@@ -1299,6 +1119,7 @@ surface =
                 , mag = 10
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Octomamm
             , Chest 4
             , Objective <| DoQuest Objective.Waterfall
             ]
@@ -1327,6 +1148,7 @@ surface =
                 , mag = 1
                 , valvalisMDef = 170
                 }
+            , Objective <| DefeatBoss Objective.Antlion
             , KeyItem Main
             , KeyItem Vanilla
             , Chest 13
@@ -1349,6 +1171,7 @@ surface =
                 , mag = 5
                 , valvalisMDef = 174
                 }
+            , Objective <| DefeatBoss Objective.MomBomb
             , Character Gated
             , Chest 5
             , Objective <| DoQuest Objective.MtHobs
@@ -1379,6 +1202,7 @@ surface =
                 , mag = 15
                 , valvalisMDef = 254
                 }
+            , Objective <| DefeatBoss Objective.Gauntlet
             , KeyItem Main
             , Chest 10
             , Objective <| DoQuest Objective.Fabul
@@ -1430,6 +1254,7 @@ surface =
                 , mag = 14
                 , valvalisMDef = 0
                 }
+            , Objective <| DefeatBoss Objective.Milon
             , Boss
                 { hp = 3000
                 , exp = 4000
@@ -1442,6 +1267,7 @@ surface =
                 , mag = 31
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.MilonZ
             , KeyItem Main
             , KeyItem Vanilla
             , Boss
@@ -1456,6 +1282,7 @@ surface =
                 , mag = 17
                 , valvalisMDef = 254
                 }
+            , Objective <| DefeatBoss Objective.DarkKnight
             , Chest 4
             , Objective <| DoQuest Objective.MtOrdeals
             ]
@@ -1476,6 +1303,7 @@ surface =
                 , mag = 26
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Guards
             , Boss
                 { hp = 4000
                 , exp = 0
@@ -1488,6 +1316,7 @@ surface =
                 , mag = 31
                 , valvalisMDef = 0
                 }
+            , Objective <| DefeatBoss Objective.Karate
             , Character Gated
             , KeyItem Main
             , KeyItem Vanilla
@@ -1496,22 +1325,13 @@ surface =
             , GatedValue BaronKey <| Objective <| DoQuest Objective.UnlockSewer
             ]
       }
-    , { key = BaronItemShop
+    , { key = BaronShop
       , name = "Baron"
       , requirements = []
       , value =
-            [ Shop Item
-            ]
-      }
-    , { key = BaronWeaponShop
-      , name = "Baron"
-      , requirements = [ BaronKey ]
-      , value =
-            [ Shop Weapon
-            , Shop Armour
-
-            -- not worth the hassle!
-            -- , Chest 2
+            [ GatedValue BaronKey <| Shop Weapon
+            , GatedValue BaronKey <| Shop Armour
+            , Shop Item
             ]
       }
     , { key = BaronSewer
@@ -1537,6 +1357,7 @@ surface =
                 , mag = 9
                 , valvalisMDef = 254
                 }
+            , Objective <| DefeatBoss Objective.Baigan
             , Boss
                 { hp = 4000
                 , exp = 5500
@@ -1549,6 +1370,7 @@ surface =
                 , mag = 29
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Kainazzo
             , Character Gated
             , KeyItem Main
             , KeyItem Vanilla
@@ -1572,6 +1394,7 @@ surface =
                 , mag = 95
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Odin
             , KeyItem Summon
             , Objective <| DoQuest Objective.BaronBasement
             ]
@@ -1626,6 +1449,7 @@ surface =
                     , mag = 15
                     , valvalisMDef = 255
                     }
+            , GatedValue TwinHarp <| Objective <| DefeatBoss Objective.DarkElf
             , GatedValue TwinHarp <| KeyItem Main
             , GatedValue TwinHarp <| KeyItem Vanilla
             , Chest 10
@@ -1649,6 +1473,7 @@ surface =
                 , mag = 11
                 , valvalisMDef = 254
                 }
+            , Objective <| DefeatBoss Objective.MagusSisters
             , GatedValue EarthCrystal <| Character Gated
             , GatedValue EarthCrystal <| Character Gated
             , GatedValue EarthCrystal <|
@@ -1664,6 +1489,7 @@ surface =
                     , mag = 63
                     , valvalisMDef = 255
                     }
+            , GatedValue EarthCrystal <| Objective <| DefeatBoss Objective.Valvalis
             , GatedValue EarthCrystal <| KeyItem Main
             , GatedValue EarthCrystal <| KeyItem Vanilla
             , Chest 5
@@ -1756,6 +1582,7 @@ surface =
                 , mag = 15
                 , valvalisMDef = 0
                 }
+            , Objective <| DefeatBoss Objective.KQEblan
             , Boss
                 { hp = 25200
                 , exp = 25000
@@ -1768,6 +1595,7 @@ surface =
                 , mag = 16
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Rubicant
             , Chest 7
             , TrappedChest 1
             , Requirement <| Pseudo Falcon
@@ -1790,6 +1618,7 @@ surface =
                 , mag = 15
                 , valvalisMDef = 86
                 }
+            , Objective <| DefeatBoss Objective.Elements
             , Boss
                 { hp = 24000
                 , exp = 150000
@@ -1802,6 +1631,7 @@ surface =
                 , mag = 127
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.CPU
             , Character Gated
             , Chest 7
             , TrappedChest 1
@@ -1830,6 +1660,7 @@ underground =
                 , mag = 41
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Calbrena
             , Character Gated
             , Boss
                 { hp = 3002
@@ -1843,6 +1674,7 @@ underground =
                 , mag = 1
                 , valvalisMDef = 0
                 }
+            , Objective <| DefeatBoss Objective.Golbez
             , KeyItem Main
             , KeyItem Vanilla
             , KeyItem Warp -- also Vanilla
@@ -1875,6 +1707,7 @@ underground =
                 , mag = 7
                 , valvalisMDef = 0
                 }
+            , Objective <| DefeatBoss Objective.DrLugae
             , KeyItem Main
             , KeyItem Vanilla
             , Chest 12
@@ -1898,6 +1731,7 @@ underground =
                 , mag = 16
                 , valvalisMDef = 0
                 }
+            , Objective <| DefeatBoss Objective.DarkImps
             , KeyItem Main
             , KeyItem Vanilla
             , Objective <| DoQuest Objective.SuperCannon
@@ -1950,6 +1784,7 @@ underground =
                 , mag = 34
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Leviatan
             , KeyItem Summon
             , Objective <| DoQuest Objective.FeymarchKing
             ]
@@ -1970,6 +1805,7 @@ underground =
                 , mag = 69
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Asura
             , KeyItem Summon
             , Objective <| DoQuest Objective.FeymarchQueen
             ]
@@ -2008,6 +1844,7 @@ underground =
                 , mag = 79
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.EvilWall
             , Chest 19
             , Objective <| DoQuest Objective.SealedCave
             , Objective <| DoQuest Objective.UnlockSealedCave
@@ -2059,6 +1896,7 @@ moon =
                 , mag = 17
                 , valvalisMDef = 170
                 }
+            , Objective <| DefeatBoss Objective.Bahamut
             , KeyItem Summon
             , Chest 4
             , Objective <| DoQuest Objective.CaveBahamut
@@ -2097,6 +1935,7 @@ moon =
                 , mag = 31
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.PaleDim
             , KeyItem MoonBoss
             , Objective <| DoQuest Objective.MurasameAltar
             ]
@@ -2117,6 +1956,7 @@ moon =
                 , mag = 8
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Wyvern
             , KeyItem MoonBoss
             , Objective <| DoQuest Objective.WyvernAltar
             ]
@@ -2137,6 +1977,7 @@ moon =
                 , mag = 96
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Plague
             , KeyItem MoonBoss
             , Objective <| DoQuest Objective.WhiteSpearAltar
             ]
@@ -2157,6 +1998,7 @@ moon =
                 , mag = 36
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.DLunars
             , KeyItem MoonBoss
             , Objective <| DoQuest Objective.RibbonRoom
             ]
@@ -2177,83 +2019,12 @@ moon =
                 , mag = 127
                 , valvalisMDef = 255
                 }
+            , Objective <| DefeatBoss Objective.Ogopogo
             , KeyItem MoonBoss
             , Objective <| DoQuest Objective.MasamuneAltar
             ]
       }
     ]
-
-
-healingItems : ConsumableItems
-healingItems =
-    [ { name = "Cure2"
-      , tier = 3
-      }
-    , { name = "Cure3"
-      , tier = 4
-      }
-    , { name = "Life"
-      , tier = 2
-      }
-    , { name = "Tent"
-      , tier = 2
-      }
-    , { name = "Cabin"
-      , tier = 4
-      }
-    , { name = "Ether"
-      , tier = 3
-      }
-    , { name = "Status-healing"
-      , tier = 1
-      }
-    ]
-        |> List.map
-            (\{ name, tier } ->
-                { name = name
-                , tier = tier
-                , isJItem = False
-                , status = Unseen
-                }
-            )
-        |> Array.fromList
-        |> ConsumableItems
-
-
-jItems : ConsumableItems
-jItems =
-    [ { name = "Bacchus"
-      , tier = 5
-      }
-    , { name = "Coffin"
-      , tier = 5
-      }
-    , { name = "Hourglass"
-      , tier = 5
-      }
-    , { name = "Moonveil"
-      , tier = 7
-      }
-    , { name = "Siren"
-      , tier = 5
-      }
-    , { name = "Starveil"
-      , tier = 2
-      }
-    , { name = "Vampire"
-      , tier = 4
-      }
-    ]
-        |> List.map
-            (\{ name, tier } ->
-                { name = name
-                , tier = tier
-                , isJItem = True
-                , status = Unseen
-                }
-            )
-        |> Array.fromList
-        |> ConsumableItems
 
 
 vanillaShops : Dict Key (Set String)
@@ -2262,7 +2033,7 @@ vanillaShops =
     [ ( KaipoShops, [ "Life", "Tent", "Status-healing" ] )
     , ( FabulShops, [ "Life", "Tent", "Status-healing" ] )
     , ( MysidiaShops, [ "Cure2", "Life", "Tent", "Cabin", "Status-healing" ] )
-    , ( BaronItemShop, [ "Life", "Tent", "Status-healing" ] )
+    , ( BaronShop, [ "Life", "Tent", "Status-healing" ] )
     , ( ToroiaShops, [ "Life", "Tent", "Status-healing" ] )
     , ( AgartShops, [ "Life", "Tent", "Status-healing" ] )
     , ( SilveraShops, [ "Status-healing" ] )

@@ -14,14 +14,8 @@ module Icon exposing
 import AssocList as Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes exposing (src)
-import Location
-    exposing
-        ( Filter(..)
-        , PseudoRequirement(..)
-        , Requirement(..)
-        , ShopValue(..)
-        , Value(..)
-        )
+import Requirement exposing (PseudoRequirement(..), Requirement(..))
+import Value exposing (Filter(..), ShopValue(..), Value(..))
 
 
 type alias Icon msg =

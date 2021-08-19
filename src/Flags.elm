@@ -1,6 +1,7 @@
 module Flags exposing
     ( Flags
     , KeyItemClass(..)
+    , Reward(..)
     , ShopRandomization(..)
     , parse
     , rewardToString
@@ -27,6 +28,7 @@ type alias Flags =
     , passInShop : Bool
     , noCharacters : Bool
     , noTreasures : Bool
+    , vanillaBosses : Bool
     , shopRandomization : ShopRandomization
     , noJItems : Bool
     , noSirens : Bool
@@ -93,6 +95,7 @@ parse flagString =
             , passInShop = False
             , noCharacters = False
             , noTreasures = False
+            , vanillaBosses = False
             , shopRandomization = None
             , noJItems = False
             , noSirens = False
@@ -214,6 +217,11 @@ parseFlag flag flags =
             opts
                 |> String.split "/"
                 |> List.foldl parseS flags
+
+        Just ( 'B', opts ) ->
+            opts
+                |> String.split "/"
+                |> List.foldl parseB flags
 
         Just ( 'N', opts ) ->
             opts
@@ -411,6 +419,18 @@ parseS opts flags =
             subopts
                 |> String.split ","
                 |> List.foldl parseNo flags
+
+        _ ->
+            flags
+
+
+parseB : String -> Flags -> Flags
+parseB switch flags =
+    case switch of
+        "vanilla" ->
+            -- technically Bvanilla is the default option in FE, so we should be
+            -- looking for Bstandard instead, but Bvanilla is very rarely used
+            { flags | vanillaBosses = True }
 
         _ ->
             flags
