@@ -543,9 +543,15 @@ view model =
                     ]
             ]
         , div [ id "footer" ]
-            [ text "Documentation, credits, and contact info can be found in "
-            , a [ href "https://github.com/EiriasValar/FF4FE-Tracker/tree/release#readme", target "_blank" ]
-                [ text "the GitHub repo" ]
+            [ div []
+                [ text "Documentation, credits, and contact info can be found in "
+                , a [ href "https://github.com/EiriasValar/FF4FE-Tracker/tree/release#readme", target "_blank" ]
+                    [ text "the GitHub repo" ]
+                ]
+            , div []
+                [ a [ href "https://github.com/EiriasValar/FF4FE-Tracker/blob/release/CHANGELOG.md", target "_blank" ]
+                    [ text "Changelog" ]
+                ]
             ]
         ]
     }

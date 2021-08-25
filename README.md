@@ -123,6 +123,10 @@ no navigation infrastructure is implemented (anymore).
 - Make the location area groupings collapsible
 - More consistent section styling; frames around every section, or would that be
   too busy?
+- Allow saving/restoring the entire tracker state
+- Make the shop tracking less ugly and fiddly-feeling
+- Under Kvanilla, show specific key item icons at locations rather than generic
+  key item values
 
 # TODO housekeeping
 - Consistent icon handling
