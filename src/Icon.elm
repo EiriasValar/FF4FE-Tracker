@@ -8,6 +8,7 @@ module Icon exposing
     , no
     , objective
     , toImg
+    , trash
     , valvalis
     )
 
@@ -114,6 +115,14 @@ objective =
     }
 
 
+trash : Icon msg
+trash =
+    { class = "trash"
+    , title = "Delete objective"
+    , img = img "img/sprites/TrashCan.gif"
+    }
+
+
 no : Html msg
 no =
     Html.img [ Html.Attributes.class "no", src "img/no.png" ] []
@@ -121,7 +130,7 @@ no =
 
 character : Icon msg
 character =
-    { class = "character"
+    { class = ""
     , title = "Character"
     , img = img "img/sprites/Mini1-Front.gif"
     }
@@ -139,13 +148,13 @@ keyItem : Icon msg
 keyItem =
     { class = "key-item"
     , title = "Key item check"
-    , img = img "img/sprites/Key-edit.gif"
+    , img = img "img/sprites/Key-gold.gif"
     }
 
 
 chest : Icon msg
 chest =
-    { class = "chest"
+    { class = ""
     , title = "Untrapped chests"
     , img = img "img/sprites/BlueChest1.gif"
     }
@@ -153,7 +162,7 @@ chest =
 
 trappedChest : Icon msg
 trappedChest =
-    { class = "trapped-chest"
+    { class = ""
     , title = "Trapped chests"
     , img = img "img/sprites/RedChest2.gif"
     }
@@ -161,7 +170,7 @@ trappedChest =
 
 yangTalk : Icon msg
 yangTalk =
-    { class = "yang-talk"
+    { class = ""
     , title = "Talk to Yang"
     , img = img "img/sprites/Yang-KO1.gif"
     }
@@ -169,7 +178,7 @@ yangTalk =
 
 yangBonk : Icon msg
 yangBonk =
-    { class = "yang-bonk"
+    { class = ""
     , title = "Bonk Yang"
     , img = img "img/sprites/Yang-Front.gif"
     }
@@ -177,7 +186,7 @@ yangBonk =
 
 falcon : Icon msg
 falcon =
-    { class = "falcon"
+    { class = ""
     , title = "Launch the Falcon"
     , img = img "img/sprites/Falcon-Left-still.png"
     }
@@ -185,7 +194,7 @@ falcon =
 
 visible : Icon msg
 visible =
-    { class = "checked"
+    { class = ""
     , title = "Dismissed locations"
     , img = img "img/sprites/SecurityEye.gif"
     }
@@ -193,7 +202,7 @@ visible =
 
 weapon : Icon msg
 weapon =
-    { class = "weapon"
+    { class = ""
     , title = "Weapon"
     , img = img "img/sprites/KnightSword.gif"
     }
@@ -201,7 +210,7 @@ weapon =
 
 armour : Icon msg
 armour =
-    { class = "armour"
+    { class = ""
     , title = "Armour"
     , img = img "img/sprites/Armor.gif"
     }
@@ -209,7 +218,7 @@ armour =
 
 healing : Icon msg
 healing =
-    { class = "healing"
+    { class = ""
     , title = "Healing consumables"
     , img = img "img/sprites/RecoveryItem.gif"
     }
@@ -217,7 +226,7 @@ healing =
 
 jItem : Icon msg
 jItem =
-    { class = "jItem"
+    { class = ""
     , title = "J-items"
     , img = img "img/sprites/Hourglass.gif"
     }
@@ -225,7 +234,7 @@ jItem =
 
 other : Icon msg
 other =
-    { class = "other"
+    { class = ""
     , title = "Other"
     , img = img "img/sprites/Summon.gif"
     }
@@ -233,7 +242,7 @@ other =
 
 kainazzo : Icon msg
 kainazzo =
-    { class = "kainazzo"
+    { class = ""
     , title = "Kainazzo Wave damage at max HP"
     , img = img "img/sprites/Cagnazzo.gif"
     }
@@ -241,7 +250,7 @@ kainazzo =
 
 dkc : Icon msg
 dkc =
-    { class = "dkc"
+    { class = ""
     , title = "Dark Knight Cecil Darkwave damage"
     , img = img "img/sprites/Cecil1-Front.gif"
     }
@@ -249,7 +258,7 @@ dkc =
 
 valvalis : Icon msg
 valvalis =
-    { class = "valvalis"
+    { class = ""
     , title = "Valvalis MDef"
     , img = img "img/sprites/Barbariccia.gif"
     }
@@ -258,115 +267,115 @@ valvalis =
 requirements : Dict Requirement (Icon msg)
 requirements =
     [ ( Adamant
-      , { class = "adamant"
+      , { class = ""
         , title = "Adamant"
         , img = img "img/schalakitty/FFIVFE-Icons-13Adamant-Color-Alt.png"
         }
       )
     , ( BaronKey
-      , { class = "baron-key"
+      , { class = ""
         , title = "Baron Key"
         , img = img "img/schalakitty/FFIVFE-Icons-9BaronKey-Color.png"
         }
       )
     , ( Crystal
-      , { class = "crystal"
+      , { class = ""
         , title = "Crystal"
         , img = img "img/schalakitty/FFIVFE-Icons-1THECrystal-Color.png"
         }
       )
     , ( DarknessCrystal
-      , { class = "darkness-crystal"
+      , { class = ""
         , title = "Darkness Crystal"
         , img = img "img/schalakitty/FFIVFE-Icons-4DarkCrystal-Color.png"
         }
       )
     , ( EarthCrystal
-      , { class = "earth-crystal"
+      , { class = ""
         , title = "Earth Crystal"
         , img = img "img/schalakitty/FFIVFE-Icons-5EarthCrystal-Color.png"
         }
       )
     , ( Hook
-      , { class = "hook"
+      , { class = ""
         , title = "Hook"
         , img = img "img/schalakitty/FFIVFE-Icons-3Hook-Color.png"
         }
       )
     , ( LegendSword
-      , { class = "legend-sword"
+      , { class = ""
         , title = "Legend Sword"
         , img = img "img/schalakitty/FFIVFE-Icons-14LegendSword-Color.png"
         }
       )
     , ( LucaKey
-      , { class = "luca-key"
+      , { class = ""
         , title = "Luca Key"
         , img = img "img/schalakitty/FFIVFE-Icons-12LucaKey-Color.png"
         }
       )
     , ( MagmaKey
-      , { class = "magma-key"
+      , { class = ""
         , title = "Magma Key"
         , img = img "img/schalakitty/FFIVFE-Icons-10MagmaKey-Color.png"
         }
       )
     , ( Pseudo MistDragon
-      , { class = "mist-dragon"
+      , { class = ""
         , title = "D.Mist Defeated"
         , img = img "img/sprites/MistDragon1.gif"
         }
       )
     , ( Package
-      , { class = "package"
+      , { class = ""
         , title = "Package"
         , img = img "img/schalakitty/FFIVFE-Icons-7Package-Color.png"
         }
       )
     , ( Pan
-      , { class = "pan"
+      , { class = ""
         , title = "Pan"
         , img = img "img/schalakitty/FFIVFE-Icons-15Pan-Color-Alt.png"
         }
       )
     , ( Pseudo Pass
-      , { class = "pass"
+      , { class = ""
         , title = "Pass"
         , img = img "img/schalakitty/FFIVFE-Icons-2Pass-Color.png"
         }
       )
     , ( PinkTail
-      , { class = "pink-tail"
+      , { class = ""
         , title = "Pink Tail"
         , img = img "img/schalakitty/FFIVFE-Icons-18PinkTail-Color.png"
         }
       )
     , ( RatTail
-      , { class = "rat-tail"
+      , { class = ""
         , title = "Rat Tail"
         , img = img "img/schalakitty/FFIVFE-Icons-17RatTail-Color.png"
         }
       )
     , ( SandRuby
-      , { class = "sand-ruby"
+      , { class = ""
         , title = "Sand Ruby"
         , img = img "img/schalakitty/FFIVFE-Icons-8SandRuby-Color.png"
         }
       )
     , ( Spoon
-      , { class = "spoon"
+      , { class = ""
         , title = "Spoon"
         , img = img "img/schalakitty/FFIVFE-Icons-16Spoon-Color.png"
         }
       )
     , ( TowerKey
-      , { class = "tower-key"
+      , { class = ""
         , title = "Tower Key"
         , img = img "img/schalakitty/FFIVFE-Icons-11TowerKey-Color.png"
         }
       )
     , ( TwinHarp
-      , { class = "twin-harp"
+      , { class = ""
         , title = "Twin Harp"
         , img = img "img/schalakitty/FFIVFE-Icons-6TwinHarp-Color.png"
         }

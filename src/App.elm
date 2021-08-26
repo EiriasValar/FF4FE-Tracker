@@ -613,17 +613,17 @@ viewObjective objective completed randomIndex =
             ]
         , onClick (ToggleObjective objective.key)
         ]
-        [ Icon.objective.img
-            [ class "icon state"
-            , class Icon.objective.class
-            , title Icon.objective.title
-            ]
+        [ Icon.toImg Icon.objective
         , span [ class "text" ] [ text objective.description ]
-        , case ( completed, randomIndex ) of
-            ( False, Just index ) ->
+        , case ( completed, randomIndex, Icon.trash ) of
+            ( False, Just index, icon ) ->
                 -- we're unlikely to want to delete a completed objective, and in the
                 -- event that we do, it's easy enough to toggle it off again first
-                span [ class "icon delete", onClickNoBubble <| UnsetRandomObjective index ] []
+                icon.img
+                    [ class icon.class
+                    , title icon.title
+                    , onClickNoBubble <| UnsetRandomObjective index
+                    ]
 
             _ ->
                 text ""
@@ -738,7 +738,7 @@ viewKeyItems flags attained =
             req PinkTail
         , displayCellIf flags.keyExpBonus <|
             div
-                [ class "requirement total"
+                [ class "requirement readonly total"
                 , classList [ ( "key-bonus-reached", numAttained >= 10 ) ]
                 ]
                 [ displayIf (numAttained > 0) <|
@@ -881,12 +881,6 @@ viewProperty context location { index, status, value } =
             case value of
                 KeyItem Warp ->
                     "warp"
-
-                Chest _ ->
-                    "countable"
-
-                TrappedChest _ ->
-                    "countable"
 
                 _ ->
                     ""
