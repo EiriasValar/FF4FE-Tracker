@@ -138,6 +138,8 @@ no navigation infrastructure is implemented (anymore).
 - Connect special value icons (the Falcon and YangBonk) to their associated
   quest objectives. This may require a refactor.
 - Connect defeating D.Mist with the D.Mist boss hunt objective.
+- Fix long objective names wrapping erratically (e.g. Baron Basement as a random
+  objective).
 
 # TOMAYBEDOs
 - Keyboard navigation?

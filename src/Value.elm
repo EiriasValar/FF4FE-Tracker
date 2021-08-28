@@ -108,11 +108,8 @@ toFilter value =
         Objective _ ->
             Nothing
 
-        GatedValue _ _ ->
-            -- we could unwrap the gated value and call `valueToFilter` on it,
-            -- but we actually shouldn't ever wind up calling this on a
-            -- GatedValue; leave it Nothing so we notice if we do
-            Nothing
+        GatedValue _ val ->
+            toFilter val
 
 
 countable : Value -> Maybe Int
