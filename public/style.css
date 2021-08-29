@@ -2,6 +2,12 @@
 body {
     font-family: sans-serif;
     margin: 20px;
+    --background-colour: white;
+    --text-colour: black;
+    --hover-colour: #e2e3e4;
+    /* --hover-colour: #797a7b; */
+    background-color: var(--background-colour);
+    color: var(--text-colour);
 }
 
 .page {
@@ -90,7 +96,7 @@ h4 {
 }
 
 .objective .text:hover {
-    background-color: #e2e3e4;
+    background-color: var(--hover-colour);
 }
 
 .objective img.objective-icon {
@@ -198,7 +204,7 @@ img.requirement.disabled {
 }
 
 .locations .name:hover {
-    background-color: #e2e3e4;
+    background-color: var(--hover-colour);
 }
 
 .locations .name.seen {
@@ -276,9 +282,9 @@ img.requirement.disabled {
     left: 15px;
     bottom: 20px;
     z-index: 1;
-    background-color: white;
-    border: black solid 1px;
-    box-shadow: 1px 1px 1px black;
+    background-color: var(--background-colour);
+    border: var(--text-colour) solid 1px;
+    box-shadow: 1px 1px 1px var(--text-colour);
     white-space: nowrap;
     padding: 5px;
     font-size: smaller;
@@ -312,9 +318,9 @@ img.requirement.disabled {
     position: absolute;
     left: 1em;
     z-index: 1;
-    background-color: white;
-    border: black solid 1px;
-    box-shadow: 3px 3px 3px black;
+    background-color: var(--background-colour);
+    border: var(--text-colour) solid 1px;
+    box-shadow: 3px 3px 3px var(--text-colour);
 }
 
 .shop-menu textarea {
@@ -331,7 +337,7 @@ img.requirement.disabled {
 }
 
 .shop-item:hover {
-    background-color: #e2e3e4;
+    background-color: var(--hover-colour);
 }
 
 .shop-item.unseen {
