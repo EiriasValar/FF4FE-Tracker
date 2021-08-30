@@ -9,14 +9,13 @@ module App exposing
 
 import Array exposing (Array)
 import AssocList as Dict exposing (Dict)
-import Bootstrap.Dropdown as Dropdown exposing (DropdownItem)
 import Browser
 import Browser.Dom
 import Browser.Events
 import ConsumableItems exposing (ConsumableItem, ConsumableItems)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
-import Html exposing (Html, a, div, h2, h4, hr, li, span, text, textarea, ul)
+import Html exposing (Html, a, datalist, div, h2, h4, hr, input, li, option, span, text, textarea, ul)
 import Html.Attributes exposing (autocomplete, class, classList, cols, href, id, rows, spellcheck, target, title, value)
 import Html.Events exposing (onClick, onInput)
 import Icon
@@ -58,7 +57,7 @@ type alias Model =
 
 type RandomObjective
     = Set Objective
-    | Unset Dropdown.State
+    | Unset
 
 
 type alias ShopMenu =
@@ -75,9 +74,8 @@ type ShopMenuContent
 
 type Msg
     = ToggleObjective Objective.Key
-    | SetRandomObjective Int Objective
+    | SetRandomObjective Int String
     | UnsetRandomObjective Int
-    | DropdownMsg Int Dropdown.State
     | ToggleRequirement Requirement
     | ToggleFilter Location.Class Filter
     | ToggleLocationStatus Location Status
@@ -134,20 +132,6 @@ init _ =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
-        dropdowns =
-            model.randomObjectives
-                |> Array.indexedMap
-                    (\index randomObjective ->
-                        case randomObjective of
-                            Unset dropdown ->
-                                Dropdown.subscriptions dropdown (DropdownMsg index)
-
-                            Set _ ->
-                                Sub.none
-                    )
-                |> Array.toList
-                |> Sub.batch
-
         -- close the shop menu on any click outside it
         shopMenuClick =
             -- for simplicity, rather than figuring out whether a click
@@ -173,19 +157,13 @@ subscriptions model =
                     )
                 -- onKeyPress doesn't work with the macbook touchbar
                 |> Browser.Events.onKeyUp
-
-        shopMenu =
-            case model.shopMenu of
-                Just _ ->
-                    Sub.batch [ shopMenuClick, shopMenuEscape ]
-
-                Nothing ->
-                    Sub.none
     in
-    Sub.batch
-        [ dropdowns
-        , shopMenu
-        ]
+    case model.shopMenu of
+        Just _ ->
+            Sub.batch [ shopMenuClick, shopMenuEscape ]
+
+        Nothing ->
+            Sub.none
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -309,21 +287,18 @@ innerUpdate msg model =
             else
                 attainObjective objective model
 
-        SetRandomObjective index objective ->
-            { model | randomObjectives = Array.set index (Set objective) model.randomObjectives }
+        SetRandomObjective index description ->
+            case Objective.fromDescription description of
+                Just objective ->
+                    { model | randomObjectives = Array.set index (Set objective) model.randomObjectives }
+
+                Nothing ->
+                    model
 
         UnsetRandomObjective index ->
             -- the UI doesn't allow unsetting an objective if it's completed, so we don't
             -- have to worry about un-completing it here
-            { model | randomObjectives = Array.set index (Unset Dropdown.initialState) model.randomObjectives }
-
-        DropdownMsg index dropdown ->
-            case Array.get index model.randomObjectives of
-                Just (Unset _) ->
-                    { model | randomObjectives = Array.set index (Unset dropdown) model.randomObjectives }
-
-                _ ->
-                    model
+            { model | randomObjectives = Array.set index Unset model.randomObjectives }
 
         ToggleRequirement requirement ->
             if Set.member requirement model.attainedRequirements then
@@ -557,6 +532,11 @@ view model =
     }
 
 
+objectivesDatalistId : String
+objectivesDatalistId =
+    "objective-options"
+
+
 viewObjectives : Model -> Html Msg
 viewObjectives model =
     let
@@ -575,7 +555,17 @@ viewObjectives model =
             viewObjective o (Set.member o.key model.completedObjectives) Nothing
 
         random i o =
-            viewEditableObjective i o model.completedObjectives model.flags.randomObjectiveTypes
+            viewEditableObjective i o model.completedObjectives
+
+        listFor : Objective.Type -> List Objective -> List (Html Msg)
+        listFor objectiveType objectives =
+            if Set.member objectiveType model.flags.randomObjectiveTypes then
+                List.map
+                    (\o -> option [] [ text o.description ])
+                    objectives
+
+            else
+                []
     in
     div [ id "objectives" ] <|
         if model.flags.requiredObjectives > 0 then
@@ -595,6 +585,11 @@ viewObjectives model =
                             ++ ")"
                     ]
                 ]
+            , datalist [ id objectivesDatalistId ] <|
+                listFor Objective.Character Objective.characters
+                    ++ listFor Objective.Boss Objective.bosses
+                    ++ listFor Objective.Quest Objective.quests
+                    ++ listFor Objective.GatedQuest Objective.gatedQuests
             , ul [ class "objectives" ] <|
                 viewArray fixed model.flags.objectives
                     ++ viewArray random model.randomObjectives
@@ -630,42 +625,19 @@ viewObjective objective completed randomIndex =
         ]
 
 
-viewEditableObjective : Int -> RandomObjective -> Set Objective.Key -> Set Objective.Type -> Html Msg
-viewEditableObjective index randomObjective completedObjectives objectiveTypes =
-    let
-        item : Objective -> DropdownItem Msg
-        item objective =
-            Dropdown.buttonItem
-                [ onClick <| SetRandomObjective index objective ]
-                [ text objective.description ]
-
-        section : Objective.Type -> String -> List Objective -> List (DropdownItem Msg)
-        section objectiveType header objectives =
-            if Set.member objectiveType objectiveTypes then
-                Dropdown.header [ text header ]
-                    :: List.map item objectives
-
-            else
-                []
-    in
+viewEditableObjective : Int -> RandomObjective -> Set Objective.Key -> Html Msg
+viewEditableObjective index randomObjective completedObjectives =
     case randomObjective of
         Set objective ->
             viewObjective objective (Set.member objective.key completedObjectives) (Just index)
 
-        Unset dropdown ->
+        Unset ->
             li [ class "objective unset" ]
-                [ Dropdown.dropdown
-                    dropdown
-                    { options = []
-                    , toggleMsg = DropdownMsg index
-                    , toggleButton =
-                        Dropdown.toggle [] [ text "(Choose random objective)" ]
-                    , items =
-                        section Objective.Character "Character Hunts" Objective.characters
-                            ++ section Objective.Boss "Boss Hunts" Objective.bosses
-                            ++ section Objective.Quest "Quests" Objective.quests
-                            ++ section Objective.GatedQuest "Gated Quests" Objective.gatedQuests
-                    }
+                [ input
+                    [ Html.Attributes.list objectivesDatalistId
+                    , onInput <| SetRandomObjective index
+                    ]
+                    []
                 ]
 
 
@@ -1055,7 +1027,7 @@ updateRandomObjectives flags objectives =
     if delta > 0 then
         -- add unset objectives to the end of the array
         Array.append objectives <|
-            Array.repeat delta (Unset Dropdown.initialState)
+            Array.repeat delta Unset
 
     else if delta < 0 then
         -- remove excess objectives from the end of the array
@@ -1073,7 +1045,7 @@ randomObjectiveKeys =
                 Set objective ->
                     Just objective.key
 
-                Unset _ ->
+                Unset ->
                     Nothing
     in
     Array.toList

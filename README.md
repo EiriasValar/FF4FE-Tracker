@@ -36,7 +36,7 @@ The total number of key items collected is shown in the lower-right (unless `-ex
 
 Specific objectives set in the flags are listed; click on them to toggle them between Incomplete and Complete. The tally at the top shows how many objectives are complete, how many total are required, and whether completing them awards the `Crystal` or wins the game.
 
-For each random objective allocated by the flags, a `(Choose random objective)` item will be shown; click on it to bring up a list of the possible objectives and choose the one randomly assigned by the game to track it. Click the trash can icon to unset a chosen random objective.
+For each random objective allocated by the flags, a text box will be shown: click on it to bring up a list of the possible objectives, type to filter for the one you're looking for, and choose the one randomly assigned by the game to track it. Click the trash can icon to unset a chosen random objective.
 
 The order in which the objectives are presented is based on their order in the flags (the numbers in the flags are ignored), which may differ from the order shown in-game. Also, the tracker will allow multiple instances of the same objective, though Free Enterprise itself won't.
 
@@ -114,10 +114,7 @@ Feel free to drop me (`@EiriasValar`) a line on the **Free Enterprise Workshop**
 The tracker is written in [Elm](https://elm-lang.org/), compiled to JavaScript. As there's only a single logical page,
 no navigation infrastructure is implemented (anymore).
 
-[Elm Bootstrap](http://elm-bootstrap.info/) is used just for the Dropdown module, to allow for dropdown options with non-string values (used when setting a random objective). The "bootstrap" stylesheet is a heavily-gutted version to handle just the dropdown elements, with nothing particularly Bootstrap-y about them. This dependency could be entirely removed with a bit of work to recreate the Dropdown element.
-
 # TODO features
-- Type-to-filter random objective selection
 - Accommodate streaming better (customizable background colour?)
 - Expand the shop weapon and armour items into short submenus?
 - Make the location area groupings collapsible
@@ -143,7 +140,6 @@ no navigation infrastructure is implemented (anymore).
 
 # TOMAYBEDOs
 - Keyboard navigation?
-- Remove elm-bootstrap
 - Switch to compiled CSS
 - Resizing a shop's textarea input doesn't persist, neither between different
   shops, nor when closing and reopening the same shop. Suppressing the ability
