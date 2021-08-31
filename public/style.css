@@ -216,9 +216,17 @@ img.requirement.disabled {
 }
 
 .locations .icons-container {
-    /* TODO grid */
     grid-column: 2 / 3;
     position: relative;
+}
+
+.locations .icon .check {
+    display: none;
+}
+
+#checks .locations .icons {
+    display: flex;
+    gap: 1px;
 }
 
 .locations .icon,
@@ -244,28 +252,21 @@ img.requirement.disabled {
     filter: opacity(40%);
 }
 
-#checks .locations .icon.dismissed>img {
-    /* direct descendant so as not to apply within .boss-stats */
+#checks .locations .icon.dismissed .value {
     filter: opacity(25%);
 }
 
-#checks .locations .icon.dismissed::after {
-    /* TODO image */
-    content: "✓";
-    color: green;
+#checks .locations .icon.dismissed .check {
+    display: block;
     position: absolute;
-    top: -9px;
+    top: 2px;
     left: 0px;
-    text-align: center;
-    text-shadow: 1px 1px 0px black;
-    font-size: larger;
-    width: 100%;
 }
 
 #checks .locations .icon .count {
     position: absolute;
     width: 100%;
-    top: -5px;
+    top: 1px;
     left: 0px;
     text-align: center;
     color: white;

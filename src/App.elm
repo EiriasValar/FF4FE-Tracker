@@ -919,7 +919,8 @@ viewProperty context location { index, status, value } =
                 , clickHandler
                 , onRightClick <| HardToggleProperty key index
                 ]
-                [ icon.img []
+                [ icon.img [ class "value" ]
+                , Icon.check
                 , displayIf (count > 0) <|
                     span [ class "count" ] [ text <| String.fromInt count ]
                 , case value of

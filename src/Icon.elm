@@ -1,5 +1,6 @@
 module Icon exposing
     ( Icon
+    , check
     , dkc
     , fromFilter
     , fromRequirement
@@ -121,6 +122,11 @@ trash =
     , title = "Delete objective"
     , img = img "img/sprites/TrashCan.gif"
     }
+
+
+check : Html msg
+check =
+    Html.img [ Html.Attributes.class "check", src "img/check.png" ] []
 
 
 no : Html msg
