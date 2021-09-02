@@ -91,10 +91,6 @@ h4 {
     width: fit-content;
 }
 
-.objective.unset {
-    height: 1.25em;
-}
-
 .objective .text:hover {
     background-color: var(--hover-colour);
 }
@@ -164,16 +160,26 @@ img.requirement.disabled {
     grid-template-columns: auto auto 1fr;
 }
 
+.icon {
+    cursor: pointer;
+    vertical-align: middle;
+    position: relative;
+    /* filter: drop-shadow(0 0 2px white); */
+}
+
 .filters {
     margin-left: 1em;
-    display: inline-grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 3px;
+    display: inline-flex;
+    gap: 5px;
 }
 
 .filter img {
     width: 18px;
     height: 18px;
+}
+
+.filter.key-item img:first-of-type {
+    width: unset;
 }
 
 .filter.unset img {
@@ -184,11 +190,14 @@ img.requirement.disabled {
     filter: none;
 }
 
-.filter.hide .no {
+.filter .no {
     position: absolute;
     top: 0px;
     left: 0px;
-    padding: 0 1px;
+}
+
+.filter.key-item .no {
+    left: -4px;
 }
 
 .area-locations {
@@ -217,26 +226,13 @@ img.requirement.disabled {
 
 .locations .icons-container {
     grid-column: 2 / 3;
+    /* for the shop menus */
     position: relative;
-}
-
-.locations .icon .check {
-    display: none;
 }
 
 #checks .locations .icons {
     display: flex;
-    gap: 1px;
-}
-
-.locations .icon,
-.filter {
-    /* TODO shared class */
-    cursor: pointer;
-    vertical-align: middle;
-    padding: 0 1px;
-    position: relative;
-    /* filter: drop-shadow(0 0 2px white); */
+    gap: 3px;
 }
 
 #checks .locations .icon img {
@@ -244,23 +240,33 @@ img.requirement.disabled {
     height: 20px;
 }
 
-#checks .locations .objective-icon img {
+.locations .icon .check {
+    display: none;
+    position: absolute;
+    top: 2px;
+    left: 0px;
+}
+
+#checks .locations .icon.key-item .check,
+#checks .locations .icon.objective-icon .check {
+    left: -5px;
+}
+
+#checks .locations .icon.key-item .value,
+#checks .locations .icon.objective-icon .value {
     width: unset;
 }
 
-#checks .locations .icon.key-item.warp.unseen {
-    filter: opacity(40%);
+#checks .locations .icon.dismissed .check {
+    display: block;
 }
 
 #checks .locations .icon.dismissed .value {
     filter: opacity(25%);
 }
 
-#checks .locations .icon.dismissed .check {
-    display: block;
-    position: absolute;
-    top: 2px;
-    left: 0px;
+#checks .locations .icon.key-item.warp.unseen {
+    filter: opacity(40%);
 }
 
 #checks .locations .icon .count {

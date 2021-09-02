@@ -126,7 +126,6 @@ no navigation infrastructure is implemented (anymore).
   key item values
 
 # TODO housekeeping
-- Consistent icon handling
 - Don't require right-clicks for anything
 - Close the Shop Other textarea onBlur (without breaking the toggle)
 - Make Statuses more intuitive; Dismissed meaning On for shops and items is weird

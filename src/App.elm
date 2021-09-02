@@ -751,7 +751,7 @@ viewFilters model locClass =
                     Icon.fromFilter filter
             in
             span
-                [ class "filter"
+                [ class "icon filter"
                 , class stateClass
                 , class icon.class
                 , title icon.title
@@ -920,7 +920,8 @@ viewProperty context location { index, status, value } =
                 , onRightClick <| HardToggleProperty key index
                 ]
                 [ icon.img [ class "value" ]
-                , Icon.check
+                , displayIf (status == Dismissed) <|
+                    Icon.check
                 , displayIf (count > 0) <|
                     span [ class "count" ] [ text <| String.fromInt count ]
                 , case value of
