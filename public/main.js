@@ -16,5 +16,6 @@ app.ports.setColours.subscribe(function(colours) {
     style = document.body.style
     style.setProperty("--background-colour", colours.background)
     style.setProperty("--text-colour", colours.text)
+    style.setProperty("--hover-colour", colours.hoverBackground)
     localStorage.setItem("colours", JSON.stringify(colours))
 })

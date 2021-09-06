@@ -859,7 +859,7 @@ viewMenu menu =
                 -- also trigger closing the menu
                 , onClickNoBubble <| ToggleShopItem menu itemIndex
                 ]
-                [ text item.name ]
+                [ span [ class "name" ] [ text item.name ] ]
     in
     div [ class "shop-menu" ] <|
         case menu.content of

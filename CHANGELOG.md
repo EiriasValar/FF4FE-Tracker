@@ -1,4 +1,4 @@
-## Upcoming
+## 2021-09-06
 - Fix bug where gated value icons didn't respect Hide filters.
 - Change random objective selection UI to support type-to-filter (at the cost
   of losing the subheadings in the dropdown list).

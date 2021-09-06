@@ -4,7 +4,6 @@ body {
     --background-colour: white;
     --text-colour: black;
     --hover-colour: #e2e3e4;
-    /* --hover-colour: #797a7b; */
     background-color: var(--background-colour);
     color: var(--text-colour);
 }
@@ -223,21 +222,21 @@ img.requirement.disabled {
     row-gap: 4px;
 }
 
-.locations .name {
+.area-locations>.name {
     cursor: pointer;
     padding-right: 5px;
     grid-column: 1 / 2;
 }
 
-.locations .name:hover {
+.area-locations>.name:hover {
     background-color: var(--hover-colour);
 }
 
-.locations .name.seen {
+.area-locations>.name.seen {
     color: green;
 }
 
-.locations .name.dismissed {
+.area-locations>.name.dismissed {
     text-decoration: line-through;
 }
 
@@ -369,10 +368,6 @@ img.requirement.disabled {
     background-color: var(--hover-colour);
 }
 
-.shop-item.unseen {
+.shop-item.unseen .name {
     filter: opacity(40%);
-}
-
-.shop-item.dismissed {
-    text-decoration: none;
 }

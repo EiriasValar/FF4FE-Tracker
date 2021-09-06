@@ -18,6 +18,7 @@ import String.Extra
 
 type alias Colours =
     { background : String
+    , hoverBackground : String
     , text : String
     }
 
@@ -25,6 +26,26 @@ type alias Colours =
 type For
     = Background
     | Text
+
+
+lightText : String
+lightText =
+    "#ffffff"
+
+
+darkText : String
+darkText =
+    "#000000"
+
+
+lightHover : String
+lightHover =
+    "#e2e3e4"
+
+
+darkHover : String
+darkHover =
+    "#797a7b"
 
 
 set : For -> String -> Colours -> Colours
@@ -60,23 +81,21 @@ setContrastText colours =
                     (red * 299 + green * 587 + blue * 114) // 1000
 
                 _ ->
-                    -- something's wrong, default to black
+                    -- something's wrong, default to dark
                     128
-
-        text =
-            if yiq >= 128 then
-                "#000000"
-
-            else
-                "#ffffff"
     in
-    { colours | text = text }
+    if yiq >= 128 then
+        { colours | text = darkText, hoverBackground = lightHover }
+
+    else
+        { colours | text = lightText, hoverBackground = darkHover }
 
 
 encode : Colours -> Encode.Value
 encode colours =
     Encode.object
         [ ( "background", Encode.string colours.background )
+        , ( "hoverBackground", Encode.string colours.hoverBackground )
         , ( "text", Encode.string colours.text )
         ]
 
@@ -90,13 +109,15 @@ decode =
 
 decoder : Decode.Decoder Colours
 decoder =
-    Decode.map2 Colours
+    Decode.map3 Colours
         (Decode.field "background" Decode.string)
+        (Decode.field "hoverBackground" Decode.string)
         (Decode.field "text" Decode.string)
 
 
 defaults : Colours
 defaults =
     { background = "#ffffff"
-    , text = "#000000"
+    , hoverBackground = lightHover
+    , text = darkText
     }

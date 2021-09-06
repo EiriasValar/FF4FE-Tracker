@@ -144,6 +144,7 @@ no navigation infrastructure is implemented (anymore).
 - Connect defeating D.Mist with the D.Mist boss hunt objective.
 - Fix long objective names wrapping erratically (e.g. Baron Basement as a random
   objective).
+- Fix hard-coded "seen" (right-click) location name colour.
 
 # TOMAYBEDOs
 - Keyboard navigation?
