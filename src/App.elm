@@ -608,7 +608,7 @@ viewObjective objective completed randomIndex =
             ]
         , onClick (ToggleObjective objective.key)
         ]
-        [ Icon.toImg Icon.objective
+        [ span [ class "icon" ] [ Icon.toImg Icon.objective ]
         , span [ class "text" ] [ text objective.description ]
         , case ( completed, randomIndex, Icon.trash ) of
             ( False, Just index, icon ) ->
@@ -1006,15 +1006,15 @@ viewBossStats stats =
         , div [] [ text <| "Speed: " ++ formatSpeed ]
         , hr [] []
         , div []
-            [ Icon.toImg Icon.kainazzo
+            [ span [ class "icon" ] [ Icon.toImg Icon.kainazzo ]
             , text <| "Dmg: " ++ waveDmg
             ]
         , div []
-            [ Icon.toImg Icon.dkc
+            [ span [ class "icon" ] [ Icon.toImg Icon.dkc ]
             , text <| "Dmg: " ++ darkwaveDmg
             ]
         , div []
-            [ Icon.toImg Icon.valvalis
+            [ span [ class "icon" ] [ Icon.toImg Icon.valvalis ]
             , text <| "MDef: " ++ String.fromInt stats.valvalisMDef
             ]
         ]

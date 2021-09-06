@@ -118,12 +118,11 @@ no navigation infrastructure is implemented (anymore).
 - Accommodate streaming better (customizable background colour?)
 - Expand the shop weapon and armour items into short submenus?
 - Make the location area groupings collapsible
-- More consistent section styling; frames around every section, or would that be
-  too busy?
 - Allow saving/restoring the entire tracker state
 - Make the shop tracking less ugly and fiddly-feeling
 - Under Kvanilla, show specific key item icons at locations rather than generic
   key item values
+- Show Valvalis physical evade as well as mdef
 
 # TODO housekeeping
 - Don't require right-clicks for anything
@@ -157,3 +156,8 @@ no navigation infrastructure is implemented (anymore).
   scan the whole list looking for Objective properties to update.
 - Add a filter for Objective value, if I can think of a real-world scenario in
   which you'd want to filter out objectives.
+- Allow dismissing individual shop values. Mostly for Baron? If you're
+  potentially interested in all available shops, wouldn't you always check them
+  all on the same trip? Maybe you're just scanning for Life potions, not having
+  enough money for equipment and hoping never to have to shop for it at all? Or
+  you just accidentally skip a shop?

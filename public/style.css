@@ -164,7 +164,11 @@ img.requirement.disabled {
     cursor: pointer;
     vertical-align: middle;
     position: relative;
-    /* filter: drop-shadow(0 0 2px white); */
+    filter: drop-shadow(0 0 1px white);
+}
+
+#shops .icons .icon {
+    filter: none;
 }
 
 .filters {
@@ -279,6 +283,12 @@ img.requirement.disabled {
     text-shadow: 1px 1px 0px black;
 }
 
+#checks .locations .icon.boss:hover {
+    /* this is for .boss-stats, but in a flexbox we have to
+    set this on the flex item */
+    z-index: 1;
+}
+
 #checks .locations .icon.boss .boss-stats {
     display: none
 }
@@ -288,7 +298,6 @@ img.requirement.disabled {
     position: absolute;
     left: 15px;
     bottom: 20px;
-    z-index: 1;
     background-color: var(--background-colour);
     border: var(--text-colour) solid 1px;
     box-shadow: 1px 1px 1px var(--text-colour);
