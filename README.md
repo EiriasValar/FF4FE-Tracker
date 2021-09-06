@@ -36,7 +36,7 @@ The total number of key items collected is shown in the lower-right (unless `-ex
 
 Specific objectives set in the flags are listed; click on them to toggle them between Incomplete and Complete. The tally at the top shows how many objectives are complete, how many total are required, and whether completing them awards the `Crystal` or wins the game.
 
-For each random objective allocated by the flags, a `(Choose random objective)` item will be shown; click on it to bring up a list of the possible objectives and choose the one randomly assigned by the game to track it. Click the trash can icon to unset a chosen random objective.
+For each random objective allocated by the flags, a text box will be shown: click on it to bring up a list of the possible objectives, type to filter for the one you're looking for, and choose the one randomly assigned by the game to track it. Click the trash can icon to unset a chosen random objective.
 
 The order in which the objectives are presented is based on their order in the flags (the numbers in the flags are ignored), which may differ from the order shown in-game. Also, the tracker will allow multiple instances of the same objective, though Free Enterprise itself won't.
 
@@ -103,6 +103,16 @@ There are a lot of items in Free Enterprise, and even the most obscure might hap
 
 The set of items potentially available in a given shop can also be limited by your flags; see the Wiki's [Shop randomization](https://wiki.ff4fe.com/doku.php?id=shop_randomization) page for details.
 
+## Colours
+
+At the bottom of the page there are inputs allowing you to set the background and text colours used by the tracker (excluding the Key Items and Shop icon areas).
+
+Most modern browsers should show you a fancy (browser- or platform-specific) colour picker input for these. If your browser doesn't provide this, the inputs should appear as plain text boxes, which will accept colours in `#rrggbb` format.
+
+When the background colour is changed, the text colour will automatically reset to black or white, attempting to provide maximum contrast. If you don't like the result, just set the text colour explicitly after setting the background colour.
+
+Your colour settings are stored in your browser's `localStorage`, so will persist when you reload the tracker. The defaults are simply black text on a white background, so there's no "reset" feature provided.
+
 # Contact
 
 Feel free to drop me (`@EiriasValar`) a line on the **Free Enterprise Workshop** Discord, and/or to [create an Issue](https://github.com/EiriasValar/FF4FE-Tracker/issues) on GitHub to report a bug or request a feature.
@@ -114,32 +124,33 @@ Feel free to drop me (`@EiriasValar`) a line on the **Free Enterprise Workshop**
 The tracker is written in [Elm](https://elm-lang.org/), compiled to JavaScript. As there's only a single logical page,
 no navigation infrastructure is implemented (anymore).
 
-[Elm Bootstrap](http://elm-bootstrap.info/) is used just for the Dropdown module, to allow for dropdown options with non-string values (used when setting a random objective). The "bootstrap" stylesheet is a heavily-gutted version to handle just the dropdown elements, with nothing particularly Bootstrap-y about them. This dependency could be entirely removed with a bit of work to recreate the Dropdown element.
-
 # TODO features
-- Type-to-filter random objective selection
-- Accommodate streaming better (customizable background colour?)
 - Expand the shop weapon and armour items into short submenus?
 - Make the location area groupings collapsible
-- More consistent section styling; frames around every section, or would that be
-  too busy?
+- Allow saving/restoring the entire tracker state
+- Make the shop tracking less ugly and fiddly-feeling
+- Under Kvanilla, show specific key item icons at locations rather than generic
+  key item values
+- Show Valvalis physical evade as well as mdef
 
 # TODO housekeeping
-- Consistent icon handling
 - Don't require right-clicks for anything
 - Close the Shop Other textarea onBlur (without breaking the toggle)
 - Make Statuses more intuitive; Dismissed meaning On for shops and items is weird
-- Add CSS linting
 - Should Property just be a record type? The two-payload type is a pain to
   unpack and update, and writing methods for it would be weird.
 - Connect special value icons (the Falcon and YangBonk) to their associated
   quest objectives. This may require a refactor.
 - Connect defeating D.Mist with the D.Mist boss hunt objective.
+- Fix long objective names wrapping erratically (e.g. Baron Basement as a random
+  objective).
+- Fix hard-coded "seen" (right-click) location name colour.
 
 # TOMAYBEDOs
 - Keyboard navigation?
-- Remove elm-bootstrap
 - Switch to compiled CSS
+  - Use SASS colour math to give the text inputs slightly offset background
+    colours.
 - Resizing a shop's textarea input doesn't persist, neither between different
   shops, nor when closing and reopening the same shop. Suppressing the ability
   to resize feels unfriendly to the user, but is it useful without persistence?
@@ -157,3 +168,11 @@ no navigation infrastructure is implemented (anymore).
   scan the whole list looking for Objective properties to update.
 - Add a filter for Objective value, if I can think of a real-world scenario in
   which you'd want to filter out objectives.
+- Allow dismissing individual shop values. Mostly for Baron? If you're
+  potentially interested in all available shops, wouldn't you always check them
+  all on the same trip? Maybe you're just scanning for Life potions, not having
+  enough money for equipment and hoping never to have to shop for it at all? Or
+  you just accidentally skip a shop?
+- Harmonize the key item and shop icons' background colours with the rest of the
+  interface. They seem best on blue, but it's probably fine to let the user pick
+  their poison. Just, they very much don't work on white. Try black shadows?

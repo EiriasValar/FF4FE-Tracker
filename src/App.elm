@@ -9,21 +9,23 @@ module App exposing
 
 import Array exposing (Array)
 import AssocList as Dict exposing (Dict)
-import Bootstrap.Dropdown as Dropdown exposing (DropdownItem)
 import Browser
 import Browser.Dom
 import Browser.Events
+import Colour exposing (Colours)
 import ConsumableItems exposing (ConsumableItem, ConsumableItems)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
-import Html exposing (Html, a, div, h2, h4, hr, li, span, text, textarea, ul)
-import Html.Attributes exposing (autocomplete, class, classList, cols, href, id, rows, spellcheck, target, title, value)
+import Html exposing (Html, a, datalist, div, h2, h4, hr, input, li, option, span, text, textarea, ul)
+import Html.Attributes exposing (autocomplete, class, classList, cols, href, id, rows, spellcheck, target, title, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Icon
 import Json.Decode
+import Json.Encode
 import Location exposing (IndexedProperty, Location, Locations)
 import Maybe.Extra
 import Objective exposing (Objective)
+import Ports
 import Requirement exposing (PseudoRequirement(..), Requirement(..))
 import Status exposing (Status(..))
 import String.Extra
@@ -53,12 +55,13 @@ type alias Model =
     , shopFilterOverrides : Dict Filter FilterType
     , warpGlitchUsed : Bool
     , shopMenu : Maybe ShopMenu
+    , colours : Colours
     }
 
 
 type RandomObjective
     = Set Objective
-    | Unset Dropdown.State
+    | Unset
 
 
 type alias ShopMenu =
@@ -75,9 +78,8 @@ type ShopMenuContent
 
 type Msg
     = ToggleObjective Objective.Key
-    | SetRandomObjective Int Objective
+    | SetRandomObjective Int String
     | UnsetRandomObjective Int
-    | DropdownMsg Int Dropdown.State
     | ToggleRequirement Requirement
     | ToggleFilter Location.Class Filter
     | ToggleLocationStatus Location Status
@@ -89,6 +91,7 @@ type Msg
     | ToggleShopItem ShopMenu Int
     | UpdateShopText ShopMenu String
     | UpdateFlags String
+    | SetColour Colour.For String
     | DoNothing
 
 
@@ -100,8 +103,8 @@ shopMenuID =
     "shop-menu-input"
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
+init : Maybe Json.Encode.Value -> ( Model, Cmd Msg )
+init savedColours =
     let
         flagString =
             "Kmain/summon/moon Sstandard Gwarp Nkey O1:char_kain/2:quest_antlionnest/random:3/req:4"
@@ -111,6 +114,9 @@ init _ =
 
         randomObjectives =
             updateRandomObjectives flags Array.empty
+
+        colours =
+            Colour.decode savedColours
     in
     { flagString = flagString
     , flags = flags
@@ -127,27 +133,14 @@ init _ =
     , shopFilterOverrides = Dict.empty
     , warpGlitchUsed = False
     , shopMenu = Nothing
+    , colours = colours
     }
-        |> with Cmd.none
+        |> with (Ports.setColours <| Colour.encode colours)
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
-        dropdowns =
-            model.randomObjectives
-                |> Array.indexedMap
-                    (\index randomObjective ->
-                        case randomObjective of
-                            Unset dropdown ->
-                                Dropdown.subscriptions dropdown (DropdownMsg index)
-
-                            Set _ ->
-                                Sub.none
-                    )
-                |> Array.toList
-                |> Sub.batch
-
         -- close the shop menu on any click outside it
         shopMenuClick =
             -- for simplicity, rather than figuring out whether a click
@@ -173,40 +166,38 @@ subscriptions model =
                     )
                 -- onKeyPress doesn't work with the macbook touchbar
                 |> Browser.Events.onKeyUp
-
-        shopMenu =
-            case model.shopMenu of
-                Just _ ->
-                    Sub.batch [ shopMenuClick, shopMenuEscape ]
-
-                Nothing ->
-                    Sub.none
     in
-    Sub.batch
-        [ dropdowns
-        , shopMenu
-        ]
+    case model.shopMenu of
+        Just _ ->
+            Sub.batch [ shopMenuClick, shopMenuEscape ]
+
+        Nothing ->
+            Sub.none
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    let
-        -- doing this here rather than every other Msg branch having to
-        -- explicitly return its own Cmd.none
-        cmd =
-            case msg of
-                ToggleShopMenu _ ->
-                    -- a bit inelegant that we're unconditionally trying to
-                    -- focus an element that will only sometimes exist, but so
-                    -- convenient
-                    Browser.Dom.focus shopMenuID
-                        |> Task.attempt (always DoNothing)
+    -- handling Cmds here rather than almost every Msg branch having to
+    -- explicitly return its own Cmd.none
+    case msg of
+        ToggleShopMenu _ ->
+            -- a bit inelegant that we're unconditionally trying to
+            -- focus an element that will only sometimes exist, but so
+            -- convenient
+            innerUpdate msg model
+                |> with (focus shopMenuID)
 
-                _ ->
-                    Cmd.none
-    in
-    innerUpdate msg model
-        |> with cmd
+        SetColour for colour ->
+            let
+                colours =
+                    Colour.set for colour model.colours
+            in
+            { model | colours = colours }
+                |> with (Ports.setColours <| Colour.encode colours)
+
+        _ ->
+            innerUpdate msg model
+                |> with Cmd.none
 
 
 innerUpdate : Msg -> Model -> Model
@@ -309,21 +300,18 @@ innerUpdate msg model =
             else
                 attainObjective objective model
 
-        SetRandomObjective index objective ->
-            { model | randomObjectives = Array.set index (Set objective) model.randomObjectives }
+        SetRandomObjective index description ->
+            case Objective.fromDescription description of
+                Just objective ->
+                    { model | randomObjectives = Array.set index (Set objective) model.randomObjectives }
+
+                Nothing ->
+                    model
 
         UnsetRandomObjective index ->
             -- the UI doesn't allow unsetting an objective if it's completed, so we don't
             -- have to worry about un-completing it here
-            { model | randomObjectives = Array.set index (Unset Dropdown.initialState) model.randomObjectives }
-
-        DropdownMsg index dropdown ->
-            case Array.get index model.randomObjectives of
-                Just (Unset _) ->
-                    { model | randomObjectives = Array.set index (Unset dropdown) model.randomObjectives }
-
-                _ ->
-                    model
+            { model | randomObjectives = Array.set index Unset model.randomObjectives }
 
         ToggleRequirement requirement ->
             if Set.member requirement model.attainedRequirements then
@@ -503,6 +491,10 @@ innerUpdate msg model =
             }
                 |> updateCrystal
 
+        SetColour _ _ ->
+            -- handled in the outer update function
+            model
+
         DoNothing ->
             model
 
@@ -543,12 +535,44 @@ view model =
                     ]
             ]
         , div [ id "footer" ]
-            [ text "Documentation, credits, and contact info can be found in "
-            , a [ href "https://github.com/EiriasValar/FF4FE-Tracker/tree/release#readme", target "_blank" ]
-                [ text "the GitHub repo" ]
+            [ div [ id "colour-pickers" ]
+                [ span [ class "colour-picker" ]
+                    [ text "Background: "
+                    , input
+                        [ type_ "color"
+                        , value model.colours.background
+                        , onInput <| SetColour Colour.Background
+                        ]
+                        []
+                    ]
+                , span [ class "colour-picker" ]
+                    [ text "Text: "
+                    , input
+                        [ type_ "color"
+                        , value model.colours.text
+                        , onInput <| SetColour Colour.Text
+                        ]
+                        []
+                    ]
+                ]
+            , div []
+                [ text "Please see the "
+                , a [ href "https://github.com/EiriasValar/FF4FE-Tracker/tree/release#readme", target "_blank" ]
+                    [ text "GitHub repo" ]
+                , text " for documentation, credits, and contact info"
+                ]
+            , div []
+                [ a [ href "https://github.com/EiriasValar/FF4FE-Tracker/blob/release/CHANGELOG.md", target "_blank" ]
+                    [ text "Changelog" ]
+                ]
             ]
         ]
     }
+
+
+objectivesDatalistId : String
+objectivesDatalistId =
+    "objective-options"
 
 
 viewObjectives : Model -> Html Msg
@@ -569,7 +593,17 @@ viewObjectives model =
             viewObjective o (Set.member o.key model.completedObjectives) Nothing
 
         random i o =
-            viewEditableObjective i o model.completedObjectives model.flags.randomObjectiveTypes
+            viewEditableObjective i o model.completedObjectives
+
+        listFor : Objective.Type -> List Objective -> List (Html Msg)
+        listFor objectiveType objectives =
+            if Set.member objectiveType model.flags.randomObjectiveTypes then
+                List.map
+                    (\o -> option [] [ text o.description ])
+                    objectives
+
+            else
+                []
     in
     div [ id "objectives" ] <|
         if model.flags.requiredObjectives > 0 then
@@ -589,6 +623,11 @@ viewObjectives model =
                             ++ ")"
                     ]
                 ]
+            , datalist [ id objectivesDatalistId ] <|
+                listFor Objective.Character Objective.characters
+                    ++ listFor Objective.Boss Objective.bosses
+                    ++ listFor Objective.Quest Objective.quests
+                    ++ listFor Objective.GatedQuest Objective.gatedQuests
             , ul [ class "objectives" ] <|
                 viewArray fixed model.flags.objectives
                     ++ viewArray random model.randomObjectives
@@ -607,59 +646,36 @@ viewObjective objective completed randomIndex =
             ]
         , onClick (ToggleObjective objective.key)
         ]
-        [ Icon.objective.img
-            [ class "icon state"
-            , class Icon.objective.class
-            , title Icon.objective.title
-            ]
+        [ span [ class "icon" ] [ Icon.toImg Icon.objective ]
         , span [ class "text" ] [ text objective.description ]
-        , case ( completed, randomIndex ) of
-            ( False, Just index ) ->
+        , case ( completed, randomIndex, Icon.trash ) of
+            ( False, Just index, icon ) ->
                 -- we're unlikely to want to delete a completed objective, and in the
                 -- event that we do, it's easy enough to toggle it off again first
-                span [ class "icon delete", onClickNoBubble <| UnsetRandomObjective index ] []
+                icon.img
+                    [ class icon.class
+                    , title icon.title
+                    , onClickNoBubble <| UnsetRandomObjective index
+                    ]
 
             _ ->
                 text ""
         ]
 
 
-viewEditableObjective : Int -> RandomObjective -> Set Objective.Key -> Set Objective.Type -> Html Msg
-viewEditableObjective index randomObjective completedObjectives objectiveTypes =
-    let
-        item : Objective -> DropdownItem Msg
-        item objective =
-            Dropdown.buttonItem
-                [ onClick <| SetRandomObjective index objective ]
-                [ text objective.description ]
-
-        section : Objective.Type -> String -> List Objective -> List (DropdownItem Msg)
-        section objectiveType header objectives =
-            if Set.member objectiveType objectiveTypes then
-                Dropdown.header [ text header ]
-                    :: List.map item objectives
-
-            else
-                []
-    in
+viewEditableObjective : Int -> RandomObjective -> Set Objective.Key -> Html Msg
+viewEditableObjective index randomObjective completedObjectives =
     case randomObjective of
         Set objective ->
             viewObjective objective (Set.member objective.key completedObjectives) (Just index)
 
-        Unset dropdown ->
+        Unset ->
             li [ class "objective unset" ]
-                [ Dropdown.dropdown
-                    dropdown
-                    { options = []
-                    , toggleMsg = DropdownMsg index
-                    , toggleButton =
-                        Dropdown.toggle [] [ text "(Choose random objective)" ]
-                    , items =
-                        section Objective.Character "Character Hunts" Objective.characters
-                            ++ section Objective.Boss "Boss Hunts" Objective.bosses
-                            ++ section Objective.Quest "Quests" Objective.quests
-                            ++ section Objective.GatedQuest "Gated Quests" Objective.gatedQuests
-                    }
+                [ input
+                    [ Html.Attributes.list objectivesDatalistId
+                    , onInput <| SetRandomObjective index
+                    ]
+                    []
                 ]
 
 
@@ -732,7 +748,7 @@ viewKeyItems flags attained =
             req PinkTail
         , displayCellIf flags.keyExpBonus <|
             div
-                [ class "requirement total"
+                [ class "requirement readonly total"
                 , classList [ ( "key-bonus-reached", numAttained >= 10 ) ]
                 ]
                 [ displayIf (numAttained > 0) <|
@@ -773,7 +789,7 @@ viewFilters model locClass =
                     Icon.fromFilter filter
             in
             span
-                [ class "filter"
+                [ class "icon filter"
                 , class stateClass
                 , class icon.class
                 , title icon.title
@@ -843,7 +859,7 @@ viewMenu menu =
                 -- also trigger closing the menu
                 , onClickNoBubble <| ToggleShopItem menu itemIndex
                 ]
-                [ text item.name ]
+                [ span [ class "name" ] [ text item.name ] ]
     in
     div [ class "shop-menu" ] <|
         case menu.content of
@@ -875,12 +891,6 @@ viewProperty context location { index, status, value } =
             case value of
                 KeyItem Warp ->
                     "warp"
-
-                Chest _ ->
-                    "countable"
-
-                TrappedChest _ ->
-                    "countable"
 
                 _ ->
                     ""
@@ -947,7 +957,9 @@ viewProperty context location { index, status, value } =
                 , clickHandler
                 , onRightClick <| HardToggleProperty key index
                 ]
-                [ icon.img []
+                [ icon.img [ class "value" ]
+                , displayIf (status == Dismissed) <|
+                    Icon.check
                 , displayIf (count > 0) <|
                     span [ class "count" ] [ text <| String.fromInt count ]
                 , case value of
@@ -1032,15 +1044,15 @@ viewBossStats stats =
         , div [] [ text <| "Speed: " ++ formatSpeed ]
         , hr [] []
         , div []
-            [ Icon.toImg Icon.kainazzo
+            [ span [ class "icon" ] [ Icon.toImg Icon.kainazzo ]
             , text <| "Dmg: " ++ waveDmg
             ]
         , div []
-            [ Icon.toImg Icon.dkc
+            [ span [ class "icon" ] [ Icon.toImg Icon.dkc ]
             , text <| "Dmg: " ++ darkwaveDmg
             ]
         , div []
-            [ Icon.toImg Icon.valvalis
+            [ span [ class "icon" ] [ Icon.toImg Icon.valvalis ]
             , text <| "MDef: " ++ String.fromInt stats.valvalisMDef
             ]
         ]
@@ -1055,7 +1067,7 @@ updateRandomObjectives flags objectives =
     if delta > 0 then
         -- add unset objectives to the end of the array
         Array.append objectives <|
-            Array.repeat delta (Unset Dropdown.initialState)
+            Array.repeat delta Unset
 
     else if delta < 0 then
         -- remove excess objectives from the end of the array
@@ -1073,7 +1085,7 @@ randomObjectiveKeys =
                 Set objective ->
                     Just objective.key
 
-                Unset _ ->
+                Unset ->
                     Nothing
     in
     Array.toList
@@ -1149,3 +1161,9 @@ onClickNoBubble msg =
             , stopPropagation = True
             , preventDefault = True
             }
+
+
+focus : String -> Cmd Msg
+focus id =
+    Browser.Dom.focus id
+        |> Task.attempt (always DoNothing)

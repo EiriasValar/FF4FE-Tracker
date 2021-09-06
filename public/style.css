@@ -1,162 +1,219 @@
-@import url("elm-bootstrap.css");
-
 body {
-  font-family: sans-serif;
-  margin: 20px;
+    font-family: sans-serif;
+    margin: 20px;
+    --background-colour: white;
+    --text-colour: black;
+    --hover-colour: #e2e3e4;
+    background-color: var(--background-colour);
+    color: var(--text-colour);
 }
 
-.page { margin-top: 20px; }
+textarea,
+input {
+    background-color: transparent;
+    color: var(--text-colour);
+}
+
+.page {
+    margin-top: 20px;
+}
 
 .content {
-  display: flex;
-  flex-flow: row wrap;
-  justify-content: space-between;
-  width: 500px;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    width: 500px;
 }
 
 #flagstring {
-  flex: 1 100%;
-  order: 0;
+    flex: 1 100%;
+    order: 0;
 }
 
 #objectives {
-  flex: 1 60%;
-  order: 2;
+    flex: 1 60%;
+    order: 2;
 }
 
 #key-items {
-  flex: 0 auto;
-  order: 1;
-  margin-right: 1em;
+    flex: 0 auto;
+    order: 1;
+    margin-right: 1em;
 }
 
 #checks {
-  flex: 1 50%;
-  order: 3;
+    flex: 1 50%;
+    order: 3;
 }
 
 #shops {
-  flex: 1 40%;
-  order: 4;
+    flex: 1 40%;
+    order: 4;
 }
 
 #footer {
-  order: 5;
-  margin-top: 3em;
-  font-size: smaller;
+    order: 5;
+    margin-top: 3em;
+    font-size: smaller;
+}
+
+#colour-pickers {
+    margin-bottom: 1em;
+}
+
+.colour-picker+.colour-picker {
+    margin-left: 1em;
 }
 
 h2 {
-  font-size: 1em;
+    font-size: 1em;
 }
 
 h4 {
-  margin: 1em 0 0.5em 0;
-  text-decoration: underline;
-  font-weight: lighter;
-  font-size: smaller;
+    margin: 1em 0 0.5em 0;
+    text-decoration: underline;
+    font-weight: lighter;
+    font-size: smaller;
 }
 
 .flagstring {
-  width: 95%;
-  display: block;
+    width: 95%;
+    display: block;
 }
 
 #objectives .progress {
-  font-weight: normal;
-  font-size: smaller;
-  margin-left: 0.5em;
+    font-weight: normal;
+    font-size: smaller;
+    margin-left: 0.5em;
 }
 
 #objectives .progress.complete {
-  color: green;
+    color: green;
 }
 
 .objectives {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .objective {
-  margin: 1px 0;
-  cursor: pointer;
-  width: fit-content;
-}
-
-.objective.unset {
-  height: 1.25em;
+    margin: 1px 0;
+    cursor: pointer;
+    width: fit-content;
 }
 
 .objective .text:hover {
-  background-color: #e2e3e4;
+    background-color: var(--hover-colour);
 }
 
-.objective .icon.state {
-  filter: grayscale(100%) opacity(50%);
-  margin-right: 0.5em;
-  height: 1.25em;
-  vertical-align: middle;
+.objective img.objective-icon {
+    filter: grayscale(100%) opacity(50%);
+    margin-right: 0.5em;
+    height: 1.25em;
+    vertical-align: middle;
 }
 
-.objective .icon.delete {
-  content: url("img/sprites/TrashCan.gif");
-  height: 1em;
-  vertical-align: top;
-  padding-top: 2px;
-  margin-left: .5em;
-  filter: opacity(75%)
+.objective.completed img.objective-icon {
+    filter: none;
 }
 
-.objective.completed .icon.state {
-  filter: none;
+.objective img.trash {
+    height: 1em;
+    vertical-align: top;
+    padding-top: 2px;
+    margin-left: .5em;
+    filter: opacity(75%)
 }
 
 .objectives .dropdown-menu.show {
-  height: 13em;
-  overflow: auto;
+    height: 13em;
+    overflow: auto;
 }
 
 .requirements {
-  display: grid;
-  grid-template-columns: repeat(4, auto);
-  background-color: rgb(0,0,175);
-  border-style: double;
-  border-color: white;
-  padding: 5px;
-  gap: 5px;
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    background-color: rgb(0, 0, 175);
+    border-style: double;
+    border-color: white;
+    padding: 5px;
+    gap: 5px;
 }
 
 .requirement {
-  display: block;
-  width: 32px;
-  height: 32px;
-  cursor: pointer;
+    display: block;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
 }
 
 .requirement.readonly {
-  cursor: auto;
+    cursor: auto;
 }
 
-.requirement.disabled {
-  filter: grayscale(100%) opacity(50%);
+img.requirement.disabled {
+    filter: grayscale(100%) opacity(50%);
 }
 
 .requirement.total {
-  color: white;
-  cursor: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .requirement.total.key-bonus-reached {
-  color: chartreuse;
+    color: chartreuse;
 }
 
 .locations-header {
     display: grid;
     grid-template-columns: auto auto 1fr;
+}
+
+.icon {
+    cursor: pointer;
+    vertical-align: middle;
+    position: relative;
+    filter: drop-shadow(0 0 1px white);
+}
+
+#shops .icons .icon {
+    filter: none;
+}
+
+.filters {
+    margin-left: 1em;
+    display: inline-flex;
+    gap: 5px;
+}
+
+.filter img {
+    width: 18px;
+    height: 18px;
+}
+
+.filter.key-item img:first-of-type {
+    width: unset;
+}
+
+.filter.unset img {
+    filter: opacity(25%);
+}
+
+.filter.show img {
+    filter: none;
+}
+
+.filter .no {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+.filter.key-item .no {
+    left: -4px;
 }
 
 .area-locations {
@@ -165,81 +222,97 @@ h4 {
     row-gap: 4px;
 }
 
-.locations .seen {
-  color: green;
+.area-locations>.name {
+    cursor: pointer;
+    padding-right: 5px;
+    grid-column: 1 / 2;
 }
 
-.locations .dismissed {
-  text-decoration: line-through;
+.area-locations>.name:hover {
+    background-color: var(--hover-colour);
 }
 
-.locations .name {
-  cursor: pointer;
-  padding-right: 5px;
-  grid-column: 1 / 2;
+.area-locations>.name.seen {
+    color: green;
 }
 
-.locations .name:hover {
-  background-color: #e2e3e4;
+.area-locations>.name.dismissed {
+    text-decoration: line-through;
 }
 
 .locations .icons-container {
     grid-column: 2 / 3;
+    /* for the shop menus */
     position: relative;
 }
 
-.filters {
-  margin-left: 1em;
-  display: inline-grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 3px;
+#checks .locations .icons {
+    display: flex;
+    gap: 3px;
 }
 
-.locations .icon,
-.filter {
-  cursor: pointer;
-  vertical-align: middle;
-  padding: 0 1px;
-  position: relative;
+#checks .locations .icon img {
+    width: 20px;
+    height: 20px;
 }
 
-.filter img {
-    width: 18px;
-    height: 18px;
-}
-  
-.filter.unset img {
-  filter: opacity(25%);
+.locations .icon .check {
+    display: none;
+    position: absolute;
+    top: 2px;
+    left: 0px;
 }
 
-.filter.show img {
-  filter: none;
-}
-  
-.filter.hide .no {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  padding: 0 1px;
+#checks .locations .icon.key-item .check,
+#checks .locations .icon.objective-icon .check {
+    left: -5px;
 }
 
-.locations .icon.key-item.warp.unseen {
+#checks .locations .icon.key-item .value,
+#checks .locations .icon.objective-icon .value {
+    width: unset;
+}
+
+#checks .locations .icon.dismissed .check {
+    display: block;
+}
+
+#checks .locations .icon.dismissed .value {
+    filter: opacity(25%);
+}
+
+#checks .locations .icon.key-item.warp.unseen {
     filter: opacity(40%);
 }
 
-.locations .icon.boss .boss-stats {
+#checks .locations .icon .count {
+    position: absolute;
+    width: 100%;
+    top: 1px;
+    left: 0px;
+    text-align: center;
+    color: white;
+    text-shadow: 1px 1px 0px black;
+}
+
+#checks .locations .icon.boss:hover {
+    /* this is for .boss-stats, but in a flexbox we have to
+    set this on the flex item */
+    z-index: 1;
+}
+
+#checks .locations .icon.boss .boss-stats {
     display: none
 }
 
-.locations .icon.boss:hover .boss-stats {
+#checks .locations .icon.boss:hover .boss-stats {
     display: block;
     position: absolute;
     left: 15px;
     bottom: 20px;
-    z-index: 1;
-    background-color: white;
-    border: black solid 1px;
-    box-shadow: 1px 1px 1px black;
+    background-color: var(--background-colour);
+    border: var(--text-colour) solid 1px;
+    box-shadow: 1px 1px 1px var(--text-colour);
     white-space: nowrap;
     padding: 5px;
     font-size: smaller;
@@ -250,43 +323,8 @@ h4 {
     margin-right: 0.5em;
 }
 
-#checks .locations .icon.dismissed::after {
-    content: "✓";
-    color: green;
-    position: absolute;
-    top: -9px;
-    left: 0px;
-    text-align: center;
-    text-shadow: 1px 1px 0px black;
-    font-size: larger;
-    width: 100%;
-}
-  
-#checks .locations .icon img {
-  width: 20px;
-  height: 20px;
-}
-
-#checks .locations .objective-icon img {
-  width: unset;
-}
-  
-#checks .locations .icon.dismissed>img {
-  filter: opacity(25%); 
-}
-
-.locations .icon .count {
-    position: absolute;
-    width: 100%;
-    top: -5px;
-    left: 0px;
-    text-align: center;
-    color: white;
-    text-shadow: 1px 1px 0px black;
-}
-
 #shops .locations .icons {
-    background-color: rgb(0,0,175);
+    background-color: rgb(0, 0, 175);
     border-style: double;
     border-color: white;
 }
@@ -308,9 +346,9 @@ h4 {
     position: absolute;
     left: 1em;
     z-index: 1;
-    background-color: white;
-    border: black solid 1px;
-    box-shadow: 3px 3px 3px black;
+    background-color: var(--background-colour);
+    border: var(--text-colour) solid 1px;
+    box-shadow: 3px 3px 3px var(--text-colour);
 }
 
 .shop-menu textarea {
@@ -327,13 +365,9 @@ h4 {
 }
 
 .shop-item:hover {
-    background-color: #e2e3e4;
+    background-color: var(--hover-colour);
 }
 
-.shop-item.unseen {
+.shop-item.unseen .name {
     filter: opacity(40%);
-}
-
-.shop-item.dismissed {
-    text-decoration: none;
 }

@@ -7,6 +7,7 @@ module Objective exposing
     , Type(..)
     , bosses
     , characters
+    , fromDescription
     , fromFlag
     , gatedQuests
     , isBoss
@@ -41,7 +42,12 @@ type alias Objective =
 
 fromFlag : String -> Maybe Objective
 fromFlag flag =
-    Dict.get flag allObjectives
+    Dict.get flag allObjectivesByFlag
+
+
+fromDescription : String -> Maybe Objective
+fromDescription description =
+    Dict.get description allObjectivesByDescription
 
 
 isBoss : Key -> Bool
@@ -340,8 +346,20 @@ classic =
         |> List.map fromTuple
 
 
-allObjectives : Dict String Objective
+allObjectives : List Objective
 allObjectives =
-    (classic ++ characters ++ bosses ++ quests)
+    classic ++ characters ++ bosses ++ quests
+
+
+allObjectivesByFlag : Dict String Objective
+allObjectivesByFlag =
+    allObjectives
         |> List.map (\o -> ( o.flag, o ))
+        |> Dict.fromList
+
+
+allObjectivesByDescription : Dict String Objective
+allObjectivesByDescription =
+    allObjectives
+        |> List.map (\o -> ( o.description, o ))
         |> Dict.fromList
