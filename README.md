@@ -119,8 +119,6 @@ no navigation infrastructure is implemented (anymore).
 - Make the location area groupings collapsible
 - Allow saving/restoring the entire tracker state
 - Preserve custom colours between sessions
-- Automatically pick a suitable text colour (either black or white) when the
-  background colour changes
 - Make the shop tracking less ugly and fiddly-feeling
 - Under Kvanilla, show specific key item icons at locations rather than generic
   key item values
