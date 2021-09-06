@@ -186,35 +186,37 @@ subscriptions model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    let
-        -- doing this here rather than every other Msg branch having to
-        -- explicitly return its own Cmd.none
-        cmd =
-            case msg of
-                ToggleShopMenu _ ->
-                    -- a bit inelegant that we're unconditionally trying to
-                    -- focus an element that will only sometimes exist, but so
-                    -- convenient
-                    Browser.Dom.focus shopMenuID
-                        |> Task.attempt (always DoNothing)
+    -- handling Cmds here rather than almost every Msg branch having to
+    -- explicitly return its own Cmd.none
+    case msg of
+        ToggleShopMenu _ ->
+            -- a bit inelegant that we're unconditionally trying to
+            -- focus an element that will only sometimes exist, but so
+            -- convenient
+            innerUpdate msg model
+                |> with (focus shopMenuID)
 
-                SetColour for colour ->
-                    let
-                        prop =
-                            case for of
-                                Background ->
-                                    "background-colour"
+        SetColour for colour ->
+            let
+                colours =
+                    model.colours
 
-                                Foreground ->
-                                    "text-colour"
-                    in
-                    Ports.setCustomProperty ( prop, colour )
+                ( newColours, prop ) =
+                    case for of
+                        Background ->
+                            { colours | background = colour }
+                                |> with "background-colour"
 
-                _ ->
-                    Cmd.none
-    in
-    innerUpdate msg model
-        |> with cmd
+                        Foreground ->
+                            { colours | text = colour }
+                                |> with "text-colour"
+            in
+            { model | colours = newColours }
+                |> with (Ports.setCustomProperty ( prop, colour ))
+
+        _ ->
+            innerUpdate msg model
+                |> with Cmd.none
 
 
 innerUpdate : Msg -> Model -> Model
@@ -508,20 +510,9 @@ innerUpdate msg model =
             }
                 |> updateCrystal
 
-        SetColour for colour ->
-            let
-                colours =
-                    model.colours
-
-                newColours =
-                    case for of
-                        Background ->
-                            { colours | background = colour }
-
-                        Foreground ->
-                            { colours | text = colour }
-            in
-            { model | colours = newColours }
+        SetColour _ _ ->
+            -- handled in the outer update function
+            model
 
         DoNothing ->
             model
@@ -1188,3 +1179,9 @@ onClickNoBubble msg =
             , stopPropagation = True
             , preventDefault = True
             }
+
+
+focus : String -> Cmd Msg
+focus id =
+    Browser.Dom.focus id
+        |> Task.attempt (always DoNothing)
