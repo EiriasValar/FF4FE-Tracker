@@ -16,13 +16,14 @@ import ConsumableItems exposing (ConsumableItem, ConsumableItems)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
 import Html exposing (Html, a, datalist, div, h2, h4, hr, input, li, option, span, text, textarea, ul)
-import Html.Attributes exposing (autocomplete, class, classList, cols, href, id, rows, spellcheck, target, title, value)
+import Html.Attributes exposing (autocomplete, class, classList, cols, href, id, rows, spellcheck, target, title, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Icon
 import Json.Decode
 import Location exposing (IndexedProperty, Location, Locations)
 import Maybe.Extra
 import Objective exposing (Objective)
+import Ports
 import Requirement exposing (PseudoRequirement(..), Requirement(..))
 import Status exposing (Status(..))
 import String.Extra
@@ -52,6 +53,13 @@ type alias Model =
     , shopFilterOverrides : Dict Filter FilterType
     , warpGlitchUsed : Bool
     , shopMenu : Maybe ShopMenu
+    , colours : Colours
+    }
+
+
+type alias Colours =
+    { background : String
+    , text : String
     }
 
 
@@ -87,7 +95,13 @@ type Msg
     | ToggleShopItem ShopMenu Int
     | UpdateShopText ShopMenu String
     | UpdateFlags String
+    | SetColour ColourFor String
     | DoNothing
+
+
+type ColourFor
+    = Background
+    | Foreground
 
 
 {-| The ID of any shop menu text input, of which only one will ever
@@ -125,6 +139,10 @@ init _ =
     , shopFilterOverrides = Dict.empty
     , warpGlitchUsed = False
     , shopMenu = Nothing
+    , colours =
+        { background = "#ffffff"
+        , text = "#000000"
+        }
     }
         |> with Cmd.none
 
@@ -179,6 +197,18 @@ update msg model =
                     -- convenient
                     Browser.Dom.focus shopMenuID
                         |> Task.attempt (always DoNothing)
+
+                SetColour for colour ->
+                    let
+                        prop =
+                            case for of
+                                Background ->
+                                    "background-colour"
+
+                                Foreground ->
+                                    "text-colour"
+                    in
+                    Ports.setCustomProperty ( prop, colour )
 
                 _ ->
                     Cmd.none
@@ -478,6 +508,21 @@ innerUpdate msg model =
             }
                 |> updateCrystal
 
+        SetColour for colour ->
+            let
+                colours =
+                    model.colours
+
+                newColours =
+                    case for of
+                        Background ->
+                            { colours | background = colour }
+
+                        Foreground ->
+                            { colours | text = colour }
+            in
+            { model | colours = newColours }
+
         DoNothing ->
             model
 
@@ -519,6 +564,26 @@ view model =
             ]
         , div [ id "footer" ]
             [ div []
+                [ span [ class "colour-picker" ]
+                    [ text "Background: "
+                    , input
+                        [ type_ "color"
+                        , value model.colours.background
+                        , onInput <| SetColour Background
+                        ]
+                        []
+                    ]
+                , span [ class "colour-picker" ]
+                    [ text "Text: "
+                    , input
+                        [ type_ "color"
+                        , value model.colours.text
+                        , onInput <| SetColour Foreground
+                        ]
+                        []
+                    ]
+                ]
+            , div []
                 [ text "Documentation, credits, and contact info can be found in "
                 , a [ href "https://github.com/EiriasValar/FF4FE-Tracker/tree/release#readme", target "_blank" ]
                     [ text "the GitHub repo" ]

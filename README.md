@@ -115,10 +115,12 @@ The tracker is written in [Elm](https://elm-lang.org/), compiled to JavaScript. 
 no navigation infrastructure is implemented (anymore).
 
 # TODO features
-- Accommodate streaming better (customizable background colour?)
 - Expand the shop weapon and armour items into short submenus?
 - Make the location area groupings collapsible
 - Allow saving/restoring the entire tracker state
+- Preserve custom colours between sessions
+- Automatically pick a suitable text colour (either black or white) when the
+  background colour changes
 - Make the shop tracking less ugly and fiddly-feeling
 - Under Kvanilla, show specific key item icons at locations rather than generic
   key item values
@@ -135,6 +137,7 @@ no navigation infrastructure is implemented (anymore).
 - Connect defeating D.Mist with the D.Mist boss hunt objective.
 - Fix long objective names wrapping erratically (e.g. Baron Basement as a random
   objective).
+- Remove redundant declaration of default colours in both Elm and CSS.
 
 # TOMAYBEDOs
 - Keyboard navigation?
@@ -161,3 +164,6 @@ no navigation infrastructure is implemented (anymore).
   all on the same trip? Maybe you're just scanning for Life potions, not having
   enough money for equipment and hoping never to have to shop for it at all? Or
   you just accidentally skip a shop?
+- Harmonize the key item and shop icons' background colours with the rest of the
+  interface. They seem best on blue, but it's probably fine to let the user pick
+  their poison. Just, they very much don't work on white. Try black shadows?

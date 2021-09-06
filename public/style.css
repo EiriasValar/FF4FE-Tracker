@@ -1,4 +1,3 @@
-@import url("elm-bootstrap.css");
 body {
     font-family: sans-serif;
     margin: 20px;
@@ -51,6 +50,10 @@ body {
     order: 5;
     margin-top: 3em;
     font-size: smaller;
+}
+
+.colour-picker+.colour-picker {
+    margin-left: 1em;
 }
 
 h2 {
