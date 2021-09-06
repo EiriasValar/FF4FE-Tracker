@@ -784,11 +784,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.cF.ay === region.cZ.ay)
+	if (region.as.U === region.aB.U)
 	{
-		return 'on line ' + region.cF.ay;
+		return 'on line ' + region.as.U;
 	}
-	return 'on lines ' + region.cF.ay + ' through ' + region.cZ.ay;
+	return 'on lines ' + region.as.U + ' through ' + region.aB.U;
 }
 
 
@@ -1857,9 +1857,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.dU,
-		impl.ek,
-		impl.eh,
+		impl.be,
+		impl.bB,
+		impl.bz,
 		function() { return function() {} }
 	);
 });
@@ -2704,9 +2704,9 @@ var _VirtualDom_mapEventTuple = F2(function(func, tuple)
 var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
-		d_: func(record.d_),
-		ef: record.ef,
-		ea: record.ea
+		bi: func(record.bi),
+		bx: record.bx,
+		bt: record.bt
 	}
 });
 
@@ -2974,11 +2974,11 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		// 3 = Custom
 
 		var value = result.a;
-		var message = !tag ? value : tag < 3 ? value.a : value.d_;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.ef;
+		var message = !tag ? value : tag < 3 ? value.a : value.bi;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.bx;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.ea) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.bt) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -3928,11 +3928,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.dU,
-		impl.ek,
-		impl.eh,
+		impl.be,
+		impl.bB,
+		impl.bz,
 		function(sendToApp, initialModel) {
-			var view = impl.em;
+			var view = impl.bD;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -3964,12 +3964,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.dU,
-		impl.ek,
-		impl.eh,
+		impl.be,
+		impl.bB,
+		impl.bz,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.cE && impl.cE(sendToApp)
-			var view = impl.em;
+			var divertHrefToApp = impl.ar && impl.ar(sendToApp)
+			var view = impl.bD;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -3977,12 +3977,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.dH);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.a4);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.aj) && (_VirtualDom_doc.title = title = doc.aj);
+				(title !== doc.O) && (_VirtualDom_doc.title = title = doc.O);
 			});
 		}
 	);
@@ -4038,12 +4038,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.d4;
-	var onUrlRequest = impl.d5;
+	var onUrlChange = impl.bo;
+	var onUrlRequest = impl.bp;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		cE: function(sendToApp)
+		ar: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4059,9 +4059,9 @@ function _Browser_application(impl)
 					var next = $elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.dm === next.dm
-							&& curr.c1 === next.c1
-							&& curr.di.a === next.di.a
+							&& curr.aR === next.aR
+							&& curr.aF === next.aF
+							&& curr.aO.a === next.aO.a
 						)
 							? $elm$browser$Browser$Internal(next)
 							: $elm$browser$Browser$External(href)
@@ -4069,13 +4069,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		dU: function(flags)
+		be: function(flags)
 		{
-			return A3(impl.dU, flags, _Browser_getUrl(), key);
+			return A3(impl.be, flags, _Browser_getUrl(), key);
 		},
-		em: impl.em,
-		ek: impl.ek,
-		eh: impl.eh
+		bD: impl.bD,
+		bB: impl.bB,
+		bz: impl.bz
 	});
 }
 
@@ -4141,17 +4141,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { dQ: 'hidden', dJ: 'visibilitychange' }
+		? { bb: 'hidden', a6: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { dQ: 'mozHidden', dJ: 'mozvisibilitychange' }
+		? { bb: 'mozHidden', a6: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { dQ: 'msHidden', dJ: 'msvisibilitychange' }
+		? { bb: 'msHidden', a6: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { dQ: 'webkitHidden', dJ: 'webkitvisibilitychange' }
-		: { dQ: 'hidden', dJ: 'visibilitychange' };
+		? { bb: 'webkitHidden', a6: 'webkitvisibilitychange' }
+		: { bb: 'hidden', a6: 'visibilitychange' };
 }
 
 
@@ -4232,12 +4232,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		dr: _Browser_getScene(),
-		dB: {
-			dD: _Browser_window.pageXOffset,
-			dE: _Browser_window.pageYOffset,
-			dC: _Browser_doc.documentElement.clientWidth,
-			c0: _Browser_doc.documentElement.clientHeight
+		aV: _Browser_getScene(),
+		aZ: {
+			a$: _Browser_window.pageXOffset,
+			a0: _Browser_window.pageYOffset,
+			a_: _Browser_doc.documentElement.clientWidth,
+			aE: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4247,8 +4247,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		dC: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		c0: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		a_: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		aE: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4271,15 +4271,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			dr: {
-				dC: node.scrollWidth,
-				c0: node.scrollHeight
+			aV: {
+				a_: node.scrollWidth,
+				aE: node.scrollHeight
 			},
-			dB: {
-				dD: node.scrollLeft,
-				dE: node.scrollTop,
-				dC: node.clientWidth,
-				c0: node.clientHeight
+			aZ: {
+				a$: node.scrollLeft,
+				a0: node.scrollTop,
+				a_: node.clientWidth,
+				aE: node.clientHeight
 			}
 		};
 	});
@@ -4309,18 +4309,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			dr: _Browser_getScene(),
-			dB: {
-				dD: x,
-				dE: y,
-				dC: _Browser_doc.documentElement.clientWidth,
-				c0: _Browser_doc.documentElement.clientHeight
+			aV: _Browser_getScene(),
+			aZ: {
+				a$: x,
+				a0: y,
+				a_: _Browser_doc.documentElement.clientWidth,
+				aE: _Browser_doc.documentElement.clientHeight
 			},
-			dM: {
-				dD: x + rect.left,
-				dE: y + rect.top,
-				dC: rect.width,
-				c0: rect.height
+			a8: {
+				a$: x + rect.left,
+				a0: y + rect.top,
+				a_: rect.width,
+				aE: rect.height
 			}
 		};
 	});
@@ -4401,8 +4401,8 @@ var _Regex_never = /.^/;
 var _Regex_fromStringWith = F2(function(options, string)
 {
 	var flags = 'g';
-	if (options.d$) { flags += 'm'; }
-	if (options.dI) { flags += 'i'; }
+	if (options.bj) { flags += 'm'; }
+	if (options.a5) { flags += 'i'; }
 
 	try
 	{
@@ -4493,6 +4493,10 @@ var _Regex_splitAtMost = F3(function(n, re, str)
 });
 
 var _Regex_infinity = Infinity;
+var $elm$core$Maybe$Just = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$core$Maybe$Nothing = {$: 1};
 var $elm$core$Basics$EQ = 1;
 var $elm$core$Basics$GT = 2;
 var $elm$core$Basics$LT = 0;
@@ -4596,10 +4600,6 @@ var $elm$json$Json$Decode$OneOf = function (a) {
 };
 var $elm$core$Basics$False = 1;
 var $elm$core$Basics$add = _Basics_add;
-var $elm$core$Maybe$Just = function (a) {
-	return {$: 0, a: a};
-};
-var $elm$core$Maybe$Nothing = {$: 1};
 var $elm$core$String$all = _String_all;
 var $elm$core$Basics$and = _Basics_and;
 var $elm$core$Basics$append = _Utils_append;
@@ -4997,7 +4997,7 @@ var $elm$url$Url$Http = 0;
 var $elm$url$Url$Https = 1;
 var $elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {c$: fragment, c1: host, dg: path, di: port_, dm: protocol, dn: query};
+		return {aD: fragment, aF: host, aM: path, aO: port_, aR: protocol, aS: query};
 	});
 var $elm$core$String$contains = _String_contains;
 var $elm$core$String$length = _String_length;
@@ -5436,37 +5436,37 @@ var $author$project$ConsumableItems$healingItems = $elm$core$Array$fromList(
 	A2(
 		$elm$core$List$map,
 		function (_v0) {
-			var name = _v0.d0;
+			var name = _v0.bk;
 			var tier = _v0.f;
-			return {cj: false, d0: name, dt: $author$project$Status$Unseen, f: tier};
+			return {ac: false, bk: name, aW: $author$project$Status$Unseen, f: tier};
 		},
 		_List_fromArray(
 			[
-				{d0: 'Cure2', f: 3},
-				{d0: 'Cure3', f: 4},
-				{d0: 'Life', f: 2},
-				{d0: 'Tent', f: 2},
-				{d0: 'Cabin', f: 4},
-				{d0: 'Ether', f: 3},
-				{d0: 'Status-healing', f: 1}
+				{bk: 'Cure2', f: 3},
+				{bk: 'Cure3', f: 4},
+				{bk: 'Life', f: 2},
+				{bk: 'Tent', f: 2},
+				{bk: 'Cabin', f: 4},
+				{bk: 'Ether', f: 3},
+				{bk: 'Status-healing', f: 1}
 			])));
 var $author$project$ConsumableItems$jItems = $elm$core$Array$fromList(
 	A2(
 		$elm$core$List$map,
 		function (_v0) {
-			var name = _v0.d0;
+			var name = _v0.bk;
 			var tier = _v0.f;
-			return {cj: true, d0: name, dt: $author$project$Status$Unseen, f: tier};
+			return {ac: true, bk: name, aW: $author$project$Status$Unseen, f: tier};
 		},
 		_List_fromArray(
 			[
-				{d0: 'Bacchus', f: 5},
-				{d0: 'Coffin', f: 5},
-				{d0: 'Hourglass', f: 5},
-				{d0: 'Moonveil', f: 7},
-				{d0: 'Siren', f: 5},
-				{d0: 'Starveil', f: 2},
-				{d0: 'Vampire', f: 4}
+				{bk: 'Bacchus', f: 5},
+				{bk: 'Coffin', f: 5},
+				{bk: 'Hourglass', f: 5},
+				{bk: 'Moonveil', f: 7},
+				{bk: 'Siren', f: 5},
+				{bk: 'Starveil', f: 2},
+				{bk: 'Vampire', f: 4}
 			])));
 var $author$project$Objective$Bahamut = 27;
 var $author$project$Value$Boss = function (a) {
@@ -5520,22 +5520,22 @@ var $author$project$Objective$WyvernAltar = 20;
 var $author$project$Location$moon = _List_fromArray(
 	[
 		{
-		w: 53,
-		d0: 'Hummingway',
+		r: 53,
+		bk: 'Hummingway',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Shop($author$project$Value$Item)
 			])
 	},
 		{
-		w: 54,
-		d0: 'Cave Bahamut',
+		r: 54,
+		bk: 'Cave Bahamut',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 174, cQ: 13, b: 35000, c: 0, dR: 99, c2: 37000, dY: 17, da: 27, cn: 27, el: 170}),
+				{ab: 174, ax: 13, b: 35000, c: 0, bc: 99, aG: 37000, bg: 17, aI: 27, ag: 27, bC: 170}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(27)),
 				$author$project$Value$KeyItem(2),
@@ -5545,20 +5545,20 @@ var $author$project$Location$moon = _List_fromArray(
 			])
 	},
 		{
-		w: 55,
-		d0: 'Lunar Path',
+		r: 55,
+		bk: 'Lunar Path',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Chest(2),
 				$author$project$Value$TrappedChest(1)
 			])
 	},
 		{
-		w: 56,
-		d0: 'Lunar Palace',
+		r: 56,
+		bk: 'Lunar Palace',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Character(1),
 				$author$project$Value$Chest(21),
@@ -5566,13 +5566,13 @@ var $author$project$Location$moon = _List_fromArray(
 			])
 	},
 		{
-		w: 57,
-		d0: 'Altar 1 (Murasame)',
+		r: 57,
+		bk: 'Altar 1 (Murasame)',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 144, cQ: 11, b: 59000, c: 0, dR: 85, c2: 27300, dY: 31, da: 43, cn: 40, el: 255}),
+				{ab: 144, ax: 11, b: 59000, c: 0, bc: 85, aG: 27300, bg: 31, aI: 43, ag: 40, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(30)),
 				$author$project$Value$KeyItem(3),
@@ -5581,13 +5581,13 @@ var $author$project$Location$moon = _List_fromArray(
 			])
 	},
 		{
-		w: 58,
-		d0: 'Altar 2 (Crystal Sword)',
+		r: 58,
+		bk: 'Altar 2 (Crystal Sword)',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 160, cQ: 12, b: 64300, c: 0, dR: 90, c2: 25000, dY: 8, da: 46, cn: 43, el: 255}),
+				{ab: 160, ax: 12, b: 64300, c: 0, bc: 90, aG: 25000, bg: 8, aI: 46, ag: 43, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(31)),
 				$author$project$Value$KeyItem(3),
@@ -5596,13 +5596,13 @@ var $author$project$Location$moon = _List_fromArray(
 			])
 	},
 		{
-		w: 59,
-		d0: 'Altar 3 (White Spear)',
+		r: 59,
+		bk: 'Altar 3 (White Spear)',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 146, cQ: 11, b: 31200, c: 550, dR: 90, c2: 28000, dY: 96, da: 32, cn: 29, el: 255}),
+				{ab: 146, ax: 11, b: 31200, c: 550, bc: 90, aG: 28000, bg: 96, aI: 32, ag: 29, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(32)),
 				$author$project$Value$KeyItem(3),
@@ -5611,13 +5611,13 @@ var $author$project$Location$moon = _List_fromArray(
 			])
 	},
 		{
-		w: 60,
-		d0: 'Altar 4 (Ribbons)',
+		r: 60,
+		bk: 'Altar 4 (Ribbons)',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 144, cQ: 11, b: 100000, c: 0, dR: 85, c2: 42000, dY: 36, da: 30, cn: 30, el: 255}),
+				{ab: 144, ax: 11, b: 100000, c: 0, bc: 85, aG: 42000, bg: 36, aI: 30, ag: 30, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(33)),
 				$author$project$Value$KeyItem(3),
@@ -5626,13 +5626,13 @@ var $author$project$Location$moon = _List_fromArray(
 			])
 	},
 		{
-		w: 61,
-		d0: 'Altar 5 (Masamune)',
+		r: 61,
+		bk: 'Altar 5 (Masamune)',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 150, cQ: 11, b: 61100, c: 0, dR: 99, c2: 37000, dY: 127, da: 38, cn: 38, el: 255}),
+				{ab: 150, ax: 11, b: 61100, c: 0, bc: 99, aG: 37000, bg: 127, aI: 38, ag: 38, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(34)),
 				$author$project$Value$KeyItem(3),
@@ -5760,13 +5760,13 @@ var $author$project$Location$Zot = 28;
 var $author$project$Location$surface = _List_fromArray(
 	[
 		{
-		w: 0,
-		d0: 'Mist Cave',
+		r: 0,
+		bk: 'Mist Cave',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 16, cQ: 2, b: 700, c: 200, dR: 90, c2: 465, dY: 10, da: 5, cn: 5, el: 255}),
+				{ab: 16, ax: 2, b: 700, c: 200, bc: 90, aG: 465, bg: 10, aI: 5, ag: 5, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(0)),
 				$author$project$Value$Chest(4),
@@ -5775,34 +5775,34 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 1,
-		d0: 'Mist Village',
+		r: 1,
+		bk: 'Mist Village',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Chest(7)
 			])
 	},
 		{
-		w: 2,
-		d0: 'Mist Village',
+		r: 2,
+		bk: 'Mist Village',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Shop($author$project$Value$Weapon),
 				$author$project$Value$Shop($author$project$Value$Armour)
 			])
 	},
 		{
-		w: 3,
-		d0: 'Mist - Package',
+		r: 3,
+		bk: 'Mist - Package',
 		a: _List_fromArray(
 			[$author$project$Requirement$Package]),
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Character(1),
 				$author$project$Value$Boss(
-				{b9: 26, cQ: 3, b: 880, c: 245, dR: 75, c2: 302, dY: 11, da: 4, cn: 2, el: 255}),
+				{ab: 26, ax: 3, b: 880, c: 245, bc: 75, aG: 302, bg: 11, aI: 4, ag: 2, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(1)),
 				$author$project$Value$Objective(
@@ -5810,23 +5810,23 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 4,
-		d0: 'Mist - Mom',
+		r: 4,
+		bk: 'Mist - Mom',
 		a: _List_fromArray(
 			[
 				$author$project$Requirement$Pseudo(1)
 			]),
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$KeyItem(0),
 				$author$project$Value$KeyItem(6)
 			])
 	},
 		{
-		w: 5,
-		d0: 'Kaipo',
+		r: 5,
+		bk: 'Kaipo',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				A2(
 				$author$project$Value$GatedValue,
@@ -5841,10 +5841,10 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 6,
-		d0: 'Kaipo',
+		r: 6,
+		bk: 'Kaipo',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Shop($author$project$Value$Weapon),
 				$author$project$Value$Shop($author$project$Value$Armour),
@@ -5852,23 +5852,23 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 7,
-		d0: 'Watery Pass',
+		r: 7,
+		bk: 'Watery Pass',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Character(0),
 				$author$project$Value$Chest(19)
 			])
 	},
 		{
-		w: 8,
-		d0: 'Waterfall',
+		r: 8,
+		bk: 'Waterfall',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 22, cQ: 2, b: 1200, c: 500, dR: 99, c2: 2350, dY: 10, da: 31, cn: 31, el: 255}),
+				{ab: 22, ax: 2, b: 1200, c: 500, bc: 99, aG: 2350, bg: 10, aI: 31, ag: 31, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(2)),
 				$author$project$Value$Chest(4),
@@ -5877,23 +5877,23 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 9,
-		d0: 'Damcyan',
+		r: 9,
+		bk: 'Damcyan',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Character(0),
 				$author$project$Value$Chest(13)
 			])
 	},
 		{
-		w: 10,
-		d0: 'Antlion Cave',
+		r: 10,
+		bk: 'Antlion Cave',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 11, cQ: 2, b: 1500, c: 800, dR: 85, c2: 1000, dY: 1, da: 5, cn: 5, el: 170}),
+				{ab: 11, ax: 2, b: 1500, c: 800, bc: 85, aG: 1000, bg: 1, aI: 5, ag: 5, bC: 170}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(3)),
 				$author$project$Value$KeyItem(0),
@@ -5904,13 +5904,13 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 11,
-		d0: 'Mt. Hobs',
+		r: 11,
+		bk: 'Mt. Hobs',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 30, cQ: 3, b: 4360, c: 1755, dR: 80, c2: 1250, dY: 5, da: 7, cn: 7, el: 174}),
+				{ab: 30, ax: 3, b: 4360, c: 1755, bc: 80, aG: 1250, bg: 5, aI: 7, ag: 7, bC: 174}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(5)),
 				$author$project$Value$Character(1),
@@ -5920,10 +5920,10 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 12,
-		d0: 'Fabul',
+		r: 12,
+		bk: 'Fabul',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Shop($author$project$Value$Weapon),
 				$author$project$Value$Shop($author$project$Value$Armour),
@@ -5931,13 +5931,13 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 13,
-		d0: 'Fabul Defence',
+		r: 13,
+		bk: 'Fabul Defence',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 36, cQ: 3, b: 5590, c: 1425, dR: 90, c2: 1880, dY: 15, da: 9, cn: 6, el: 254}),
+				{ab: 36, ax: 3, b: 5590, c: 1425, bc: 90, aG: 1880, bg: 15, aI: 9, ag: 6, bC: 254}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(6)),
 				$author$project$Value$KeyItem(0),
@@ -5947,10 +5947,10 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 14,
-		d0: 'Sheila',
+		r: 14,
+		bk: 'Sheila',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				A2(
 				$author$project$Value$GatedValue,
@@ -5976,10 +5976,10 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 15,
-		d0: 'Mysidia',
+		r: 15,
+		bk: 'Mysidia',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Character(0),
 				$author$project$Value$Character(0),
@@ -5991,10 +5991,10 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 16,
-		d0: 'Mysidia',
+		r: 16,
+		bk: 'Mysidia',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Shop($author$project$Value$Weapon),
 				$author$project$Value$Shop($author$project$Value$Armour),
@@ -6002,24 +6002,24 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 17,
-		d0: 'Mt. Ordeals',
+		r: 17,
+		bk: 'Mt. Ordeals',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Character(0),
 				$author$project$Value$Boss(
-				{b9: 19, cQ: 1, b: 3800, c: 3300, dR: 75, c2: 2780, dY: 14, da: 8, cn: 8, el: 0}),
+				{ab: 19, ax: 1, b: 3800, c: 3300, bc: 75, aG: 2780, bg: 14, aI: 8, ag: 8, bC: 0}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(7)),
 				$author$project$Value$Boss(
-				{b9: 44, cQ: 3, b: 4000, c: 3000, dR: 99, c2: 3000, dY: 31, da: 9, cn: 9, el: 255}),
+				{ab: 44, ax: 3, b: 4000, c: 3000, bc: 99, aG: 3000, bg: 31, aI: 9, ag: 9, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(8)),
 				$author$project$Value$KeyItem(0),
 				$author$project$Value$KeyItem(6),
 				$author$project$Value$Boss(
-				{b9: 46, cQ: 3, b: 0, c: 0, dR: 99, c2: 1000, dY: 17, da: 5, cn: 5, el: 254}),
+				{ab: 46, ax: 3, b: 0, c: 0, bc: 99, aG: 1000, bg: 17, aI: 5, ag: 5, bC: 254}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(9)),
 				$author$project$Value$Chest(4),
@@ -6028,17 +6028,17 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 18,
-		d0: 'Baron Town',
+		r: 18,
+		bk: 'Baron Town',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 46, cQ: 3, b: 1440, c: 1000, dR: 99, c2: 400, dY: 26, da: 14, cn: 11, el: 255}),
+				{ab: 46, ax: 3, b: 1440, c: 1000, bc: 99, aG: 400, bg: 26, aI: 14, ag: 11, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(10)),
 				$author$project$Value$Boss(
-				{b9: 86, cQ: 6, b: 0, c: 0, dR: 99, c2: 4000, dY: 31, da: 7, cn: 4, el: 0}),
+				{ab: 86, ax: 6, b: 0, c: 0, bc: 99, aG: 4000, bg: 31, aI: 7, ag: 4, bC: 0}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(11)),
 				$author$project$Value$Character(1),
@@ -6055,10 +6055,10 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 19,
-		d0: 'Baron',
+		r: 19,
+		bk: 'Baron',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				A2(
 				$author$project$Value$GatedValue,
@@ -6072,28 +6072,28 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 20,
-		d0: 'Baron Sewer',
+		r: 20,
+		bk: 'Baron Sewer',
 		a: _List_fromArray(
 			[$author$project$Requirement$BaronKey]),
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Chest(9)
 			])
 	},
 		{
-		w: 21,
-		d0: 'Baron Castle',
+		r: 21,
+		bk: 'Baron Castle',
 		a: _List_fromArray(
 			[$author$project$Requirement$BaronKey]),
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 52, cQ: 4, b: 4820, c: 3000, dR: 99, c2: 4200, dY: 9, da: 8, cn: 8, el: 254}),
+				{ab: 52, ax: 4, b: 4820, c: 3000, bc: 99, aG: 4200, bg: 9, aI: 8, ag: 8, bC: 254}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(12)),
 				$author$project$Value$Boss(
-				{b9: 44, cQ: 3, b: 5500, c: 4000, dR: 99, c2: 4000, dY: 29, da: 15, cn: 15, el: 255}),
+				{ab: 44, ax: 3, b: 5500, c: 4000, bc: 99, aG: 4000, bg: 29, aI: 15, ag: 15, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(13)),
 				$author$project$Value$Character(1),
@@ -6105,14 +6105,14 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 22,
-		d0: 'Baron Basement',
+		r: 22,
+		bk: 'Baron Basement',
 		a: _List_fromArray(
 			[$author$project$Requirement$BaronKey]),
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 116, cQ: 9, b: 18000, c: 0, dR: 85, c2: 20500, dY: 95, da: 46, cn: 43, el: 255}),
+				{ab: 116, ax: 9, b: 18000, c: 0, bc: 85, aG: 20500, bg: 95, aI: 46, ag: 43, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(26)),
 				$author$project$Value$KeyItem(2),
@@ -6121,10 +6121,10 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 23,
-		d0: 'Toroia',
+		r: 23,
+		bk: 'Toroia',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Chest(4),
 				A2(
@@ -6135,10 +6135,10 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 24,
-		d0: 'Toroia',
+		r: 24,
+		bk: 'Toroia',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Shop($author$project$Value$Weapon),
 				$author$project$Value$Shop($author$project$Value$Armour),
@@ -6146,21 +6146,21 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 25,
-		d0: 'Toroia Castle',
+		r: 25,
+		bk: 'Toroia Castle',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$KeyItem(5),
 				$author$project$Value$Chest(9)
 			])
 	},
 		{
-		w: 26,
-		d0: 'Toroia Treasury',
+		r: 26,
+		bk: 'Toroia Treasury',
 		a: _List_fromArray(
 			[$author$project$Requirement$EarthCrystal]),
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Chest(18),
 				$author$project$Value$Objective(
@@ -6168,16 +6168,16 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 27,
-		d0: 'Cave Magnes',
+		r: 27,
+		bk: 'Cave Magnes',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				A2(
 				$author$project$Value$GatedValue,
 				$author$project$Requirement$TwinHarp,
 				$author$project$Value$Boss(
-					{b9: 54, cQ: 4, b: 7000, c: 9000, dR: 99, c2: 5000, dY: 15, da: 11, cn: 11, el: 255})),
+					{ab: 54, ax: 4, b: 7000, c: 9000, bc: 99, aG: 5000, bg: 15, aI: 11, ag: 11, bC: 255})),
 				A2(
 				$author$project$Value$GatedValue,
 				$author$project$Requirement$TwinHarp,
@@ -6205,13 +6205,13 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 28,
-		d0: 'Tower of Zot',
+		r: 28,
+		bk: 'Tower of Zot',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 60, cQ: 5, b: 9000, c: 9000, dR: 80, c2: 9000, dY: 11, da: 7, cn: 7, el: 254}),
+				{ab: 60, ax: 5, b: 9000, c: 9000, bc: 80, aG: 9000, bg: 11, aI: 7, ag: 7, bC: 254}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(15)),
 				A2(
@@ -6226,7 +6226,7 @@ var $author$project$Location$surface = _List_fromArray(
 				$author$project$Value$GatedValue,
 				$author$project$Requirement$EarthCrystal,
 				$author$project$Value$Boss(
-					{b9: 70, cQ: 5, b: 9500, c: 5500, dR: 99, c2: 6000, dY: 63, da: 18, cn: 18, el: 255})),
+					{ab: 70, ax: 5, b: 9500, c: 5500, bc: 99, aG: 6000, bg: 63, aI: 18, ag: 18, bC: 255})),
 				A2(
 				$author$project$Value$GatedValue,
 				$author$project$Requirement$EarthCrystal,
@@ -6250,10 +6250,10 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 29,
-		d0: 'Agart',
+		r: 29,
+		bk: 'Agart',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Chest(1),
 				A2(
@@ -6264,10 +6264,10 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 30,
-		d0: 'Agart',
+		r: 30,
+		bk: 'Agart',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Shop($author$project$Value$Weapon),
 				$author$project$Value$Shop($author$project$Value$Armour),
@@ -6275,19 +6275,19 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 31,
-		d0: 'Silvera',
+		r: 31,
+		bk: 'Silvera',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Chest(3)
 			])
 	},
 		{
-		w: 32,
-		d0: 'Silvera',
+		r: 32,
+		bk: 'Silvera',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Shop($author$project$Value$Weapon),
 				$author$project$Value$Shop($author$project$Value$Armour),
@@ -6295,11 +6295,11 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 33,
-		d0: 'Adamant Grotto',
+		r: 33,
+		bk: 'Adamant Grotto',
 		a: _List_fromArray(
 			[$author$project$Requirement$Hook]),
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				A2(
 				$author$project$Value$GatedValue,
@@ -6322,21 +6322,21 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 34,
-		d0: 'Castle Eblan',
+		r: 34,
+		bk: 'Castle Eblan',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Chest(19),
 				$author$project$Value$TrappedChest(3)
 			])
 	},
 		{
-		w: 35,
-		d0: 'Cave Eblan',
+		r: 35,
+		bk: 'Cave Eblan',
 		a: _List_fromArray(
 			[$author$project$Requirement$Hook]),
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Character(1),
 				$author$project$Value$Chest(21),
@@ -6344,11 +6344,11 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 36,
-		d0: 'Eblan',
+		r: 36,
+		bk: 'Eblan',
 		a: _List_fromArray(
 			[$author$project$Requirement$Hook]),
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Shop($author$project$Value$Weapon),
 				$author$project$Value$Shop($author$project$Value$Armour),
@@ -6356,18 +6356,18 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 37,
-		d0: 'Upper Bab-il',
+		r: 37,
+		bk: 'Upper Bab-il',
 		a: _List_fromArray(
 			[$author$project$Requirement$Hook]),
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 116, cQ: 9, b: 0, c: 0, dR: 85, c2: 6000, dY: 15, da: 53, cn: 53, el: 0}),
+				{ab: 116, ax: 9, b: 0, c: 0, bc: 85, aG: 6000, bg: 15, aI: 53, ag: 53, bC: 0}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(21)),
 				$author$project$Value$Boss(
-				{b9: 88, cQ: 7, b: 25000, c: 700, dR: 80, c2: 25200, dY: 16, da: 38, cn: 38, el: 255}),
+				{ab: 88, ax: 7, b: 25000, c: 700, bc: 80, aG: 25200, bg: 16, aI: 38, ag: 38, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(22)),
 				$author$project$Value$Chest(7),
@@ -6379,18 +6379,18 @@ var $author$project$Location$surface = _List_fromArray(
 			])
 	},
 		{
-		w: 38,
-		d0: 'Giant of Bab-il',
+		r: 38,
+		bk: 'Giant of Bab-il',
 		a: _List_fromArray(
 			[$author$project$Requirement$DarknessCrystal]),
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 128, cQ: 10, b: 102500, c: 20000, dR: 80, c2: 65000, dY: 15, da: 89, cn: 89, el: 86}),
+				{ab: 128, ax: 10, b: 102500, c: 20000, bc: 80, aG: 65000, bg: 15, aI: 89, ag: 89, bC: 86}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(28)),
 				$author$project$Value$Boss(
-				{b9: 174, cQ: 13, b: 150000, c: 10333, dR: 99, c2: 24000, dY: 127, da: 38, cn: 38, el: 255}),
+				{ab: 174, ax: 13, b: 150000, c: 10333, bc: 99, aG: 24000, bg: 127, aI: 38, ag: 38, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(29)),
 				$author$project$Value$Character(1),
@@ -6443,18 +6443,18 @@ var $author$project$Flags$Warp = 1;
 var $author$project$Location$underground = _List_fromArray(
 	[
 		{
-		w: 39,
-		d0: 'Dwarf Castle',
+		r: 39,
+		bk: 'Dwarf Castle',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 96, cQ: 7, b: 21000, c: 8000, dR: 99, c2: 8524, dY: 41, da: 11, cn: 11, el: 255}),
+				{ab: 96, ax: 7, b: 21000, c: 8000, bc: 99, aG: 8524, bg: 41, aI: 11, ag: 11, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(17)),
 				$author$project$Value$Character(1),
 				$author$project$Value$Boss(
-				{b9: 68, cQ: 5, b: 20000, c: 11000, dR: 99, c2: 3002, dY: 1, da: 27, cn: 27, el: 0}),
+				{ab: 68, ax: 5, b: 20000, c: 11000, bc: 99, aG: 3002, bg: 1, aI: 27, ag: 27, bC: 0}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(18)),
 				$author$project$Value$KeyItem(0),
@@ -6466,10 +6466,10 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		w: 40,
-		d0: 'Dwarf Castle',
+		r: 40,
+		bk: 'Dwarf Castle',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Shop($author$project$Value$Weapon),
 				$author$project$Value$Shop($author$project$Value$Armour),
@@ -6477,13 +6477,13 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		w: 41,
-		d0: 'Lower Bab-il',
+		r: 41,
+		bk: 'Lower Bab-il',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 86, cQ: 6, b: 26020, c: 11000, dR: 99, c2: 18943, dY: 7, da: 27, cn: 27, el: 0}),
+				{ab: 86, ax: 6, b: 26020, c: 11000, bc: 99, aG: 18943, bg: 7, aI: 27, ag: 27, bC: 0}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(19)),
 				$author$project$Value$KeyItem(0),
@@ -6495,14 +6495,14 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		w: 42,
-		d0: 'Super Cannon',
+		r: 42,
+		bk: 'Super Cannon',
 		a: _List_fromArray(
 			[$author$project$Requirement$TowerKey]),
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 56, cQ: 5, b: 5820, c: 135, dR: 70, c2: 597, dY: 16, da: 21, cn: 18, el: 0}),
+				{ab: 56, ax: 5, b: 5820, c: 135, bc: 70, aG: 597, bg: 16, aI: 21, ag: 18, bC: 0}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(20)),
 				$author$project$Value$KeyItem(0),
@@ -6512,10 +6512,10 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		w: 43,
-		d0: 'Sylph Cave',
+		r: 43,
+		bk: 'Sylph Cave',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Requirement(
 				$author$project$Requirement$Pseudo(3)),
@@ -6538,10 +6538,10 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		w: 44,
-		d0: 'Feymarch',
+		r: 44,
+		bk: 'Feymarch',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$KeyItem(0),
 				$author$project$Value$KeyItem(6),
@@ -6550,10 +6550,10 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		w: 45,
-		d0: 'Feymarch',
+		r: 45,
+		bk: 'Feymarch',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Shop($author$project$Value$Weapon),
 				$author$project$Value$Shop($author$project$Value$Armour),
@@ -6561,13 +6561,13 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		w: 46,
-		d0: 'Feymarch King',
+		r: 46,
+		bk: 'Feymarch King',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 174, cQ: 13, b: 28000, c: 0, dR: 99, c2: 35000, dY: 34, da: 53, cn: 53, el: 255}),
+				{ab: 174, ax: 13, b: 28000, c: 0, bc: 99, aG: 35000, bg: 34, aI: 53, ag: 53, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(25)),
 				$author$project$Value$KeyItem(2),
@@ -6576,13 +6576,13 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		w: 47,
-		d0: 'Feymarch Queen',
+		r: 47,
+		bk: 'Feymarch Queen',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Boss(
-				{b9: 134, cQ: 10, b: 20000, c: 0, dR: 99, c2: 23000, dY: 69, da: 66, cn: 66, el: 255}),
+				{ab: 134, ax: 10, b: 20000, c: 0, bc: 99, aG: 23000, bg: 69, aI: 66, ag: 66, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(24)),
 				$author$project$Value$KeyItem(2),
@@ -6591,19 +6591,19 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		w: 48,
-		d0: 'Tomra',
+		r: 48,
+		bk: 'Tomra',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Chest(6)
 			])
 	},
 		{
-		w: 49,
-		d0: 'Tomra',
+		r: 49,
+		bk: 'Tomra',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Shop($author$project$Value$Weapon),
 				$author$project$Value$Shop($author$project$Value$Armour),
@@ -6611,16 +6611,16 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		w: 50,
-		d0: 'Sealed Cave',
+		r: 50,
+		bk: 'Sealed Cave',
 		a: _List_fromArray(
 			[$author$project$Requirement$LucaKey]),
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$KeyItem(0),
 				$author$project$Value$KeyItem(6),
 				$author$project$Value$Boss(
-				{b9: 84, cQ: 6, b: 23000, c: 8000, dR: 90, c2: 19000, dY: 79, da: 66, cn: 66, el: 255}),
+				{ab: 84, ax: 6, b: 23000, c: 8000, bc: 90, aG: 19000, bg: 79, aI: 66, ag: 66, bC: 255}),
 				$author$project$Value$Objective(
 				$author$project$Objective$DefeatBoss(23)),
 				$author$project$Value$Chest(19),
@@ -6631,10 +6631,10 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		w: 51,
-		d0: 'Kokkol',
+		r: 51,
+		bk: 'Kokkol',
 		a: _List_Nil,
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Chest(4),
 				A2(
@@ -6649,11 +6649,11 @@ var $author$project$Location$underground = _List_fromArray(
 			])
 	},
 		{
-		w: 52,
-		d0: 'Kokkol',
+		r: 52,
+		bk: 'Kokkol',
 		a: _List_fromArray(
 			[$author$project$Requirement$LegendSword, $author$project$Requirement$Adamant]),
-		cK: _List_fromArray(
+		at: _List_fromArray(
 			[
 				$author$project$Value$Shop($author$project$Value$Weapon),
 				$author$project$Value$Shop($author$project$Value$Armour),
@@ -6696,18 +6696,18 @@ var $author$project$Location$all = function () {
 	var finish = F2(
 		function (area, l) {
 			return {
-				X: area,
-				ck: A2($elm$core$List$any, isShop, l.cK),
-				w: l.w,
-				d0: l.d0,
+				H: area,
+				ad: A2($elm$core$List$any, isShop, l.at),
+				r: l.r,
+				bk: l.bk,
 				k: $elm$core$Array$fromList(
 					A2(
 						$elm$core$List$map,
 						$author$project$Location$Property($author$project$Status$Unseen),
 						addOther(
-							A2($elm$core$List$concatMap, expandShop, l.cK)))),
+							A2($elm$core$List$concatMap, expandShop, l.at)))),
 				a: $Gizra$elm_all_set$EverySet$fromList(l.a),
-				dt: $author$project$Status$Unseen
+				aW: $author$project$Status$Unseen
 			};
 		});
 	return $pzp1997$assoc_list$AssocList$fromList(
@@ -6715,7 +6715,7 @@ var $author$project$Location$all = function () {
 			A2(
 				$elm$core$List$map,
 				function (l) {
-					return _Utils_Tuple2(l.w, l);
+					return _Utils_Tuple2(l.r, l);
 				},
 				_Utils_ap(
 					A2(
@@ -6732,8 +6732,101 @@ var $author$project$Location$all = function () {
 							finish(2),
 							$author$project$Location$moon))))));
 }();
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (!maybeValue.$) {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $author$project$Colour$Colours = F3(
+	function (background, hoverBackground, text) {
+		return {a3: background, T: hoverBackground, bA: text};
+	});
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$map3 = _Json_map3;
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$Colour$decoder = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$Colour$Colours,
+	A2($elm$json$Json$Decode$field, 'background', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'hoverBackground', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'text', $elm$json$Json$Decode$string));
+var $author$project$Colour$darkText = '#000000';
+var $author$project$Colour$lightHover = '#e2e3e4';
+var $author$project$Colour$defaults = {a3: '#ffffff', T: $author$project$Colour$lightHover, bA: $author$project$Colour$darkText};
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (!maybe.$) {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $elm$core$Result$toMaybe = function (result) {
+	if (!result.$) {
+		var v = result.a;
+		return $elm$core$Maybe$Just(v);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (!maybe.$) {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Colour$decode = A2(
+	$elm$core$Basics$composeR,
+	$elm$core$Maybe$map(
+		$elm$json$Json$Decode$decodeValue($author$project$Colour$decoder)),
+	A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Maybe$andThen($elm$core$Result$toMaybe),
+		$elm$core$Maybe$withDefault($author$project$Colour$defaults)));
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(0),
+			pairs));
+};
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Colour$encode = function (colours) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'background',
+				$elm$json$Json$Encode$string(colours.a3)),
+				_Utils_Tuple2(
+				'hoverBackground',
+				$elm$json$Json$Encode$string(colours.T)),
+				_Utils_Tuple2(
+				'text',
+				$elm$json$Json$Encode$string(colours.bA))
+			]));
+};
 var $author$project$Objective$Boss = 1;
 var $author$project$Objective$Character = 0;
 var $author$project$Objective$Fiends = {$: 2};
@@ -6929,10 +7022,10 @@ var $author$project$Objective$bosses = function () {
 		var flag = _v0.b;
 		var name = _v0.c;
 		return {
-			cW: 'Defeat ' + name,
-			ab: 'boss_' + flag,
-			ae: false,
-			w: $author$project$Objective$DefeatBoss(key)
+			aA: 'Defeat ' + name,
+			K: 'boss_' + flag,
+			L: false,
+			r: $author$project$Objective$DefeatBoss(key)
 		};
 	};
 	return A2(
@@ -6977,11 +7070,6 @@ var $author$project$Objective$bosses = function () {
 				_Utils_Tuple3(34, 'ogopogo', 'Ogopogo')
 			]));
 }();
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
 var $pzp1997$assoc_list$AssocList$get = F2(
 	function (targetKey, _v0) {
 		get:
@@ -7087,7 +7175,7 @@ var $author$project$Flags$parseB = F2(
 		if (_switch === 'vanilla') {
 			return _Utils_update(
 				flags,
-				{cL: true});
+				{au: true});
 		} else {
 			return flags;
 		}
@@ -7099,7 +7187,7 @@ var $author$project$Flags$parseC = F2(
 			var _v1 = _v0.b;
 			return _Utils_update(
 				flags,
-				{d1: true});
+				{bl: true});
 		} else {
 			return flags;
 		}
@@ -7110,8 +7198,8 @@ var $author$project$Flags$parseG = F2(
 			return _Utils_update(
 				flags,
 				{
-					c7: A2($Gizra$elm_all_set$EverySet$insert, 1, flags.c7),
-					cM: true
+					aH: A2($Gizra$elm_all_set$EverySet$insert, 1, flags.aH),
+					av: true
 				});
 		} else {
 			return flags;
@@ -7125,31 +7213,31 @@ var $author$project$Flags$parseK = F2(
 				return _Utils_update(
 					flags,
 					{
-						c7: A2($Gizra$elm_all_set$EverySet$insert, 6, flags.c7)
+						aH: A2($Gizra$elm_all_set$EverySet$insert, 6, flags.aH)
 					});
 			case 'main':
 				return _Utils_update(
 					flags,
 					{
-						c7: A2($Gizra$elm_all_set$EverySet$insert, 0, flags.c7)
+						aH: A2($Gizra$elm_all_set$EverySet$insert, 0, flags.aH)
 					});
 			case 'summon':
 				return _Utils_update(
 					flags,
 					{
-						c7: A2($Gizra$elm_all_set$EverySet$insert, 2, flags.c7)
+						aH: A2($Gizra$elm_all_set$EverySet$insert, 2, flags.aH)
 					});
 			case 'moon':
 				return _Utils_update(
 					flags,
 					{
-						c7: A2($Gizra$elm_all_set$EverySet$insert, 3, flags.c7)
+						aH: A2($Gizra$elm_all_set$EverySet$insert, 3, flags.aH)
 					});
 			case 'trap':
 				return _Utils_update(
 					flags,
 					{
-						c7: A2($Gizra$elm_all_set$EverySet$insert, 4, flags.c7)
+						aH: A2($Gizra$elm_all_set$EverySet$insert, 4, flags.aH)
 					});
 			default:
 				return flags;
@@ -7166,12 +7254,12 @@ var $author$project$Flags$parseN = F2(
 			case 'chars':
 				return _Utils_update(
 					flags,
-					{cp: true});
+					{ai: true});
 			case 'key':
 				return _Utils_update(
 					flags,
 					{
-						c7: A2($Gizra$elm_all_set$EverySet$remove, 5, flags.c7)
+						aH: A2($Gizra$elm_all_set$EverySet$remove, 5, flags.aH)
 					});
 			default:
 				return flags;
@@ -7199,14 +7287,14 @@ var $author$project$Objective$characters = function () {
 		var key = _v0.a;
 		var name = _v0.b;
 		return {
-			cW: 'Get ' + name,
-			ab: 'char_' + $elm$core$String$toLower(name),
-			ae: A2(
+			aA: 'Get ' + name,
+			K: 'char_' + $elm$core$String$toLower(name),
+			L: A2(
 				$elm$core$List$member,
 				key,
 				_List_fromArray(
 					[10, 11])),
-			w: $author$project$Objective$GetCharacter(key)
+			r: $author$project$Objective$GetCharacter(key)
 		};
 	};
 	return A2(
@@ -7234,7 +7322,7 @@ var $author$project$Objective$classic = function () {
 		var key = _v0.a;
 		var flag = _v0.b;
 		var desc = _v0.c;
-		return {cW: desc, ab: flag, ae: false, w: key};
+		return {aA: desc, K: flag, L: false, r: key};
 	};
 	return A2(
 		$elm$core$List$map,
@@ -7247,6 +7335,71 @@ var $author$project$Objective$classic = function () {
 				_Utils_Tuple3($author$project$Objective$DarkMatterHunt, 'dkmatter', 'Deliver 30 Dark Matter')
 			]));
 }();
+var $author$project$Objective$quests = function () {
+	var ungated = _List_fromArray(
+		[0, 1, 2, 3, 4, 5, 6, 38]);
+	var fromTuple = function (_v0) {
+		var key = _v0.a;
+		var flag = _v0.b;
+		var desc = _v0.c;
+		return {
+			aA: desc,
+			K: 'quest_' + flag,
+			L: !A2($elm$core$List$member, key, ungated),
+			r: $author$project$Objective$DoQuest(key)
+		};
+	};
+	return A2(
+		$elm$core$List$map,
+		fromTuple,
+		_List_fromArray(
+			[
+				_Utils_Tuple3(0, 'mistcave', 'Defeat the boss of the Mist Cave'),
+				_Utils_Tuple3(1, 'waterfall', 'Defeat the boss of the Waterfall'),
+				_Utils_Tuple3(2, 'antlionnest', 'Complete the Antlion Nest'),
+				_Utils_Tuple3(3, 'hobs', 'Rescue the hostage on Mt. Hobs'),
+				_Utils_Tuple3(4, 'fabul', 'Defend Fabul'),
+				_Utils_Tuple3(5, 'ordeals', 'Complete Mt. Ordeals'),
+				_Utils_Tuple3(6, 'baroninn', 'Defeat the bosses of Baron Inn'),
+				_Utils_Tuple3(7, 'baroncastle', 'Liberate Baron Castle'),
+				_Utils_Tuple3(8, 'magnes', 'Complete Cave Magnes'),
+				_Utils_Tuple3(9, 'zot', 'Complete the Tower of Zot'),
+				_Utils_Tuple3(10, 'dwarfcastle', 'Defeat the bosses of Dwarf Castle'),
+				_Utils_Tuple3(11, 'lowerbabil', 'Defeat the boss of Lower Bab-il'),
+				_Utils_Tuple3(12, 'falcon', 'Launch the Falcon'),
+				_Utils_Tuple3(13, 'sealedcave', 'Complete the Sealed Cave'),
+				_Utils_Tuple3(14, 'monsterqueen', 'Defeat the queen at the Town of Monsters'),
+				_Utils_Tuple3(15, 'monsterking', 'Defeat the king at the Town of Monsters'),
+				_Utils_Tuple3(16, 'baronbasement', 'Defeat the Baron Castle basement throne'),
+				_Utils_Tuple3(17, 'giant', 'Complete the Giant of Bab-il'),
+				_Utils_Tuple3(18, 'cavebahamut', 'Complete Cave Bahamut'),
+				_Utils_Tuple3(19, 'murasamealtar', 'Conquer the vanilla Murasame altar'),
+				_Utils_Tuple3(20, 'crystalaltar', 'Conquer the vanilla Crystal Sword altar'),
+				_Utils_Tuple3(21, 'whitealtar', 'Conquer the vanilla White Spear altar'),
+				_Utils_Tuple3(22, 'ribbonaltar', 'Conquer the vanillla Ribbon room'),
+				_Utils_Tuple3(23, 'masamunealtar', 'Conquer the vanilla Masamune Altar'),
+				_Utils_Tuple3(24, 'burnmist', 'Burn village Mist with the Package'),
+				_Utils_Tuple3(25, 'curefever', 'Cure the fever with the SandRuby'),
+				_Utils_Tuple3(26, 'unlocksewer', 'Unlock the sewer with the Baron Key'),
+				_Utils_Tuple3(27, 'music', 'Break the Dark Elf\'s spell with the TwinHarp'),
+				_Utils_Tuple3(28, 'toroiatreasury', 'Open the Toroia treasury with the Earth Crystal'),
+				_Utils_Tuple3(29, 'magma', 'Drop the Magma Key into the Agart well'),
+				_Utils_Tuple3(30, 'supercannon', 'Destroy the Super Cannon'),
+				_Utils_Tuple3(31, 'unlocksealedcave', 'Unlock the Sealed Cave'),
+				_Utils_Tuple3(32, 'bigwhale', 'Raise the Big Whale'),
+				_Utils_Tuple3(33, 'traderat', 'Trade away the Rat Tail'),
+				_Utils_Tuple3(34, 'forge', 'Have Kokkol forge Legend Sword with Adamant'),
+				_Utils_Tuple3(35, 'wakeyang', 'Wake Yang with the Pan'),
+				_Utils_Tuple3(36, 'tradepan', 'Return the Pan to Yang\'s wife'),
+				_Utils_Tuple3(37, 'tradepink', 'Trade away the Pink Tail'),
+				_Utils_Tuple3(38, 'pass', 'Unlock the Pass door in Toroia')
+			]));
+}();
+var $author$project$Objective$allObjectives = _Utils_ap(
+	$author$project$Objective$classic,
+	_Utils_ap(
+		$author$project$Objective$characters,
+		_Utils_ap($author$project$Objective$bosses, $author$project$Objective$quests)));
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $elm$core$Dict$Black = 1;
@@ -7370,77 +7523,13 @@ var $elm$core$Dict$fromList = function (assocs) {
 		$elm$core$Dict$empty,
 		assocs);
 };
-var $author$project$Objective$quests = function () {
-	var ungated = _List_fromArray(
-		[0, 1, 2, 3, 4, 5, 6, 38]);
-	var fromTuple = function (_v0) {
-		var key = _v0.a;
-		var flag = _v0.b;
-		var desc = _v0.c;
-		return {
-			cW: desc,
-			ab: 'quest_' + flag,
-			ae: !A2($elm$core$List$member, key, ungated),
-			w: $author$project$Objective$DoQuest(key)
-		};
-	};
-	return A2(
-		$elm$core$List$map,
-		fromTuple,
-		_List_fromArray(
-			[
-				_Utils_Tuple3(0, 'mistcave', 'Defeat the boss of the Mist Cave'),
-				_Utils_Tuple3(1, 'waterfall', 'Defeat the boss of the Waterfall'),
-				_Utils_Tuple3(2, 'antlionnest', 'Complete the Antlion Nest'),
-				_Utils_Tuple3(3, 'hobs', 'Rescue the hostage on Mt. Hobs'),
-				_Utils_Tuple3(4, 'fabul', 'Defend Fabul'),
-				_Utils_Tuple3(5, 'ordeals', 'Complete Mt. Ordeals'),
-				_Utils_Tuple3(6, 'baroninn', 'Defeat the bosses of Baron Inn'),
-				_Utils_Tuple3(7, 'baroncastle', 'Liberate Baron Castle'),
-				_Utils_Tuple3(8, 'magnes', 'Complete Cave Magnes'),
-				_Utils_Tuple3(9, 'zot', 'Complete the Tower of Zot'),
-				_Utils_Tuple3(10, 'dwarfcastle', 'Defeat the bosses of Dwarf Castle'),
-				_Utils_Tuple3(11, 'lowerbabil', 'Defeat the boss of Lower Bab-il'),
-				_Utils_Tuple3(12, 'falcon', 'Launch the Falcon'),
-				_Utils_Tuple3(13, 'sealedcave', 'Complete the Sealed Cave'),
-				_Utils_Tuple3(14, 'monsterqueen', 'Defeat the queen at the Town of Monsters'),
-				_Utils_Tuple3(15, 'monsterking', 'Defeat the king at the Town of Monsters'),
-				_Utils_Tuple3(16, 'baronbasement', 'Defeat the Baron Castle basement throne'),
-				_Utils_Tuple3(17, 'giant', 'Complete the Giant of Bab-il'),
-				_Utils_Tuple3(18, 'cavebahamut', 'Complete Cave Bahamut'),
-				_Utils_Tuple3(19, 'murasamealtar', 'Conquer the vanilla Murasame altar'),
-				_Utils_Tuple3(20, 'crystalaltar', 'Conquer the vanilla Crystal Sword altar'),
-				_Utils_Tuple3(21, 'whitealtar', 'Conquer the vanilla White Spear altar'),
-				_Utils_Tuple3(22, 'ribbonaltar', 'Conquer the vanillla Ribbon room'),
-				_Utils_Tuple3(23, 'masamunealtar', 'Conquer the vanilla Masamune Altar'),
-				_Utils_Tuple3(24, 'burnmist', 'Burn village Mist with the Package'),
-				_Utils_Tuple3(25, 'curefever', 'Cure the fever with the SandRuby'),
-				_Utils_Tuple3(26, 'unlocksewer', 'Unlock the sewer with the Baron Key'),
-				_Utils_Tuple3(27, 'music', 'Break the Dark Elf\'s spell with the TwinHarp'),
-				_Utils_Tuple3(28, 'toroiatreasury', 'Open the Toroia treasury with the Earth Crystal'),
-				_Utils_Tuple3(29, 'magma', 'Drop the Magma Key into the Agart well'),
-				_Utils_Tuple3(30, 'supercannon', 'Destroy the Super Cannon'),
-				_Utils_Tuple3(31, 'unlocksealedcave', 'Unlock the Sealed Cave'),
-				_Utils_Tuple3(32, 'bigwhale', 'Raise the Big Whale'),
-				_Utils_Tuple3(33, 'traderat', 'Trade away the Rat Tail'),
-				_Utils_Tuple3(34, 'forge', 'Have Kokkol forge Legend Sword with Adamant'),
-				_Utils_Tuple3(35, 'wakeyang', 'Wake Yang with the Pan'),
-				_Utils_Tuple3(36, 'tradepan', 'Return the Pan to Yang\'s wife'),
-				_Utils_Tuple3(37, 'tradepink', 'Trade away the Pink Tail'),
-				_Utils_Tuple3(38, 'pass', 'Unlock the Pass door in Toroia')
-			]));
-}();
-var $author$project$Objective$allObjectives = $elm$core$Dict$fromList(
+var $author$project$Objective$allObjectivesByFlag = $elm$core$Dict$fromList(
 	A2(
 		$elm$core$List$map,
 		function (o) {
-			return _Utils_Tuple2(o.ab, o);
+			return _Utils_Tuple2(o.K, o);
 		},
-		_Utils_ap(
-			$author$project$Objective$classic,
-			_Utils_ap(
-				$author$project$Objective$characters,
-				_Utils_ap($author$project$Objective$bosses, $author$project$Objective$quests)))));
+		$author$project$Objective$allObjectives));
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -7473,7 +7562,7 @@ var $elm$core$Dict$get = F2(
 		}
 	});
 var $author$project$Objective$fromFlag = function (flag) {
-	return A2($elm$core$Dict$get, flag, $author$project$Objective$allObjectives);
+	return A2($elm$core$Dict$get, flag, $author$project$Objective$allObjectivesByFlag);
 };
 var $elm$core$Array$push = F2(
 	function (a, array) {
@@ -7492,25 +7581,25 @@ var $author$project$Flags$parseO = F2(
 						return _Utils_update(
 							flags,
 							{
-								eb: A2($Gizra$elm_all_set$EverySet$insert, 0, flags.eb)
+								bu: A2($Gizra$elm_all_set$EverySet$insert, 0, flags.bu)
 							});
 					case 'boss':
 						return _Utils_update(
 							flags,
 							{
-								eb: A2($Gizra$elm_all_set$EverySet$insert, 1, flags.eb)
+								bu: A2($Gizra$elm_all_set$EverySet$insert, 1, flags.bu)
 							});
 					case 'quest':
 						return _Utils_update(
 							flags,
 							{
-								eb: A2($Gizra$elm_all_set$EverySet$insert, 2, flags.eb)
+								bu: A2($Gizra$elm_all_set$EverySet$insert, 2, flags.bu)
 							});
 					case 'gated_quest':
 						return _Utils_update(
 							flags,
 							{
-								eb: A2($Gizra$elm_all_set$EverySet$insert, 3, flags.eb)
+								bu: A2($Gizra$elm_all_set$EverySet$insert, 3, flags.bu)
 							});
 					default:
 						var num = _switch;
@@ -7519,7 +7608,7 @@ var $author$project$Flags$parseO = F2(
 							var n = _v11.a;
 							return _Utils_update(
 								flags,
-								{l: n});
+								{s: n});
 						} else {
 							return flags;
 						}
@@ -7533,7 +7622,7 @@ var $author$project$Flags$parseO = F2(
 					return _Utils_update(
 						flags,
 						{
-							dd: A2($elm$core$Array$push, objective, flags.dd)
+							aK: A2($elm$core$Array$push, objective, flags.aK)
 						});
 				} else {
 					return flags;
@@ -7566,7 +7655,7 @@ var $author$project$Flags$parseO = F2(
 						var c = _v4.a;
 						return _Utils_update(
 							incomingFlags,
-							{cD: c});
+							{aq: c});
 					} else {
 						return incomingFlags;
 					}
@@ -7577,11 +7666,11 @@ var $author$project$Flags$parseO = F2(
 						case 'game':
 							return _Utils_update(
 								incomingFlags,
-								{ct: 1});
+								{am: 1});
 						case 'crystal':
 							return _Utils_update(
 								incomingFlags,
-								{ct: 0});
+								{am: 0});
 						default:
 							return incomingFlags;
 					}
@@ -7597,7 +7686,7 @@ var $author$project$Flags$parseO = F2(
 						return _Utils_update(
 							incomingFlags,
 							{
-								dd: A2($elm$core$Array$push, objective, incomingFlags.dd)
+								aK: A2($elm$core$Array$push, objective, incomingFlags.aK)
 							});
 					} else {
 						return incomingFlags;
@@ -7613,19 +7702,19 @@ var $author$project$Flags$parseOther = F2(
 			case 'exp:nokeybonus':
 				return _Utils_update(
 					flags,
-					{dW: false});
+					{bf: false});
 			case 'pushbtojump':
 				return _Utils_update(
 					flags,
-					{cA: true});
+					{ap: true});
 			case 'wacky:nightmode':
 				return _Utils_update(
 					flags,
-					{co: true});
+					{ah: true});
 			case 'wacky:kleptomania':
 				return _Utils_update(
 					flags,
-					{cl: true});
+					{ae: true});
 			default:
 				return flags;
 		}
@@ -7636,15 +7725,15 @@ var $author$project$Flags$parseP = F2(
 			case 'shop':
 				return _Utils_update(
 					flags,
-					{d8: true, d9: true});
+					{br: true, bs: true});
 			case 'key':
 				return _Utils_update(
 					flags,
-					{d8: true, cx: true});
+					{br: true, ao: true});
 			case 'chests':
 				return _Utils_update(
 					flags,
-					{d8: true});
+					{br: true});
 			default:
 				return flags;
 		}
@@ -7663,15 +7752,15 @@ var $author$project$Flags$parseS = F2(
 					case 'j':
 						return _Utils_update(
 							newFlags,
-							{cq: true});
+							{aj: true});
 					case 'sirens':
 						return _Utils_update(
 							newFlags,
-							{cs: true});
+							{al: true});
 					case 'life':
 						return _Utils_update(
 							newFlags,
-							{cr: true});
+							{ak: true});
 					default:
 						return newFlags;
 				}
@@ -7685,31 +7774,31 @@ var $author$project$Flags$parseS = F2(
 						case 'vanilla':
 							return _Utils_update(
 								flags,
-								{ed: 0});
+								{bw: 0});
 						case 'shuffle':
 							return _Utils_update(
 								flags,
-								{ed: 1});
+								{bw: 1});
 						case 'standard':
 							return _Utils_update(
 								flags,
-								{ed: 2});
+								{bw: 2});
 						case 'pro':
 							return _Utils_update(
 								flags,
-								{ed: 3});
+								{bw: 3});
 						case 'wild':
 							return _Utils_update(
 								flags,
-								{ed: 4});
+								{bw: 4});
 						case 'cabins':
 							return _Utils_update(
 								flags,
-								{ed: 5});
+								{bw: 5});
 						case 'empty':
 							return _Utils_update(
 								flags,
-								{ed: 6});
+								{bw: 6});
 						default:
 							break _v0$8;
 					}
@@ -7737,7 +7826,7 @@ var $author$project$Flags$parseT = F2(
 		if (_switch === 'empty') {
 			return _Utils_update(
 				flags,
-				{d2: true});
+				{bm: true});
 		} else {
 			return flags;
 		}
@@ -7847,34 +7936,34 @@ var $Gizra$elm_all_set$EverySet$singleton = function (k) {
 var $elm$core$String$words = _String_words;
 var $author$project$Flags$parse = function (flagString) {
 	var fixupRequiredObjectives = function (flags) {
-		var requiredObjectives = (!flags.cD) ? ($elm$core$Array$length(flags.dd) + flags.l) : flags.cD;
+		var requiredObjectives = (!flags.aq) ? ($elm$core$Array$length(flags.aK) + flags.s) : flags.aq;
 		return _Utils_update(
 			flags,
-			{cD: requiredObjectives});
+			{aq: requiredObjectives});
 	};
 	var fixupObjectiveTypes = function (flags) {
-		return $Gizra$elm_all_set$EverySet$isEmpty(flags.eb) ? _Utils_update(
+		return $Gizra$elm_all_set$EverySet$isEmpty(flags.bu) ? _Utils_update(
 			flags,
 			{
-				eb: $Gizra$elm_all_set$EverySet$fromList(
+				bu: $Gizra$elm_all_set$EverySet$fromList(
 					_List_fromArray(
 						[0, 1, 2]))
-			}) : (A2($Gizra$elm_all_set$EverySet$member, 2, flags.eb) ? _Utils_update(
+			}) : (A2($Gizra$elm_all_set$EverySet$member, 2, flags.bu) ? _Utils_update(
 			flags,
 			{
-				eb: A2($Gizra$elm_all_set$EverySet$remove, 3, flags.eb)
+				bu: A2($Gizra$elm_all_set$EverySet$remove, 3, flags.bu)
 			}) : flags);
 	};
 	var fixupKeyItems = function (flags) {
-		var keyItems = A2($Gizra$elm_all_set$EverySet$member, 6, flags.c7) ? A2(
+		var keyItems = A2($Gizra$elm_all_set$EverySet$member, 6, flags.aH) ? A2(
 			$Gizra$elm_all_set$EverySet$diff,
-			flags.c7,
+			flags.aH,
 			$Gizra$elm_all_set$EverySet$fromList(
 				_List_fromArray(
-					[0, 2, 3]))) : A2($Gizra$elm_all_set$EverySet$insert, 0, flags.c7);
+					[0, 2, 3]))) : A2($Gizra$elm_all_set$EverySet$insert, 0, flags.aH);
 		return _Utils_update(
 			flags,
-			{c7: keyItems});
+			{aH: keyItems});
 	};
 	var fixupFiends = function (flags) {
 		var fiends = _List_fromArray(
@@ -7888,7 +7977,7 @@ var $author$project$Flags$parse = function (flagString) {
 			]);
 		var expandFiends = F2(
 			function (objective, objectives) {
-				return _Utils_eq(objective.w, $author$project$Objective$Fiends) ? A2(
+				return _Utils_eq(objective.r, $author$project$Objective$Fiends) ? A2(
 					$elm$core$Array$append,
 					objectives,
 					$elm$core$Array$fromList(
@@ -7897,7 +7986,7 @@ var $author$project$Flags$parse = function (flagString) {
 							A2(
 								$elm$core$Basics$composeR,
 								function ($) {
-									return $.w;
+									return $.r;
 								},
 								$author$project$Flags$memberOf(fiends)),
 							$author$project$Objective$bosses))) : A2($elm$core$Array$push, objective, objectives);
@@ -7905,32 +7994,32 @@ var $author$project$Flags$parse = function (flagString) {
 		return _Utils_update(
 			flags,
 			{
-				dd: A3($elm$core$Array$foldl, expandFiends, $elm$core$Array$empty, flags.dd)
+				aK: A3($elm$core$Array$foldl, expandFiends, $elm$core$Array$empty, flags.aK)
 			});
 	};
 	var _default = {
-		dW: true,
-		c7: $Gizra$elm_all_set$EverySet$singleton(5),
-		cl: false,
-		co: false,
-		d1: false,
-		cp: false,
-		cq: false,
-		cr: false,
-		cs: false,
-		d2: false,
-		ct: 1,
-		dd: $elm$core$Array$empty,
-		d8: false,
-		d9: false,
-		cx: false,
-		cA: false,
-		eb: $Gizra$elm_all_set$EverySet$empty,
-		l: 0,
-		cD: 0,
-		ed: 0,
-		cL: false,
-		cM: false
+		bf: true,
+		aH: $Gizra$elm_all_set$EverySet$singleton(5),
+		ae: false,
+		ah: false,
+		bl: false,
+		ai: false,
+		aj: false,
+		ak: false,
+		al: false,
+		bm: false,
+		am: 1,
+		aK: $elm$core$Array$empty,
+		br: false,
+		bs: false,
+		ao: false,
+		ap: false,
+		bu: $Gizra$elm_all_set$EverySet$empty,
+		s: 0,
+		aq: 0,
+		bw: 0,
+		au: false,
+		av: false
 	};
 	return fixupKeyItems(
 		fixupFiends(
@@ -7942,20 +8031,8 @@ var $author$project$Flags$parse = function (flagString) {
 						_default,
 						$elm$core$String$words(flagString))))));
 };
-var $author$project$App$Unset = function (a) {
-	return {$: 1, a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area = F4(
-	function (top, left, width, height) {
-		return {c0: height, Q: left, T: top, dC: width};
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed = 2;
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$State = $elm$core$Basics$identity;
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState = {
-	az: A4($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area, 0, 0, 0, 0),
-	dt: 2,
-	b$: A4($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area, 0, 0, 0, 0)
-};
+var $author$project$Ports$setColours = _Platform_outgoingPort('setColours', $elm$core$Basics$identity);
+var $author$project$App$Unset = {$: 1};
 var $elm$core$Array$repeat = F2(
 	function (n, e) {
 		return A2(
@@ -8170,32 +8247,32 @@ var $elm$core$Array$slice = F3(
 	});
 var $author$project$App$updateRandomObjectives = F2(
 	function (flags, objectives) {
-		var delta = flags.l - $elm$core$Array$length(objectives);
+		var delta = flags.s - $elm$core$Array$length(objectives);
 		return (delta > 0) ? A2(
 			$elm$core$Array$append,
 			objectives,
-			A2(
-				$elm$core$Array$repeat,
-				delta,
-				$author$project$App$Unset($rundis$elm_bootstrap$Bootstrap$Dropdown$initialState))) : ((delta < 0) ? A3($elm$core$Array$slice, 0, delta, objectives) : objectives);
+			A2($elm$core$Array$repeat, delta, $author$project$App$Unset)) : ((delta < 0) ? A3($elm$core$Array$slice, 0, delta, objectives) : objectives);
 	});
 var $author$project$App$with = F2(
 	function (b, a) {
 		return _Utils_Tuple2(a, b);
 	});
-var $author$project$App$init = function (_v0) {
+var $author$project$App$init = function (savedColours) {
 	var flagString = 'Kmain/summon/moon Sstandard Gwarp Nkey O1:char_kain/2:quest_antlionnest/random:3/req:4';
 	var flags = $author$project$Flags$parse(flagString);
 	var randomObjectives = A2($author$project$App$updateRandomObjectives, flags, $elm$core$Array$empty);
+	var colours = $author$project$Colour$decode(savedColours);
 	return A2(
 		$author$project$App$with,
-		$elm$core$Platform$Cmd$none,
+		$author$project$Ports$setColours(
+			$author$project$Colour$encode(colours)),
 		{
-			p: $Gizra$elm_all_set$EverySet$empty,
+			n: $Gizra$elm_all_set$EverySet$empty,
+			I: colours,
 			h: $Gizra$elm_all_set$EverySet$empty,
-			bb: flagString,
-			m: flags,
-			C: $pzp1997$assoc_list$AssocList$fromList(
+			_: flagString,
+			l: flags,
+			x: $pzp1997$assoc_list$AssocList$fromList(
 				_List_fromArray(
 					[
 						_Utils_Tuple2(0, 0),
@@ -8203,58 +8280,18 @@ var $author$project$App$init = function (_v0) {
 						_Utils_Tuple2(3, 1)
 					])),
 			i: $author$project$Location$all,
-			l: randomObjectives,
-			ah: $pzp1997$assoc_list$AssocList$empty,
-			B: $elm$core$Maybe$Nothing,
-			al: false
+			s: randomObjectives,
+			M: $pzp1997$assoc_list$AssocList$empty,
+			w: $elm$core$Maybe$Nothing,
+			Q: false
 		});
 };
-var $author$project$App$CloseShopMenu = {$: 11};
-var $author$project$App$DropdownMsg = F2(
-	function (a, b) {
-		return {$: 3, a: a, b: b};
-	});
+var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $author$project$App$CloseShopMenu = {$: 10};
 var $elm$json$Json$Decode$andThen = _Json_andThen;
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$json$Json$Decode$fail = _Json_fail;
-var $elm$json$Json$Decode$field = _Json_decodeField;
-var $elm$core$Elm$JsArray$indexedMap = _JsArray_indexedMap;
-var $elm$core$Array$indexedMap = F2(
-	function (func, _v0) {
-		var len = _v0.a;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		var initialBuilder = {
-			j: _List_Nil,
-			d: 0,
-			g: A3(
-				$elm$core$Elm$JsArray$indexedMap,
-				func,
-				$elm$core$Array$tailIndex(len),
-				tail)
-		};
-		var helper = F2(
-			function (node, builder) {
-				if (!node.$) {
-					var subTree = node.a;
-					return A3($elm$core$Elm$JsArray$foldl, helper, builder, subTree);
-				} else {
-					var leaf = node.a;
-					var offset = builder.d * $elm$core$Array$branchFactor;
-					var mappedLeaf = $elm$core$Array$Leaf(
-						A3($elm$core$Elm$JsArray$indexedMap, func, offset, leaf));
-					return {
-						j: A2($elm$core$List$cons, mappedLeaf, builder.j),
-						d: builder.d + 1,
-						g: builder.g
-					};
-				}
-			});
-		return A2(
-			$elm$core$Array$builderToArray,
-			true,
-			A3($elm$core$Elm$JsArray$foldl, helper, initialBuilder, tree));
-	});
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $elm$browser$Browser$Events$Document = 0;
 var $elm$browser$Browser$Events$MySub = F3(
@@ -8263,7 +8300,7 @@ var $elm$browser$Browser$Events$MySub = F3(
 	});
 var $elm$browser$Browser$Events$State = F2(
 	function (subs, pids) {
-		return {dh: pids, du: subs};
+		return {aN: pids, aX: subs};
 	});
 var $elm$browser$Browser$Events$init = $elm$core$Task$succeed(
 	A2($elm$browser$Browser$Events$State, _List_Nil, $elm$core$Dict$empty));
@@ -8372,7 +8409,7 @@ var $elm$core$Dict$merge = F6(
 	});
 var $elm$browser$Browser$Events$Event = F2(
 	function (key, event) {
-		return {c_: event, w: key};
+		return {aC: event, r: key};
 	});
 var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
 var $elm$browser$Browser$Events$spawn = F3(
@@ -8447,7 +8484,7 @@ var $elm$browser$Browser$Events$onEffects = F3(
 			stepLeft,
 			stepBoth,
 			stepRight,
-			state.dh,
+			state.aN,
 			$elm$core$Dict$fromList(newSubs),
 			_Utils_Tuple3(_List_Nil, $elm$core$Dict$empty, _List_Nil));
 		var deadPids = _v0.a;
@@ -8493,8 +8530,8 @@ var $elm$core$List$filterMap = F2(
 	});
 var $elm$browser$Browser$Events$onSelfMsg = F3(
 	function (router, _v0, state) {
-		var key = _v0.w;
-		var event = _v0.c_;
+		var key = _v0.r;
+		var event = _v0.aC;
 		var toMessage = function (_v2) {
 			var subKey = _v2.a;
 			var _v3 = _v2.b;
@@ -8503,7 +8540,7 @@ var $elm$browser$Browser$Events$onSelfMsg = F3(
 			var decoder = _v3.c;
 			return _Utils_eq(subKey, key) ? A2(_Browser_decodeEvent, decoder, event) : $elm$core$Maybe$Nothing;
 		};
-		var messages = A2($elm$core$List$filterMap, toMessage, state.du);
+		var messages = A2($elm$core$List$filterMap, toMessage, state.aX);
 		return A2(
 			$elm$core$Task$andThen,
 			function (_v1) {
@@ -8535,164 +8572,6 @@ var $elm$browser$Browser$Events$on = F3(
 	});
 var $elm$browser$Browser$Events$onClick = A2($elm$browser$Browser$Events$on, 0, 'click');
 var $elm$browser$Browser$Events$onKeyUp = A2($elm$browser$Browser$Events$on, 0, 'keyup');
-var $elm$json$Json$Decode$string = _Json_decodeString;
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$ListenClicks = 1;
-var $elm$browser$Browser$AnimationManager$Time = function (a) {
-	return {$: 0, a: a};
-};
-var $elm$browser$Browser$AnimationManager$State = F3(
-	function (subs, request, oldTime) {
-		return {cv: oldTime, dp: request, du: subs};
-	});
-var $elm$browser$Browser$AnimationManager$init = $elm$core$Task$succeed(
-	A3($elm$browser$Browser$AnimationManager$State, _List_Nil, $elm$core$Maybe$Nothing, 0));
-var $elm$browser$Browser$AnimationManager$now = _Browser_now(0);
-var $elm$browser$Browser$AnimationManager$rAF = _Browser_rAF(0);
-var $elm$core$Process$spawn = _Scheduler_spawn;
-var $elm$browser$Browser$AnimationManager$onEffects = F3(
-	function (router, subs, _v0) {
-		var request = _v0.dp;
-		var oldTime = _v0.cv;
-		var _v1 = _Utils_Tuple2(request, subs);
-		if (_v1.a.$ === 1) {
-			if (!_v1.b.b) {
-				var _v2 = _v1.a;
-				return $elm$browser$Browser$AnimationManager$init;
-			} else {
-				var _v4 = _v1.a;
-				return A2(
-					$elm$core$Task$andThen,
-					function (pid) {
-						return A2(
-							$elm$core$Task$andThen,
-							function (time) {
-								return $elm$core$Task$succeed(
-									A3(
-										$elm$browser$Browser$AnimationManager$State,
-										subs,
-										$elm$core$Maybe$Just(pid),
-										time));
-							},
-							$elm$browser$Browser$AnimationManager$now);
-					},
-					$elm$core$Process$spawn(
-						A2(
-							$elm$core$Task$andThen,
-							$elm$core$Platform$sendToSelf(router),
-							$elm$browser$Browser$AnimationManager$rAF)));
-			}
-		} else {
-			if (!_v1.b.b) {
-				var pid = _v1.a.a;
-				return A2(
-					$elm$core$Task$andThen,
-					function (_v3) {
-						return $elm$browser$Browser$AnimationManager$init;
-					},
-					$elm$core$Process$kill(pid));
-			} else {
-				return $elm$core$Task$succeed(
-					A3($elm$browser$Browser$AnimationManager$State, subs, request, oldTime));
-			}
-		}
-	});
-var $elm$time$Time$Posix = $elm$core$Basics$identity;
-var $elm$time$Time$millisToPosix = $elm$core$Basics$identity;
-var $elm$browser$Browser$AnimationManager$onSelfMsg = F3(
-	function (router, newTime, _v0) {
-		var subs = _v0.du;
-		var oldTime = _v0.cv;
-		var send = function (sub) {
-			if (!sub.$) {
-				var tagger = sub.a;
-				return A2(
-					$elm$core$Platform$sendToApp,
-					router,
-					tagger(
-						$elm$time$Time$millisToPosix(newTime)));
-			} else {
-				var tagger = sub.a;
-				return A2(
-					$elm$core$Platform$sendToApp,
-					router,
-					tagger(newTime - oldTime));
-			}
-		};
-		return A2(
-			$elm$core$Task$andThen,
-			function (pid) {
-				return A2(
-					$elm$core$Task$andThen,
-					function (_v1) {
-						return $elm$core$Task$succeed(
-							A3(
-								$elm$browser$Browser$AnimationManager$State,
-								subs,
-								$elm$core$Maybe$Just(pid),
-								newTime));
-					},
-					$elm$core$Task$sequence(
-						A2($elm$core$List$map, send, subs)));
-			},
-			$elm$core$Process$spawn(
-				A2(
-					$elm$core$Task$andThen,
-					$elm$core$Platform$sendToSelf(router),
-					$elm$browser$Browser$AnimationManager$rAF)));
-	});
-var $elm$browser$Browser$AnimationManager$Delta = function (a) {
-	return {$: 1, a: a};
-};
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $elm$browser$Browser$AnimationManager$subMap = F2(
-	function (func, sub) {
-		if (!sub.$) {
-			var tagger = sub.a;
-			return $elm$browser$Browser$AnimationManager$Time(
-				A2($elm$core$Basics$composeL, func, tagger));
-		} else {
-			var tagger = sub.a;
-			return $elm$browser$Browser$AnimationManager$Delta(
-				A2($elm$core$Basics$composeL, func, tagger));
-		}
-	});
-_Platform_effectManagers['Browser.AnimationManager'] = _Platform_createManager($elm$browser$Browser$AnimationManager$init, $elm$browser$Browser$AnimationManager$onEffects, $elm$browser$Browser$AnimationManager$onSelfMsg, 0, $elm$browser$Browser$AnimationManager$subMap);
-var $elm$browser$Browser$AnimationManager$subscription = _Platform_leaf('Browser.AnimationManager');
-var $elm$browser$Browser$AnimationManager$onAnimationFrame = function (tagger) {
-	return $elm$browser$Browser$AnimationManager$subscription(
-		$elm$browser$Browser$AnimationManager$Time(tagger));
-};
-var $elm$browser$Browser$Events$onAnimationFrame = $elm$browser$Browser$AnimationManager$onAnimationFrame;
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$updateStatus = F2(
-	function (status, _v0) {
-		var stateRec = _v0;
-		return _Utils_update(
-			stateRec,
-			{dt: status});
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$subscriptions = F2(
-	function (state, toMsg) {
-		var status = state.dt;
-		switch (status) {
-			case 0:
-				return $elm$browser$Browser$Events$onAnimationFrame(
-					function (_v1) {
-						return toMsg(
-							A2($rundis$elm_bootstrap$Bootstrap$Dropdown$updateStatus, 1, state));
-					});
-			case 1:
-				return $elm$browser$Browser$Events$onClick(
-					$elm$json$Json$Decode$succeed(
-						toMsg(
-							A2($rundis$elm_bootstrap$Bootstrap$Dropdown$updateStatus, 2, state))));
-			default:
-				return $elm$core$Platform$Sub$none;
-		}
-	});
 var $author$project$App$subscriptions = function (model) {
 	var shopMenuEscape = $elm$browser$Browser$Events$onKeyUp(
 		A2(
@@ -8707,41 +8586,24 @@ var $author$project$App$subscriptions = function (model) {
 			A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string)));
 	var shopMenuClick = $elm$browser$Browser$Events$onClick(
 		$elm$json$Json$Decode$succeed($author$project$App$CloseShopMenu));
-	var shopMenu = function () {
-		var _v1 = model.B;
-		if (!_v1.$) {
-			return $elm$core$Platform$Sub$batch(
-				_List_fromArray(
-					[shopMenuClick, shopMenuEscape]));
-		} else {
-			return $elm$core$Platform$Sub$none;
-		}
-	}();
-	var dropdowns = $elm$core$Platform$Sub$batch(
-		$elm$core$Array$toList(
-			A2(
-				$elm$core$Array$indexedMap,
-				F2(
-					function (index, randomObjective) {
-						if (randomObjective.$ === 1) {
-							var dropdown = randomObjective.a;
-							return A2(
-								$rundis$elm_bootstrap$Bootstrap$Dropdown$subscriptions,
-								dropdown,
-								$author$project$App$DropdownMsg(index));
-						} else {
-							return $elm$core$Platform$Sub$none;
-						}
-					}),
-				model.l)));
-	return $elm$core$Platform$Sub$batch(
-		_List_fromArray(
-			[dropdowns, shopMenu]));
+	var _v0 = model.w;
+	if (!_v0.$) {
+		return $elm$core$Platform$Sub$batch(
+			_List_fromArray(
+				[shopMenuClick, shopMenuEscape]));
+	} else {
+		return $elm$core$Platform$Sub$none;
+	}
 };
 var $author$project$App$DoNothing = {$: 15};
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
 		return a;
+	});
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
 	});
 var $elm$core$Task$onError = _Scheduler_onError;
 var $elm$core$Task$attempt = F2(
@@ -8762,6 +8624,12 @@ var $elm$core$Task$attempt = F2(
 					task)));
 	});
 var $elm$browser$Browser$Dom$focus = _Browser_call('focus');
+var $author$project$App$focus = function (id) {
+	return A2(
+		$elm$core$Task$attempt,
+		$elm$core$Basics$always($author$project$App$DoNothing),
+		$elm$browser$Browser$Dom$focus(id));
+};
 var $author$project$Value$Checked = 5;
 var $author$project$Requirement$Crystal = {$: 8};
 var $author$project$App$Items = function (a) {
@@ -8774,39 +8642,16 @@ var $author$project$Location$Shops = 1;
 var $author$project$App$Text = function (a) {
 	return {$: 1, a: a};
 };
-var $elm$core$Array$getHelp = F3(
-	function (shift, index, tree) {
-		getHelp:
-		while (true) {
-			var pos = $elm$core$Array$bitMask & (index >>> shift);
-			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-			if (!_v0.$) {
-				var subTree = _v0.a;
-				var $temp$shift = shift - $elm$core$Array$shiftStep,
-					$temp$index = index,
-					$temp$tree = subTree;
-				shift = $temp$shift;
-				index = $temp$index;
-				tree = $temp$tree;
-				continue getHelp;
-			} else {
-				var values = _v0.a;
-				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
-			}
-		}
-	});
-var $elm$core$Array$get = F2(
-	function (index, _v0) {
-		var len = _v0.a;
-		var startShift = _v0.b;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
-			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
-			A3($elm$core$Array$getHelp, startShift, index, tree)));
-	});
+var $author$project$Objective$allObjectivesByDescription = $elm$core$Dict$fromList(
+	A2(
+		$elm$core$List$map,
+		function (o) {
+			return _Utils_Tuple2(o.aA, o);
+		},
+		$author$project$Objective$allObjectives));
+var $author$project$Objective$fromDescription = function (description) {
+	return A2($elm$core$Dict$get, description, $author$project$Objective$allObjectivesByDescription);
+};
 var $author$project$Location$get = F2(
 	function (key, _v0) {
 		var locations = _v0;
@@ -8817,7 +8662,7 @@ var $author$project$App$randomObjectiveKeys = function () {
 	var toMaybeKey = function (o) {
 		if (!o.$) {
 			var objective = o.a;
-			return $elm$core$Maybe$Just(objective.w);
+			return $elm$core$Maybe$Just(objective.r);
 		} else {
 			return $elm$core$Maybe$Nothing;
 		}
@@ -8833,18 +8678,18 @@ var $author$project$App$randomObjectiveKeys = function () {
 var $author$project$App$getContextFor = F2(
 	function (locClass, model) {
 		return {
-			p: model.p,
+			n: model.n,
 			h: model.h,
-			dO: function () {
+			ba: function () {
 				if (!locClass) {
-					return model.C;
+					return model.x;
 				} else {
-					return model.ah;
+					return model.M;
 				}
 			}(),
-			m: model.m,
-			l: $author$project$App$randomObjectiveKeys(model.l),
-			al: model.al
+			l: model.l,
+			s: $author$project$App$randomObjectiveKeys(model.s),
+			Q: model.Q
 		};
 	});
 var $author$project$App$getContext = $author$project$App$getContextFor(0);
@@ -8970,47 +8815,38 @@ var $author$project$Location$vanillaShops = $pzp1997$assoc_list$AssocList$fromLi
 				_List_fromArray(
 					['Cure2', 'Life', 'Cabin', 'Ether']))
 			])));
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (!maybe.$) {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var $author$project$Location$filterItems = F3(
 	function (_v0, _v1, items) {
-		var flags = _v0.m;
+		var flags = _v0.l;
 		var location = _v1;
 		var vanillaItems = A2(
 			$elm$core$Maybe$withDefault,
 			$Gizra$elm_all_set$EverySet$empty,
-			A2($pzp1997$assoc_list$AssocList$get, location.w, $author$project$Location$vanillaShops));
-		var shopType = (location.w === 52) ? 2 : (($Gizra$elm_all_set$EverySet$isEmpty(location.a) && (!location.X)) ? 0 : 1);
+			A2($pzp1997$assoc_list$AssocList$get, location.r, $author$project$Location$vanillaShops));
+		var shopType = (location.r === 52) ? 2 : (($Gizra$elm_all_set$EverySet$isEmpty(location.a) && (!location.H)) ? 0 : 1);
 		var allVanillaItems = A3(
 			$elm$core$List$foldl,
 			$Gizra$elm_all_set$EverySet$union,
 			$Gizra$elm_all_set$EverySet$empty,
 			$pzp1997$assoc_list$AssocList$values($author$project$Location$vanillaShops));
 		var exists = function (item) {
-			if ((item.d0 === 'Life') && flags.cr) {
+			if ((item.bk === 'Life') && flags.ak) {
 				return false;
 			} else {
-				if ((item.d0 === 'Siren') && flags.cs) {
+				if ((item.bk === 'Siren') && flags.al) {
 					return false;
 				} else {
-					if (item.cj && flags.cq) {
+					if (item.ac && flags.aj) {
 						return false;
 					} else {
-						var _v2 = _Utils_Tuple2(flags.ed, shopType);
+						var _v2 = _Utils_Tuple2(flags.bw, shopType);
 						switch (_v2.a) {
 							case 0:
 								var _v3 = _v2.a;
-								return A2($Gizra$elm_all_set$EverySet$member, item.d0, vanillaItems);
+								return A2($Gizra$elm_all_set$EverySet$member, item.bk, vanillaItems);
 							case 1:
 								var _v4 = _v2.a;
-								return A2($Gizra$elm_all_set$EverySet$member, item.d0, allVanillaItems);
+								return A2($Gizra$elm_all_set$EverySet$member, item.bk, allVanillaItems);
 							case 2:
 								switch (_v2.b) {
 									case 0:
@@ -9054,6 +8890,39 @@ var $author$project$Location$filterItems = F3(
 		};
 		return A2($author$project$ConsumableItems$filter, exists, items);
 	});
+var $elm$core$Array$getHelp = F3(
+	function (shift, index, tree) {
+		getHelp:
+		while (true) {
+			var pos = $elm$core$Array$bitMask & (index >>> shift);
+			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (!_v0.$) {
+				var subTree = _v0.a;
+				var $temp$shift = shift - $elm$core$Array$shiftStep,
+					$temp$index = index,
+					$temp$tree = subTree;
+				shift = $temp$shift;
+				index = $temp$index;
+				tree = $temp$tree;
+				continue getHelp;
+			} else {
+				var values = _v0.a;
+				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
+			}
+		}
+	});
+var $elm$core$Array$get = F2(
+	function (index, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
+			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
+			A3($elm$core$Array$getHelp, startShift, index, tree)));
+	});
 var $author$project$Location$getItems = F3(
 	function (context, valueIndex, _v0) {
 		var location = _v0;
@@ -9079,15 +8948,6 @@ var $author$project$Location$getItems = F3(
 		}
 		return _List_Nil;
 	});
-var $elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (!maybeValue.$) {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $author$project$Objective$keys = A2(
 	$elm$core$Basics$composeR,
 	$elm$core$Array$toList,
@@ -9095,14 +8955,14 @@ var $author$project$Objective$keys = A2(
 		$elm$core$Basics$composeR,
 		$elm$core$List$map(
 			function ($) {
-				return $.w;
+				return $.r;
 			}),
 		$Gizra$elm_all_set$EverySet$fromList));
 var $author$project$Location$combinedObjectives = function (context) {
 	return A2(
 		$Gizra$elm_all_set$EverySet$union,
-		context.l,
-		$author$project$Objective$keys(context.m.dd));
+		context.s,
+		$author$project$Objective$keys(context.l.aK));
 };
 var $elm$core$List$isEmpty = function (xs) {
 	if (!xs.b) {
@@ -9114,25 +8974,31 @@ var $elm$core$List$isEmpty = function (xs) {
 var $author$project$Value$Bosses = 1;
 var $author$project$Value$TrappedChests = 4;
 var $author$project$Value$toFilter = function (value) {
-	switch (value.$) {
-		case 0:
-			return $elm$core$Maybe$Just(0);
-		case 1:
-			return $elm$core$Maybe$Just(1);
-		case 2:
-			return $elm$core$Maybe$Just(2);
-		case 3:
-			return $elm$core$Maybe$Just(3);
-		case 4:
-			return $elm$core$Maybe$Just(4);
-		case 5:
-			return $elm$core$Maybe$Nothing;
-		case 6:
-			return $elm$core$Maybe$Nothing;
-		case 7:
-			return $elm$core$Maybe$Nothing;
-		default:
-			return $elm$core$Maybe$Nothing;
+	toFilter:
+	while (true) {
+		switch (value.$) {
+			case 0:
+				return $elm$core$Maybe$Just(0);
+			case 1:
+				return $elm$core$Maybe$Just(1);
+			case 2:
+				return $elm$core$Maybe$Just(2);
+			case 3:
+				return $elm$core$Maybe$Just(3);
+			case 4:
+				return $elm$core$Maybe$Just(4);
+			case 5:
+				return $elm$core$Maybe$Nothing;
+			case 6:
+				return $elm$core$Maybe$Nothing;
+			case 7:
+				return $elm$core$Maybe$Nothing;
+			default:
+				var val = value.b;
+				var $temp$value = val;
+				value = $temp$value;
+				continue toFilter;
+		}
 	}
 };
 var $author$project$Location$getProperties_ = F3(
@@ -9154,9 +9020,9 @@ var $author$project$Location$getProperties_ = F3(
 			var status = _v16.a;
 			var value = _v16.b;
 			return {
-				I: index,
-				dt: status,
-				cK: unwrapGatedValue(value)
+				A: index,
+				aW: status,
+				at: unwrapGatedValue(value)
 			};
 		};
 		var fixupShopOther = function (list) {
@@ -9171,10 +9037,10 @@ var $author$project$Location$getProperties_ = F3(
 		var context = _Utils_update(
 			c,
 			{
-				p: (A2($Gizra$elm_all_set$EverySet$member, $author$project$Requirement$LegendSword, c.p) && A2($Gizra$elm_all_set$EverySet$member, $author$project$Requirement$Adamant, c.p)) ? A2(
+				n: (A2($Gizra$elm_all_set$EverySet$member, $author$project$Requirement$LegendSword, c.n) && A2($Gizra$elm_all_set$EverySet$member, $author$project$Requirement$Adamant, c.n)) ? A2(
 					$Gizra$elm_all_set$EverySet$insert,
 					$author$project$Requirement$Pseudo(6),
-					c.p) : c.p
+					c.n) : c.n
 			});
 		var notFilteredOut = function (_v11) {
 			var value = _v11.b;
@@ -9184,7 +9050,7 @@ var $author$project$Location$getProperties_ = F3(
 				A2(
 					$elm$core$Maybe$andThen,
 					function (filter) {
-						return A2($pzp1997$assoc_list$AssocList$get, filter, context.dO);
+						return A2($pzp1997$assoc_list$AssocList$get, filter, context.ba);
 					},
 					$author$project$Value$toFilter(value)));
 		};
@@ -9196,18 +9062,18 @@ var $author$project$Location$getProperties_ = F3(
 					case 0:
 						if (!value.a) {
 							var _v2 = value.a;
-							return !context.m.cp;
+							return !context.l.ai;
 						} else {
 							var _v3 = value.a;
-							return !(A2($Gizra$elm_all_set$EverySet$member, $author$project$Objective$ClassicGiant, objectives) && (location.w === 38));
+							return !(A2($Gizra$elm_all_set$EverySet$member, $author$project$Objective$ClassicGiant, objectives) && (location.r === 38));
 						}
 					case 2:
 						var itemClass = value.a;
-						return (!(context.al && (location.w === 50))) && ((!((location.w === 21) && ((itemClass === 6) && (!context.m.cx)))) && A2($Gizra$elm_all_set$EverySet$member, itemClass, context.m.c7));
+						return (!(context.Q && (location.r === 50))) && ((!((location.r === 21) && ((itemClass === 6) && (!context.l.ao)))) && A2($Gizra$elm_all_set$EverySet$member, itemClass, context.l.aH));
 					case 7:
 						if (value.a.$ === 5) {
 							var obj = value.a.a;
-							return context.m.cL && A2(
+							return context.l.au && A2(
 								$Gizra$elm_all_set$EverySet$member,
 								$author$project$Objective$DefeatBoss(obj),
 								objectives);
@@ -9218,7 +9084,7 @@ var $author$project$Location$getProperties_ = F3(
 					case 8:
 						var required = value.a;
 						var v = value.b;
-						var _v4 = _Utils_Tuple3(context.m.cA, location.w, v);
+						var _v4 = _Utils_Tuple3(context.l.ap, location.r, v);
 						_v4$2:
 						while (true) {
 							if (_v4.a) {
@@ -9244,15 +9110,15 @@ var $author$project$Location$getProperties_ = F3(
 								break _v4$2;
 							}
 						}
-						return A2($Gizra$elm_all_set$EverySet$member, required, context.p) && exists(v);
+						return A2($Gizra$elm_all_set$EverySet$member, required, context.n) && exists(v);
 					case 5:
 						var shopValue = value.a;
 						var hasValue = function () {
 							switch (shopValue.$) {
 								case 0:
-									return !context.m.cl;
+									return !context.l.ae;
 								case 1:
-									return !context.m.cl;
+									return !context.l.ae;
 								case 3:
 									var items = shopValue.a;
 									return !$elm$core$List$isEmpty(
@@ -9277,7 +9143,7 @@ var $author$project$Location$getProperties_ = F3(
 									return false;
 							}
 						}();
-						var passesNightMode = (!context.m.co) || ((!(!location.X)) || (((location.w === 19) && baronNightShop) || ((location.w === 36) || ((location.w === 24) && (!A2(
+						var passesNightMode = (!context.l.ah) || ((!(!location.H)) || (((location.r === 19) && baronNightShop) || ((location.r === 36) || ((location.r === 24) && (!A2(
 							$elm$core$List$member,
 							shopValue,
 							_List_fromArray(
@@ -9308,16 +9174,6 @@ var $author$project$Location$getProperties = F2(
 	function (context, location) {
 		return A3($author$project$Location$getProperties_, context, true, location);
 	});
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (!maybe.$) {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $author$project$Location$getProperty = F3(
 	function (key, index, _v0) {
 		var locations = _v0;
@@ -9343,11 +9199,11 @@ var $author$project$Location$getProperty = F3(
 	});
 var $author$project$Location$getStatus = function (_v0) {
 	var location = _v0;
-	return location.dt;
+	return location.aW;
 };
 var $author$project$Location$getKey = function (_v0) {
 	var location = _v0;
-	return location.w;
+	return location.r;
 };
 var $pzp1997$assoc_list$AssocList$update = F3(
 	function (targetKey, alter, dict) {
@@ -9619,7 +9475,7 @@ var $author$project$ConsumableItems$anyDismissed = function (_v0) {
 		A2(
 			$elm$core$Basics$composeR,
 			function ($) {
-				return $.dt;
+				return $.aW;
 			},
 			$elm$core$Basics$eq($author$project$Status$Dismissed)),
 		$elm$core$Array$toList(items));
@@ -9647,7 +9503,7 @@ var $author$project$Location$toggleItem = F3(
 						return _Utils_update(
 							item,
 							{
-								dt: A2($author$project$Status$toggle, $author$project$Status$Dismissed, item.dt)
+								aW: A2($author$project$Status$toggle, $author$project$Status$Dismissed, item.aW)
 							});
 					},
 					items);
@@ -9762,7 +9618,7 @@ var $author$project$Location$toggleProperty = F3(
 var $author$project$Location$toggleStatus = F3(
 	function (context, status, _v0) {
 		var location = _v0;
-		var newStatus = A2($author$project$Status$toggle, status, location.dt);
+		var newStatus = A2($author$project$Status$toggle, status, location.aW);
 		var dismissSpecialValue = function (_v4) {
 			var propStatus = _v4.a;
 			var value = _v4.b;
@@ -9774,9 +9630,9 @@ var $author$project$Location$toggleStatus = F3(
 						var required = value.a;
 						var v = value.b;
 						var _v2 = _Utils_Tuple3(
-							A2($Gizra$elm_all_set$EverySet$member, required, context.p),
+							A2($Gizra$elm_all_set$EverySet$member, required, context.n),
 							v,
-							location.w);
+							location.r);
 						_v2$2:
 						while (true) {
 							if (_v2.a) {
@@ -9807,7 +9663,7 @@ var $author$project$Location$toggleStatus = F3(
 		var properties = _Utils_eq(newStatus, $author$project$Status$Dismissed) ? A2($elm$core$Array$map, dismissSpecialValue, location.k) : location.k;
 		return _Utils_update(
 			location,
-			{k: properties, dt: newStatus});
+			{k: properties, aW: newStatus});
 	});
 var $author$project$Location$undismissByGatingRequirement = F3(
 	function (context, requirement, _v0) {
@@ -9827,14 +9683,14 @@ var $author$project$Location$undismissByGatingRequirement = F3(
 				A2(
 					$elm$core$Basics$composeR,
 					function ($) {
-						return $.cK;
+						return $.at;
 					},
 					isMatchingGatedValue)));
 		var updateLocation = function (location) {
 			var l = location;
 			return hasMatchingGatedValue(location) ? _Utils_update(
 				l,
-				{dt: $author$project$Status$Unseen}) : location;
+				{aW: $author$project$Status$Unseen}) : location;
 		};
 		return A2(
 			$pzp1997$assoc_list$AssocList$map,
@@ -9844,13 +9700,13 @@ var $author$project$Location$undismissByGatingRequirement = F3(
 var $author$project$App$innerUpdate = F2(
 	function (msg, model) {
 		var updateCrystal = function (newModel) {
-			var fn = (!newModel.m.ct) ? ((_Utils_cmp(
+			var fn = (!newModel.l.am) ? ((_Utils_cmp(
 				$Gizra$elm_all_set$EverySet$size(newModel.h),
-				newModel.m.cD) > -1) ? $Gizra$elm_all_set$EverySet$insert($author$project$Requirement$Crystal) : $Gizra$elm_all_set$EverySet$remove($author$project$Requirement$Crystal)) : $elm$core$Basics$identity;
+				newModel.l.aq) > -1) ? $Gizra$elm_all_set$EverySet$insert($author$project$Requirement$Crystal) : $Gizra$elm_all_set$EverySet$remove($author$project$Requirement$Crystal)) : $elm$core$Basics$identity;
 			return _Utils_update(
 				newModel,
 				{
-					p: fn(newModel.p)
+					n: fn(newModel.n)
 				});
 		};
 		var removeRequirement = F2(
@@ -9858,7 +9714,7 @@ var $author$project$App$innerUpdate = F2(
 				return _Utils_update(
 					newModel,
 					{
-						p: A2($Gizra$elm_all_set$EverySet$remove, requirement, model.p)
+						n: A2($Gizra$elm_all_set$EverySet$remove, requirement, model.n)
 					});
 			});
 		var removeObjective = F2(
@@ -9873,15 +9729,15 @@ var $author$project$App$innerUpdate = F2(
 			});
 		var attainRequirement = F2(
 			function (requirement, newModel) {
-				var attainedRequirements = A2($Gizra$elm_all_set$EverySet$insert, requirement, newModel.p);
+				var attainedRequirements = A2($Gizra$elm_all_set$EverySet$insert, requirement, newModel.n);
 				var context = $author$project$App$getContext(
 					_Utils_update(
 						newModel,
-						{p: attainedRequirements}));
+						{n: attainedRequirements}));
 				var locations = A3($author$project$Location$undismissByGatingRequirement, context, requirement, newModel.i);
 				return _Utils_update(
 					newModel,
-					{p: attainedRequirements, i: locations});
+					{n: attainedRequirements, i: locations});
 			});
 		var toggleProperty = F4(
 			function (key, index, hard, newModel) {
@@ -9966,48 +9822,33 @@ var $author$project$App$innerUpdate = F2(
 				return A2($Gizra$elm_all_set$EverySet$member, objective, model.h) ? A2(removeObjective, objective, model) : A2(attainObjective, objective, model);
 			case 1:
 				var index = msg.a;
-				var objective = msg.b;
-				return _Utils_update(
-					model,
-					{
-						l: A3(
-							$elm$core$Array$set,
-							index,
-							$author$project$App$Set(objective),
-							model.l)
-					});
+				var description = msg.b;
+				var _v1 = $author$project$Objective$fromDescription(description);
+				if (!_v1.$) {
+					var objective = _v1.a;
+					return _Utils_update(
+						model,
+						{
+							s: A3(
+								$elm$core$Array$set,
+								index,
+								$author$project$App$Set(objective),
+								model.s)
+						});
+				} else {
+					return model;
+				}
 			case 2:
 				var index = msg.a;
 				return _Utils_update(
 					model,
 					{
-						l: A3(
-							$elm$core$Array$set,
-							index,
-							$author$project$App$Unset($rundis$elm_bootstrap$Bootstrap$Dropdown$initialState),
-							model.l)
+						s: A3($elm$core$Array$set, index, $author$project$App$Unset, model.s)
 					});
 			case 3:
-				var index = msg.a;
-				var dropdown = msg.b;
-				var _v1 = A2($elm$core$Array$get, index, model.l);
-				if ((!_v1.$) && (_v1.a.$ === 1)) {
-					return _Utils_update(
-						model,
-						{
-							l: A3(
-								$elm$core$Array$set,
-								index,
-								$author$project$App$Unset(dropdown),
-								model.l)
-						});
-				} else {
-					return model;
-				}
-			case 4:
 				var requirement = msg.a;
-				return A2($Gizra$elm_all_set$EverySet$member, requirement, model.p) ? A2(removeRequirement, requirement, model) : A2(attainRequirement, requirement, model);
-			case 5:
+				return A2($Gizra$elm_all_set$EverySet$member, requirement, model.n) ? A2(removeRequirement, requirement, model) : A2(attainRequirement, requirement, model);
+			case 4:
 				var locClass = msg.a;
 				var filter = msg.b;
 				var toggle = function (state) {
@@ -10031,16 +9872,16 @@ var $author$project$App$innerUpdate = F2(
 					return _Utils_update(
 						model,
 						{
-							C: A3($pzp1997$assoc_list$AssocList$update, filter, toggle, model.C)
+							x: A3($pzp1997$assoc_list$AssocList$update, filter, toggle, model.x)
 						});
 				} else {
 					return _Utils_update(
 						model,
 						{
-							ah: A3($pzp1997$assoc_list$AssocList$update, filter, toggle, model.ah)
+							M: A3($pzp1997$assoc_list$AssocList$update, filter, toggle, model.M)
 						});
 				}
-			case 6:
+			case 5:
 				var location = msg.a;
 				var status = msg.b;
 				var newLocation = A3(
@@ -10062,7 +9903,7 @@ var $author$project$App$innerUpdate = F2(
 					A2(
 						$elm$core$Basics$composeR,
 						function ($) {
-							return $.cK;
+							return $.at;
 						},
 						$author$project$Value$objective),
 					properties);
@@ -10071,7 +9912,7 @@ var $author$project$App$innerUpdate = F2(
 					A2(
 						$elm$core$Basics$composeR,
 						function ($) {
-							return $.cK;
+							return $.at;
 						},
 						$author$project$Value$requirement),
 					properties);
@@ -10085,15 +9926,15 @@ var $author$project$App$innerUpdate = F2(
 				} else {
 					return newModel;
 				}
-			case 7:
+			case 6:
 				var key = msg.a;
 				var index = msg.b;
 				return A4(toggleProperty, key, index, false, model);
-			case 8:
+			case 7:
 				var key = msg.a;
 				var index = msg.b;
 				return A4(toggleProperty, key, index, true, model);
-			case 9:
+			case 8:
 				var key = msg.a;
 				var index = msg.b;
 				return A4(
@@ -10103,33 +9944,33 @@ var $author$project$App$innerUpdate = F2(
 					false,
 					_Utils_update(
 						model,
-						{al: !model.al}));
-			case 10:
+						{Q: !model.Q}));
+			case 9:
 				var newShop = msg.a;
 				var shopMenu = function () {
-					var _v7 = model.B;
+					var _v7 = model.w;
 					if (!_v7.$) {
 						var existingShop = _v7.a;
-						return (_Utils_eq(existingShop.w, newShop.w) && _Utils_eq(existingShop.I, newShop.I)) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(newShop);
+						return (_Utils_eq(existingShop.r, newShop.r) && _Utils_eq(existingShop.A, newShop.A)) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(newShop);
 					} else {
 						return $elm$core$Maybe$Just(newShop);
 					}
 				}();
 				return _Utils_update(
 					model,
-					{B: shopMenu});
-			case 11:
+					{w: shopMenu});
+			case 10:
 				return _Utils_update(
 					model,
-					{B: $elm$core$Maybe$Nothing});
-			case 12:
+					{w: $elm$core$Maybe$Nothing});
+			case 11:
 				var menu = msg.a;
 				var itemIndex = msg.b;
 				var locations = A3(
 					$author$project$Location$update,
-					menu.w,
+					menu.r,
 					$elm$core$Maybe$map(
-						A2($author$project$Location$toggleItem, menu.I, itemIndex)),
+						A2($author$project$Location$toggleItem, menu.A, itemIndex)),
 					model.i);
 				var shopMenu = A2(
 					$elm$core$Maybe$map,
@@ -10137,7 +9978,7 @@ var $author$project$App$innerUpdate = F2(
 						return _Utils_update(
 							menu,
 							{
-								ap: $author$project$App$Items(items)
+								S: $author$project$App$Items(items)
 							});
 					},
 					A2(
@@ -10145,79 +9986,402 @@ var $author$project$App$innerUpdate = F2(
 						A2(
 							$author$project$Location$getItems,
 							A2($author$project$App$getContextFor, 1, model),
-							menu.I),
-						A2($author$project$Location$get, menu.w, locations)));
+							menu.A),
+						A2($author$project$Location$get, menu.r, locations)));
 				return _Utils_update(
 					model,
-					{i: locations, B: shopMenu});
-			case 13:
+					{i: locations, w: shopMenu});
+			case 12:
 				var menu = msg.a;
 				var newText = msg.b;
 				var locations = A3(
 					$author$project$Location$update,
-					menu.w,
+					menu.r,
 					$elm$core$Maybe$map(
-						A2($author$project$Location$setText, menu.I, newText)),
+						A2($author$project$Location$setText, menu.A, newText)),
 					model.i);
 				return _Utils_update(
 					model,
 					{
 						i: locations,
-						B: $elm$core$Maybe$Just(
+						w: $elm$core$Maybe$Just(
 							_Utils_update(
 								menu,
 								{
-									ap: $author$project$App$Text(newText)
+									S: $author$project$App$Text(newText)
 								}))
 					});
-			case 14:
+			case 13:
 				var flagString = msg.a;
 				var flags = $author$project$Flags$parse(flagString);
-				var randomObjectives = A2($author$project$App$updateRandomObjectives, flags, model.l);
-				var filterChests = (flags.d2 && (!_Utils_eq(
-					A2($pzp1997$assoc_list$AssocList$get, 3, model.C),
+				var randomObjectives = A2($author$project$App$updateRandomObjectives, flags, model.s);
+				var filterChests = (flags.bm && (!_Utils_eq(
+					A2($pzp1997$assoc_list$AssocList$get, 3, model.x),
 					$elm$core$Maybe$Just(0)))) ? A2($pzp1997$assoc_list$AssocList$insert, 3, 1) : $elm$core$Basics$identity;
-				var filterCharacters = flags.d1 ? A2($pzp1997$assoc_list$AssocList$insert, 0, 1) : $elm$core$Basics$identity;
+				var filterCharacters = flags.bl ? A2($pzp1997$assoc_list$AssocList$insert, 0, 1) : $elm$core$Basics$identity;
 				var locationFilterOverrides = filterCharacters(
-					filterChests(model.C));
+					filterChests(model.x));
 				var completedObjectives = A2(
 					$Gizra$elm_all_set$EverySet$intersect,
 					model.h,
 					A2(
 						$Gizra$elm_all_set$EverySet$union,
-						$author$project$Objective$keys(flags.dd),
+						$author$project$Objective$keys(flags.aK),
 						$author$project$App$randomObjectiveKeys(randomObjectives)));
 				return updateCrystal(
 					_Utils_update(
 						model,
-						{h: completedObjectives, bb: flagString, m: flags, C: locationFilterOverrides, l: randomObjectives, B: $elm$core$Maybe$Nothing}));
+						{h: completedObjectives, _: flagString, l: flags, x: locationFilterOverrides, s: randomObjectives, w: $elm$core$Maybe$Nothing}));
+			case 14:
+				return model;
 			default:
 				return model;
+		}
+	});
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $elm_community$string_extra$String$Extra$breaker = F3(
+	function (width, string, acc) {
+		breaker:
+		while (true) {
+			if (string === '') {
+				return $elm$core$List$reverse(acc);
+			} else {
+				var $temp$width = width,
+					$temp$string = A2($elm$core$String$dropLeft, width, string),
+					$temp$acc = A2(
+					$elm$core$List$cons,
+					A3($elm$core$String$slice, 0, width, string),
+					acc);
+				width = $temp$width;
+				string = $temp$string;
+				acc = $temp$acc;
+				continue breaker;
+			}
+		}
+	});
+var $elm_community$string_extra$String$Extra$break = F2(
+	function (width, string) {
+		return ((!width) || (string === '')) ? _List_fromArray(
+			[string]) : A3($elm_community$string_extra$String$Extra$breaker, width, string, _List_Nil);
+	});
+var $author$project$Colour$darkHover = '#797a7b';
+var $elm$core$String$cons = _String_cons;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $elm$core$Basics$pow = _Basics_pow;
+var $rtfeldman$elm_hex$Hex$fromStringHelp = F3(
+	function (position, chars, accumulated) {
+		fromStringHelp:
+		while (true) {
+			if (!chars.b) {
+				return $elm$core$Result$Ok(accumulated);
+			} else {
+				var _char = chars.a;
+				var rest = chars.b;
+				switch (_char) {
+					case '0':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated;
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '1':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + A2($elm$core$Basics$pow, 16, position);
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '2':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (2 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '3':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (3 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '4':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (4 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '5':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (5 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '6':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (6 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '7':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (7 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '8':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (8 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '9':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (9 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case 'a':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (10 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case 'b':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (11 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case 'c':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (12 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case 'd':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (13 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case 'e':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (14 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case 'f':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (15 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					default:
+						var nonHex = _char;
+						return $elm$core$Result$Err(
+							$elm$core$String$fromChar(nonHex) + ' is not a valid hexadecimal character.');
+				}
+			}
+		}
+	});
+var $elm$core$Result$map = F2(
+	function (func, ra) {
+		if (!ra.$) {
+			var a = ra.a;
+			return $elm$core$Result$Ok(
+				func(a));
+		} else {
+			var e = ra.a;
+			return $elm$core$Result$Err(e);
+		}
+	});
+var $elm$core$Result$mapError = F2(
+	function (f, result) {
+		if (!result.$) {
+			var v = result.a;
+			return $elm$core$Result$Ok(v);
+		} else {
+			var e = result.a;
+			return $elm$core$Result$Err(
+				f(e));
+		}
+	});
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$List$tail = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(xs);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $rtfeldman$elm_hex$Hex$fromString = function (str) {
+	if ($elm$core$String$isEmpty(str)) {
+		return $elm$core$Result$Err('Empty strings are not valid hexadecimal strings.');
+	} else {
+		var result = function () {
+			if (A2($elm$core$String$startsWith, '-', str)) {
+				var list = A2(
+					$elm$core$Maybe$withDefault,
+					_List_Nil,
+					$elm$core$List$tail(
+						$elm$core$String$toList(str)));
+				return A2(
+					$elm$core$Result$map,
+					$elm$core$Basics$negate,
+					A3(
+						$rtfeldman$elm_hex$Hex$fromStringHelp,
+						$elm$core$List$length(list) - 1,
+						list,
+						0));
+			} else {
+				return A3(
+					$rtfeldman$elm_hex$Hex$fromStringHelp,
+					$elm$core$String$length(str) - 1,
+					$elm$core$String$toList(str),
+					0);
+			}
+		}();
+		var formatError = function (err) {
+			return A2(
+				$elm$core$String$join,
+				' ',
+				_List_fromArray(
+					['\"' + (str + '\"'), 'is not a valid hexadecimal string because', err]));
+		};
+		return A2($elm$core$Result$mapError, formatError, result);
+	}
+};
+var $author$project$Colour$lightText = '#ffffff';
+var $elm$core$Result$withDefault = F2(
+	function (def, result) {
+		if (!result.$) {
+			var a = result.a;
+			return a;
+		} else {
+			return def;
+		}
+	});
+var $author$project$Colour$setContrastText = function (colours) {
+	var rgb = A2(
+		$elm$core$List$map,
+		A2(
+			$elm$core$Basics$composeR,
+			$rtfeldman$elm_hex$Hex$fromString,
+			$elm$core$Result$withDefault(0)),
+		A2(
+			$elm_community$string_extra$String$Extra$break,
+			2,
+			A2($elm$core$String$dropLeft, 1, colours.a3)));
+	var yiq = function () {
+		if (((rgb.b && rgb.b.b) && rgb.b.b.b) && (!rgb.b.b.b.b)) {
+			var red = rgb.a;
+			var _v1 = rgb.b;
+			var green = _v1.a;
+			var _v2 = _v1.b;
+			var blue = _v2.a;
+			return ((((red * 299) + (green * 587)) + (blue * 114)) / 1000) | 0;
+		} else {
+			return 128;
+		}
+	}();
+	return (yiq >= 128) ? _Utils_update(
+		colours,
+		{T: $author$project$Colour$lightHover, bA: $author$project$Colour$darkText}) : _Utils_update(
+		colours,
+		{T: $author$project$Colour$darkHover, bA: $author$project$Colour$lightText});
+};
+var $author$project$Colour$set = F3(
+	function (_for, colour, colours) {
+		if (!_for) {
+			return $author$project$Colour$setContrastText(
+				_Utils_update(
+					colours,
+					{a3: colour}));
+		} else {
+			return _Utils_update(
+				colours,
+				{bA: colour});
 		}
 	});
 var $author$project$App$shopMenuID = 'shop-menu-input';
 var $author$project$App$update = F2(
 	function (msg, model) {
-		var cmd = function () {
-			if (msg.$ === 10) {
+		switch (msg.$) {
+			case 9:
 				return A2(
-					$elm$core$Task$attempt,
-					$elm$core$Basics$always($author$project$App$DoNothing),
-					$elm$browser$Browser$Dom$focus($author$project$App$shopMenuID));
-			} else {
-				return $elm$core$Platform$Cmd$none;
-			}
-		}();
-		return A2(
-			$author$project$App$with,
-			cmd,
-			A2($author$project$App$innerUpdate, msg, model));
+					$author$project$App$with,
+					$author$project$App$focus($author$project$App$shopMenuID),
+					A2($author$project$App$innerUpdate, msg, model));
+			case 14:
+				var _for = msg.a;
+				var colour = msg.b;
+				var colours = A3($author$project$Colour$set, _for, colour, model.I);
+				return A2(
+					$author$project$App$with,
+					$author$project$Ports$setColours(
+						$author$project$Colour$encode(colours)),
+					_Utils_update(
+						model,
+						{I: colours}));
+			default:
+				return A2(
+					$author$project$App$with,
+					$elm$core$Platform$Cmd$none,
+					A2($author$project$App$innerUpdate, msg, model));
+		}
 	});
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $author$project$Colour$Background = 0;
+var $author$project$App$SetColour = F2(
+	function (a, b) {
+		return {$: 14, a: a, b: b};
+	});
+var $author$project$Colour$Text = 1;
 var $author$project$App$UpdateFlags = function (a) {
-	return {$: 14, a: a};
+	return {$: 13, a: a};
 };
 var $elm$html$Html$a = _VirtualDom_node('a');
-var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -10247,6 +10411,7 @@ var $elm$html$Html$Attributes$href = function (url) {
 		_VirtualDom_noJavaScriptUri(url));
 };
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $elm$html$Html$input = _VirtualDom_node('input');
 var $elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
@@ -10279,6 +10444,7 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			$elm$html$Html$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
+var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
@@ -10290,9 +10456,11 @@ var $elm$html$Html$Attributes$boolProperty = F2(
 var $elm$html$Html$Attributes$spellcheck = $elm$html$Html$Attributes$boolProperty('spellcheck');
 var $elm$html$Html$Attributes$target = $elm$html$Html$Attributes$stringProperty('target');
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
+var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $author$project$App$ToggleFilter = F2(
 	function (a, b) {
-		return {$: 5, a: a, b: b};
+		return {$: 4, a: a, b: b};
 	});
 var $elm$html$Html$img = _VirtualDom_node('img');
 var $elm$html$Html$Attributes$src = function (url) {
@@ -10312,34 +10480,34 @@ var $author$project$Icon$img = F2(
 			_List_Nil);
 	});
 var $author$project$Icon$boss = {
-	a5: 'boss',
-	bk: $author$project$Icon$img('img/sprites/Monster3-Front.gif'),
-	aj: 'Boss'
+	Z: 'boss',
+	aa: $author$project$Icon$img('img/sprites/Monster3-Front.gif'),
+	O: 'Boss'
 };
 var $author$project$Icon$character = {
-	a5: 'character',
-	bk: $author$project$Icon$img('img/sprites/Mini1-Front.gif'),
-	aj: 'Character'
+	Z: '',
+	aa: $author$project$Icon$img('img/sprites/Mini1-Front.gif'),
+	O: 'Character'
 };
 var $author$project$Icon$chest = {
-	a5: 'chest',
-	bk: $author$project$Icon$img('img/sprites/BlueChest1.gif'),
-	aj: 'Untrapped chests'
+	Z: '',
+	aa: $author$project$Icon$img('img/sprites/BlueChest1.gif'),
+	O: 'Untrapped chests'
 };
 var $author$project$Icon$keyItem = {
-	a5: 'key-item',
-	bk: $author$project$Icon$img('img/sprites/Key-edit.gif'),
-	aj: 'Key item check'
+	Z: 'key-item',
+	aa: $author$project$Icon$img('img/sprites/Key-gold.gif'),
+	O: 'Key item check'
 };
 var $author$project$Icon$trappedChest = {
-	a5: 'trapped-chest',
-	bk: $author$project$Icon$img('img/sprites/RedChest2.gif'),
-	aj: 'Trapped chests'
+	Z: '',
+	aa: $author$project$Icon$img('img/sprites/RedChest2.gif'),
+	O: 'Trapped chests'
 };
 var $author$project$Icon$visible = {
-	a5: 'checked',
-	bk: $author$project$Icon$img('img/sprites/SecurityEye.gif'),
-	aj: 'Dismissed locations'
+	Z: '',
+	aa: $author$project$Icon$img('img/sprites/SecurityEye.gif'),
+	O: 'Dismissed locations'
 };
 var $author$project$Icon$fromFilter = function (filter) {
 	switch (filter) {
@@ -10381,7 +10549,6 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$html$Html$Attributes$title = $elm$html$Html$Attributes$stringProperty('title');
 var $author$project$App$viewFilters = F2(
 	function (model, locClass) {
@@ -10390,12 +10557,12 @@ var $author$project$App$viewFilters = F2(
 				return _Utils_Tuple2(
 					_List_fromArray(
 						[0, 2, 1, 3, 4, 5]),
-					model.C);
+					model.x);
 			} else {
 				return _Utils_Tuple2(
 					_List_fromArray(
 						[5]),
-					model.ah);
+					model.M);
 			}
 		}();
 		var filters = _v0.a;
@@ -10422,16 +10589,16 @@ var $author$project$App$viewFilters = F2(
 				$elm$html$Html$span,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$class('filter'),
+						$elm$html$Html$Attributes$class('icon filter'),
 						$elm$html$Html$Attributes$class(stateClass),
-						$elm$html$Html$Attributes$class(icon.a5),
-						$elm$html$Html$Attributes$title(icon.aj),
+						$elm$html$Html$Attributes$class(icon.Z),
+						$elm$html$Html$Attributes$title(icon.O),
 						$elm$html$Html$Events$onClick(
 						A2($author$project$App$ToggleFilter, locClass, filter))
 					]),
 				_List_fromArray(
 					[
-						icon.bk(_List_Nil),
+						icon.aa(_List_Nil),
 						A2($author$project$App$displayIf, hide, $author$project$Icon$no)
 					]));
 		};
@@ -10445,7 +10612,7 @@ var $author$project$App$viewFilters = F2(
 	});
 var $author$project$Requirement$Spoon = {$: 15};
 var $author$project$App$ToggleRequirement = function (a) {
-	return {$: 4, a: a};
+	return {$: 3, a: a};
 };
 var $elm$html$Html$Attributes$classList = function (classes) {
 	return $elm$html$Html$Attributes$class(
@@ -10490,135 +10657,135 @@ var $author$project$Icon$requirements = $pzp1997$assoc_list$AssocList$fromList(
 			_Utils_Tuple2(
 			$author$project$Requirement$Adamant,
 			{
-				a5: 'adamant',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-13Adamant-Color-Alt.png'),
-				aj: 'Adamant'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-13Adamant-Color-Alt.png'),
+				O: 'Adamant'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$BaronKey,
 			{
-				a5: 'baron-key',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-9BaronKey-Color.png'),
-				aj: 'Baron Key'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-9BaronKey-Color.png'),
+				O: 'Baron Key'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$Crystal,
 			{
-				a5: 'crystal',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-1THECrystal-Color.png'),
-				aj: 'Crystal'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-1THECrystal-Color.png'),
+				O: 'Crystal'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$DarknessCrystal,
 			{
-				a5: 'darkness-crystal',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-4DarkCrystal-Color.png'),
-				aj: 'Darkness Crystal'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-4DarkCrystal-Color.png'),
+				O: 'Darkness Crystal'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$EarthCrystal,
 			{
-				a5: 'earth-crystal',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-5EarthCrystal-Color.png'),
-				aj: 'Earth Crystal'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-5EarthCrystal-Color.png'),
+				O: 'Earth Crystal'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$Hook,
 			{
-				a5: 'hook',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-3Hook-Color.png'),
-				aj: 'Hook'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-3Hook-Color.png'),
+				O: 'Hook'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$LegendSword,
 			{
-				a5: 'legend-sword',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-14LegendSword-Color.png'),
-				aj: 'Legend Sword'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-14LegendSword-Color.png'),
+				O: 'Legend Sword'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$LucaKey,
 			{
-				a5: 'luca-key',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-12LucaKey-Color.png'),
-				aj: 'Luca Key'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-12LucaKey-Color.png'),
+				O: 'Luca Key'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$MagmaKey,
 			{
-				a5: 'magma-key',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-10MagmaKey-Color.png'),
-				aj: 'Magma Key'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-10MagmaKey-Color.png'),
+				O: 'Magma Key'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$Pseudo(1),
 			{
-				a5: 'mist-dragon',
-				bk: $author$project$Icon$img('img/sprites/MistDragon1.gif'),
-				aj: 'D.Mist Defeated'
+				Z: '',
+				aa: $author$project$Icon$img('img/sprites/MistDragon1.gif'),
+				O: 'D.Mist Defeated'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$Package,
 			{
-				a5: 'package',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-7Package-Color.png'),
-				aj: 'Package'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-7Package-Color.png'),
+				O: 'Package'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$Pan,
 			{
-				a5: 'pan',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-15Pan-Color-Alt.png'),
-				aj: 'Pan'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-15Pan-Color-Alt.png'),
+				O: 'Pan'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$Pseudo(0),
 			{
-				a5: 'pass',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-2Pass-Color.png'),
-				aj: 'Pass'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-2Pass-Color.png'),
+				O: 'Pass'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$PinkTail,
 			{
-				a5: 'pink-tail',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-18PinkTail-Color.png'),
-				aj: 'Pink Tail'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-18PinkTail-Color.png'),
+				O: 'Pink Tail'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$RatTail,
 			{
-				a5: 'rat-tail',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-17RatTail-Color.png'),
-				aj: 'Rat Tail'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-17RatTail-Color.png'),
+				O: 'Rat Tail'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$SandRuby,
 			{
-				a5: 'sand-ruby',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-8SandRuby-Color.png'),
-				aj: 'Sand Ruby'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-8SandRuby-Color.png'),
+				O: 'Sand Ruby'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$Spoon,
 			{
-				a5: 'spoon',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-16Spoon-Color.png'),
-				aj: 'Spoon'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-16Spoon-Color.png'),
+				O: 'Spoon'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$TowerKey,
 			{
-				a5: 'tower-key',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-11TowerKey-Color.png'),
-				aj: 'Tower Key'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-11TowerKey-Color.png'),
+				O: 'Tower Key'
 			}),
 			_Utils_Tuple2(
 			$author$project$Requirement$TwinHarp,
 			{
-				a5: 'twin-harp',
-				bk: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-6TwinHarp-Color.png'),
-				aj: 'Twin Harp'
+				Z: '',
+				aa: $author$project$Icon$img('img/schalakitty/FFIVFE-Icons-6TwinHarp-Color.png'),
+				O: 'Twin Harp'
 			})
 		]));
 var $author$project$Icon$fromRequirement = function (requirement) {
@@ -10640,20 +10807,20 @@ var $author$project$App$viewKeyItems = F2(
 					var icon = _v0.a;
 					var readonlyAttr = readonly ? _List_fromArray(
 						[
-							$elm$html$Html$Attributes$title(icon.aj + ' (can\'t be toggled directly)'),
+							$elm$html$Html$Attributes$title(icon.O + ' (can\'t be toggled directly)'),
 							$elm$html$Html$Attributes$class('readonly')
 						]) : _List_fromArray(
 						[
-							$elm$html$Html$Attributes$title(icon.aj),
+							$elm$html$Html$Attributes$title(icon.O),
 							$elm$html$Html$Events$onClick(
 							$author$project$App$ToggleRequirement(requirement))
 						]);
-					return icon.bk(
+					return icon.aa(
 						_Utils_ap(
 							_List_fromArray(
 								[
 									$elm$html$Html$Attributes$class('requirement'),
-									$elm$html$Html$Attributes$class(icon.a5),
+									$elm$html$Html$Attributes$class(icon.Z),
 									$elm$html$Html$Attributes$classList(
 									_List_fromArray(
 										[
@@ -10683,10 +10850,10 @@ var $author$project$App$viewKeyItems = F2(
 				]),
 			_List_fromArray(
 				[
-					(!flags.ct) ? A2(req_, $author$project$Requirement$Crystal, true) : A2(req_, $author$project$Requirement$Crystal, false),
+					(!flags.am) ? A2(req_, $author$project$Requirement$Crystal, true) : A2(req_, $author$project$Requirement$Crystal, false),
 					A2(
 					$author$project$App$displayCellIf,
-					flags.d8,
+					flags.br,
 					req(
 						$author$project$Requirement$Pseudo(0))),
 					req($author$project$Requirement$Hook),
@@ -10705,22 +10872,22 @@ var $author$project$App$viewKeyItems = F2(
 					req($author$project$Requirement$Spoon),
 					A2(
 					$author$project$App$displayCellIf,
-					!A2($Gizra$elm_all_set$EverySet$member, 5, flags.c7),
+					!A2($Gizra$elm_all_set$EverySet$member, 5, flags.aH),
 					req(
 						$author$project$Requirement$Pseudo(1))),
 					req($author$project$Requirement$RatTail),
 					A2(
 					$author$project$App$displayCellIf,
-					!A2($Gizra$elm_all_set$EverySet$member, 6, flags.c7),
+					!A2($Gizra$elm_all_set$EverySet$member, 6, flags.aH),
 					req($author$project$Requirement$PinkTail)),
 					A2(
 					$author$project$App$displayCellIf,
-					flags.dW,
+					flags.bf,
 					A2(
 						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('requirement total'),
+								$elm$html$Html$Attributes$class('requirement readonly total'),
 								$elm$html$Html$Attributes$classList(
 								_List_fromArray(
 									[
@@ -10751,7 +10918,7 @@ var $author$project$Requirement$UndergroundAccess = 2;
 var $author$project$Location$areaAccessible = F2(
 	function (attained, _v0) {
 		var location = _v0;
-		var _v1 = location.X;
+		var _v1 = location.H;
 		switch (_v1) {
 			case 0:
 				return true;
@@ -10765,10 +10932,10 @@ var $author$project$Location$areaAccessible = F2(
 		}
 	});
 var $author$project$Location$huntingDMist = function (context) {
-	return !(A2($Gizra$elm_all_set$EverySet$member, 5, context.m.c7) || A2(
+	return !(A2($Gizra$elm_all_set$EverySet$member, 5, context.l.aH) || A2(
 		$Gizra$elm_all_set$EverySet$member,
 		$author$project$Requirement$Pseudo(1),
-		context.p));
+		context.n));
 };
 var $author$project$Objective$isBoss = function (key) {
 	switch (key.$) {
@@ -10783,19 +10950,19 @@ var $author$project$Objective$isBoss = function (key) {
 var $author$project$Location$outstandingObjectives = function (context) {
 	return (_Utils_cmp(
 		$Gizra$elm_all_set$EverySet$size(context.h),
-		context.m.cD) > -1) ? $Gizra$elm_all_set$EverySet$empty : A2(
+		context.l.aq) > -1) ? $Gizra$elm_all_set$EverySet$empty : A2(
 		$Gizra$elm_all_set$EverySet$diff,
 		$author$project$Location$combinedObjectives(context),
 		context.h);
 };
 var $author$project$Location$defaultFiltersFrom = function (context) {
-	var trappedKeyItems = A2($Gizra$elm_all_set$EverySet$member, 4, context.m.c7);
+	var trappedKeyItems = A2($Gizra$elm_all_set$EverySet$member, 4, context.l.aH);
 	var outstanding = $author$project$Location$outstandingObjectives(context);
 	var onDarkMatterHunt = A2($Gizra$elm_all_set$EverySet$member, $author$project$Objective$DarkMatterHunt, outstanding);
 	var bossesHaveValue = function () {
 		var activeBossHunt = !$Gizra$elm_all_set$EverySet$isEmpty(
 			A2($Gizra$elm_all_set$EverySet$filter, $author$project$Objective$isBoss, outstanding));
-		return (!context.m.cL) && (activeBossHunt || $author$project$Location$huntingDMist(context));
+		return (!context.l.au) && (activeBossHunt || $author$project$Location$huntingDMist(context));
 	}();
 	return $Gizra$elm_all_set$EverySet$fromList(
 		A2(
@@ -10839,12 +11006,12 @@ var $author$project$Location$filtersFrom = function (context) {
 				}
 			}),
 		$author$project$Location$defaultFiltersFrom(context),
-		context.dO);
+		context.ba);
 };
 var $author$project$Location$isClass = F2(
 	function (_class, _v0) {
 		var location = _v0;
-		return _Utils_eq(_class === 1, location.ck);
+		return _Utils_eq(_class === 1, location.ad);
 	});
 var $author$project$Location$requirementsMet = F2(
 	function (attained, _v0) {
@@ -10855,25 +11022,25 @@ var $author$project$Location$requirementsMet = F2(
 var $author$project$Location$filterByContext = F3(
 	function (_class, c, _v0) {
 		var locations = _v0;
-		var undergroundAccess = c.m.cA || (A2($Gizra$elm_all_set$EverySet$member, $author$project$Requirement$MagmaKey, c.p) || A2(
+		var undergroundAccess = c.l.ap || (A2($Gizra$elm_all_set$EverySet$member, $author$project$Requirement$MagmaKey, c.n) || A2(
 			$Gizra$elm_all_set$EverySet$member,
 			$author$project$Requirement$Pseudo(5),
-			c.p));
+			c.n));
 		var jumpable = $Gizra$elm_all_set$EverySet$fromList(
 			_List_fromArray(
 				[20, 21, 22, 35, 36, 37]));
 		var attainedRequirements = undergroundAccess ? A2(
 			$Gizra$elm_all_set$EverySet$insert,
 			$author$project$Requirement$Pseudo(2),
-			c.p) : c.p;
+			c.n) : c.n;
 		var context = _Utils_update(
 			c,
-			{p: attainedRequirements});
+			{n: attainedRequirements});
 		var filters = $author$project$Location$filtersFrom(context);
 		var outstanding = $author$project$Location$outstandingObjectives(context);
 		var propertyHasValue = function (_v3) {
-			var status = _v3.dt;
-			var value = _v3.cK;
+			var status = _v3.aW;
+			var value = _v3.at;
 			var _v1 = _Utils_Tuple2(
 				value,
 				$author$project$Value$toFilter(value));
@@ -10901,13 +11068,13 @@ var $author$project$Location$filterByContext = F3(
 		};
 		var isRelevant = function (location) {
 			var l = location;
-			return (!A2($author$project$Location$isClass, _class, location)) ? false : (_Utils_eq(l.dt, $author$project$Status$Dismissed) ? (!A2(
+			return (!A2($author$project$Location$isClass, _class, location)) ? false : (_Utils_eq(l.aW, $author$project$Status$Dismissed) ? (!A2(
 				$elm$core$Maybe$withDefault,
 				1,
-				A2($pzp1997$assoc_list$AssocList$get, 5, context.dO))) : ((context.m.cL && ((!l.w) && $author$project$Location$huntingDMist(context))) ? true : (A2(
+				A2($pzp1997$assoc_list$AssocList$get, 5, context.ba))) : ((context.l.au && ((!l.r) && $author$project$Location$huntingDMist(context))) ? true : (A2(
 				$elm$core$List$any,
 				propertyHasValue,
-				A2($author$project$Location$getProperties, context, location)) && (A2($author$project$Location$areaAccessible, attainedRequirements, location) && ((context.m.cA && A2($Gizra$elm_all_set$EverySet$member, l.w, jumpable)) || A2($author$project$Location$requirementsMet, attainedRequirements, location))))));
+				A2($author$project$Location$getProperties, context, location)) && (A2($author$project$Location$areaAccessible, attainedRequirements, location) && ((context.l.ap && A2($Gizra$elm_all_set$EverySet$member, l.r, jumpable)) || A2($author$project$Location$requirementsMet, attainedRequirements, location))))));
 		};
 		return A2(
 			$pzp1997$assoc_list$AssocList$filter,
@@ -10972,7 +11139,7 @@ var $elm_community$list_extra$List$Extra$gatherEqualsBy = F2(
 	});
 var $author$project$Location$getArea = function (_v0) {
 	var location = _v0;
-	return location.X;
+	return location.H;
 };
 var $author$project$Location$values = function (_v0) {
 	var locations = _v0;
@@ -10995,13 +11162,13 @@ var $author$project$Location$groupByArea = A2(
 var $elm$html$Html$h4 = _VirtualDom_node('h4');
 var $elm$regex$Regex$Match = F4(
 	function (match, index, number, submatches) {
-		return {I: index, dZ: match, d3: number, eg: submatches};
+		return {A: index, bh: match, bn: number, by: submatches};
 	});
 var $elm$regex$Regex$fromStringWith = _Regex_fromStringWith;
 var $elm$regex$Regex$fromString = function (string) {
 	return A2(
 		$elm$regex$Regex$fromStringWith,
-		{dI: false, d$: false},
+		{a5: false, bj: false},
 		string);
 };
 var $elm$regex$Regex$never = _Regex_never;
@@ -11010,7 +11177,6 @@ var $elm_community$string_extra$String$Extra$regexFromString = A2(
 	$elm$regex$Regex$fromString,
 	$elm$core$Maybe$withDefault($elm$regex$Regex$never));
 var $elm$regex$Regex$replace = _Regex_replaceAtMost(_Regex_infinity);
-var $elm$core$String$cons = _String_cons;
 var $elm_community$string_extra$String$Extra$changeCase = F2(
 	function (mutator, word) {
 		return A2(
@@ -11039,7 +11205,7 @@ var $elm_community$string_extra$String$Extra$toTitleCase = function (ws) {
 		A2(
 			$elm$core$Basics$composeR,
 			function ($) {
-				return $.dZ;
+				return $.bh;
 			},
 			$elm_community$string_extra$String$Extra$toSentenceCase));
 	return A3(
@@ -11048,7 +11214,7 @@ var $elm_community$string_extra$String$Extra$toTitleCase = function (ws) {
 		A2(
 			$elm$core$Basics$composeR,
 			function ($) {
-				return $.dZ;
+				return $.bh;
 			},
 			uppercaseMatch),
 		ws);
@@ -11056,7 +11222,7 @@ var $elm_community$string_extra$String$Extra$toTitleCase = function (ws) {
 var $author$project$Status$Seen = {$: 1};
 var $author$project$App$ToggleLocationStatus = F2(
 	function (a, b) {
-		return {$: 6, a: a, b: b};
+		return {$: 5, a: a, b: b};
 	});
 var $elm_community$maybe_extra$Maybe$Extra$filter = F2(
 	function (f, m) {
@@ -11069,7 +11235,7 @@ var $elm_community$maybe_extra$Maybe$Extra$filter = F2(
 	});
 var $author$project$Location$getName = function (_v0) {
 	var location = _v0;
-	return location.d0;
+	return location.bk;
 };
 var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
 	return {$: 2, a: a};
@@ -11102,11 +11268,11 @@ var $author$project$Status$toString = function (status) {
 };
 var $author$project$App$ToggleShopItem = F2(
 	function (a, b) {
-		return {$: 12, a: a, b: b};
+		return {$: 11, a: a, b: b};
 	});
 var $author$project$App$UpdateShopText = F2(
 	function (a, b) {
-		return {$: 13, a: a, b: b};
+		return {$: 12, a: a, b: b};
 	});
 var $elm$html$Html$Attributes$cols = function (n) {
 	return A2(
@@ -11129,7 +11295,7 @@ var $author$project$App$onClickNoBubble = function (msg) {
 		$elm$html$Html$Events$custom,
 		'click',
 		$elm$json$Json$Decode$succeed(
-			{d_: msg, ea: true, ef: true}));
+			{bi: msg, bt: true, bx: true}));
 };
 var $elm$html$Html$Attributes$rows = function (n) {
 	return A2(
@@ -11137,7 +11303,6 @@ var $elm$html$Html$Attributes$rows = function (n) {
 		'rows',
 		$elm$core$String$fromInt(n));
 };
-var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $author$project$App$viewMenu = function (menu) {
 	var viewItem = function (_v1) {
 		var itemIndex = _v1.a;
@@ -11148,13 +11313,22 @@ var $author$project$App$viewMenu = function (menu) {
 				[
 					$elm$html$Html$Attributes$class('shop-item'),
 					$elm$html$Html$Attributes$class(
-					$author$project$Status$toString(item.dt)),
+					$author$project$Status$toString(item.aW)),
 					$author$project$App$onClickNoBubble(
 					A2($author$project$App$ToggleShopItem, menu, itemIndex))
 				]),
 			_List_fromArray(
 				[
-					$elm$html$Html$text(item.d0)
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('name')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(item.bk)
+						]))
 				]));
 	};
 	return A2(
@@ -11164,7 +11338,7 @@ var $author$project$App$viewMenu = function (menu) {
 				$elm$html$Html$Attributes$class('shop-menu')
 			]),
 		function () {
-			var _v0 = menu.ap;
+			var _v0 = menu.S;
 			if (!_v0.$) {
 				var items = _v0.a;
 				return A2($elm$core$List$map, viewItem, items);
@@ -11193,63 +11367,71 @@ var $author$project$App$viewMenu = function (menu) {
 };
 var $author$project$App$HardToggleProperty = F2(
 	function (a, b) {
-		return {$: 8, a: a, b: b};
+		return {$: 7, a: a, b: b};
 	});
 var $author$project$App$ToggleProperty = F2(
 	function (a, b) {
-		return {$: 7, a: a, b: b};
+		return {$: 6, a: a, b: b};
 	});
 var $author$project$App$ToggleShopMenu = function (a) {
-	return {$: 10, a: a};
+	return {$: 9, a: a};
 };
 var $author$project$App$ToggleWarpGlitchUsed = F2(
 	function (a, b) {
-		return {$: 9, a: a, b: b};
+		return {$: 8, a: a, b: b};
 	});
+var $author$project$Icon$check = A2(
+	$elm$html$Html$img,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('check'),
+			$elm$html$Html$Attributes$src('img/check.png')
+		]),
+	_List_Nil);
 var $author$project$Icon$armour = {
-	a5: 'armour',
-	bk: $author$project$Icon$img('img/sprites/Armor.gif'),
-	aj: 'Armour'
+	Z: '',
+	aa: $author$project$Icon$img('img/sprites/Armor.gif'),
+	O: 'Armour'
 };
 var $author$project$Icon$falcon = {
-	a5: 'falcon',
-	bk: $author$project$Icon$img('img/sprites/Falcon-Left-still.png'),
-	aj: 'Launch the Falcon'
+	Z: '',
+	aa: $author$project$Icon$img('img/sprites/Falcon-Left-still.png'),
+	O: 'Launch the Falcon'
 };
 var $author$project$Icon$healing = {
-	a5: 'healing',
-	bk: $author$project$Icon$img('img/sprites/RecoveryItem.gif'),
-	aj: 'Healing consumables'
+	Z: '',
+	aa: $author$project$Icon$img('img/sprites/RecoveryItem.gif'),
+	O: 'Healing consumables'
 };
 var $author$project$Icon$jItem = {
-	a5: 'jItem',
-	bk: $author$project$Icon$img('img/sprites/Hourglass.gif'),
-	aj: 'J-items'
+	Z: '',
+	aa: $author$project$Icon$img('img/sprites/Hourglass.gif'),
+	O: 'J-items'
 };
 var $author$project$Icon$objective = {
-	a5: 'objective-icon',
-	bk: $author$project$Icon$img('img/sprites/Crystal-still.png'),
-	aj: 'Objective'
+	Z: 'objective-icon',
+	aa: $author$project$Icon$img('img/sprites/Crystal-still.png'),
+	O: 'Objective'
 };
 var $author$project$Icon$other = {
-	a5: 'other',
-	bk: $author$project$Icon$img('img/sprites/Summon.gif'),
-	aj: 'Other'
+	Z: '',
+	aa: $author$project$Icon$img('img/sprites/Summon.gif'),
+	O: 'Other'
 };
 var $author$project$Icon$weapon = {
-	a5: 'weapon',
-	bk: $author$project$Icon$img('img/sprites/KnightSword.gif'),
-	aj: 'Weapon'
+	Z: '',
+	aa: $author$project$Icon$img('img/sprites/KnightSword.gif'),
+	O: 'Weapon'
 };
 var $author$project$Icon$yangBonk = {
-	a5: 'yang-bonk',
-	bk: $author$project$Icon$img('img/sprites/Yang-Front.gif'),
-	aj: 'Bonk Yang'
+	Z: '',
+	aa: $author$project$Icon$img('img/sprites/Yang-Front.gif'),
+	O: 'Bonk Yang'
 };
 var $author$project$Icon$yangTalk = {
-	a5: 'yang-talk',
-	bk: $author$project$Icon$img('img/sprites/Yang-KO1.gif'),
-	aj: 'Talk to Yang'
+	Z: '',
+	aa: $author$project$Icon$img('img/sprites/Yang-KO1.gif'),
+	O: 'Talk to Yang'
 };
 var $author$project$Icon$fromValue = function (value) {
 	_v0$14:
@@ -11308,63 +11490,38 @@ var $author$project$Icon$fromValue = function (value) {
 	}
 	return $elm$core$Maybe$Nothing;
 };
-var $elm_community$string_extra$String$Extra$breaker = F3(
-	function (width, string, acc) {
-		breaker:
-		while (true) {
-			if (string === '') {
-				return $elm$core$List$reverse(acc);
-			} else {
-				var $temp$width = width,
-					$temp$string = A2($elm$core$String$dropLeft, width, string),
-					$temp$acc = A2(
-					$elm$core$List$cons,
-					A3($elm$core$String$slice, 0, width, string),
-					acc);
-				width = $temp$width;
-				string = $temp$string;
-				acc = $temp$acc;
-				continue breaker;
-			}
-		}
-	});
-var $elm_community$string_extra$String$Extra$break = F2(
-	function (width, string) {
-		return ((!width) || (string === '')) ? _List_fromArray(
-			[string]) : A3($elm_community$string_extra$String$Extra$breaker, width, string, _List_Nil);
-	});
 var $author$project$Icon$dkc = {
-	a5: 'dkc',
-	bk: $author$project$Icon$img('img/sprites/Cecil1-Front.gif'),
-	aj: 'Dark Knight Cecil Darkwave damage'
+	Z: '',
+	aa: $author$project$Icon$img('img/sprites/Cecil1-Front.gif'),
+	O: 'Dark Knight Cecil Darkwave damage'
 };
 var $elm$html$Html$hr = _VirtualDom_node('hr');
 var $author$project$Icon$kainazzo = {
-	a5: 'kainazzo',
-	bk: $author$project$Icon$img('img/sprites/Cagnazzo.gif'),
-	aj: 'Kainazzo Wave damage at max HP'
+	Z: '',
+	aa: $author$project$Icon$img('img/sprites/Cagnazzo.gif'),
+	O: 'Kainazzo Wave damage at max HP'
 };
 var $elm$core$String$reverse = _String_reverse;
 var $author$project$Icon$toImg = function (icon) {
-	return icon.bk(
+	return icon.aa(
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$class(icon.a5),
-				$elm$html$Html$Attributes$title(icon.aj)
+				$elm$html$Html$Attributes$class(icon.Z),
+				$elm$html$Html$Attributes$title(icon.O)
 			]));
 };
 var $author$project$Icon$valvalis = {
-	a5: 'valvalis',
-	bk: $author$project$Icon$img('img/sprites/Barbariccia.gif'),
-	aj: 'Valvalis MDef'
+	Z: '',
+	aa: $author$project$Icon$img('img/sprites/Barbariccia.gif'),
+	O: 'Valvalis MDef'
 };
 var $author$project$App$viewBossStats = function (stats) {
 	var waveDmg = function () {
-		var min = $elm$core$Basics$ceiling(stats.c2 / 25);
+		var min = $elm$core$Basics$ceiling(stats.aG / 25);
 		var max = $elm$core$Basics$ceiling(min * 1.5);
 		return $elm$core$String$fromInt(min) + ('-' + $elm$core$String$fromInt(max));
 	}();
-	var formatSpeed = _Utils_eq(stats.cn, stats.da) ? $elm$core$String$fromInt(stats.cn) : ($elm$core$String$fromInt(stats.cn) + ('-' + $elm$core$String$fromInt(stats.da)));
+	var formatSpeed = _Utils_eq(stats.ag, stats.aI) ? $elm$core$String$fromInt(stats.ag) : ($elm$core$String$fromInt(stats.ag) + ('-' + $elm$core$String$fromInt(stats.aI)));
 	var formatHP = $elm$core$String$reverse(
 		A2(
 			$elm$core$String$join,
@@ -11373,10 +11530,10 @@ var $author$project$App$viewBossStats = function (stats) {
 				$elm_community$string_extra$String$Extra$break,
 				3,
 				$elm$core$String$reverse(
-					$elm$core$String$fromInt(stats.c2)))));
+					$elm$core$String$fromInt(stats.aG)))));
 	var darkwaveDmg = function () {
-		var min = $elm$core$Basics$ceiling((stats.b9 * stats.cQ) / 2);
-		var max = min + stats.b9;
+		var min = $elm$core$Basics$ceiling((stats.ab * stats.ax) / 2);
+		var max = min + stats.ab;
 		return $elm$core$String$fromInt(min) + ('-' + $elm$core$String$fromInt(max));
 	}();
 	return A2(
@@ -11408,7 +11565,7 @@ var $author$project$App$viewBossStats = function (stats) {
 				_List_fromArray(
 					[
 						$elm$html$Html$text(
-						'Atk: ' + ($elm$core$String$fromInt(stats.b9) + ('x' + ($elm$core$String$fromInt(stats.cQ) + (', ' + ($elm$core$String$fromInt(stats.dR) + '%'))))))
+						'Atk: ' + ($elm$core$String$fromInt(stats.ab) + ('x' + ($elm$core$String$fromInt(stats.ax) + (', ' + ($elm$core$String$fromInt(stats.bc) + '%'))))))
 					])),
 				A2(
 				$elm$html$Html$div,
@@ -11416,7 +11573,7 @@ var $author$project$App$viewBossStats = function (stats) {
 				_List_fromArray(
 					[
 						$elm$html$Html$text(
-						'Mag: ' + $elm$core$String$fromInt(stats.dY))
+						'Mag: ' + $elm$core$String$fromInt(stats.bg))
 					])),
 				A2(
 				$elm$html$Html$div,
@@ -11431,7 +11588,16 @@ var $author$project$App$viewBossStats = function (stats) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						$author$project$Icon$toImg($author$project$Icon$kainazzo),
+						A2(
+						$elm$html$Html$span,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('icon')
+							]),
+						_List_fromArray(
+							[
+								$author$project$Icon$toImg($author$project$Icon$kainazzo)
+							])),
 						$elm$html$Html$text('Dmg: ' + waveDmg)
 					])),
 				A2(
@@ -11439,7 +11605,16 @@ var $author$project$App$viewBossStats = function (stats) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						$author$project$Icon$toImg($author$project$Icon$dkc),
+						A2(
+						$elm$html$Html$span,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('icon')
+							]),
+						_List_fromArray(
+							[
+								$author$project$Icon$toImg($author$project$Icon$dkc)
+							])),
 						$elm$html$Html$text('Dmg: ' + darkwaveDmg)
 					])),
 				A2(
@@ -11447,38 +11622,34 @@ var $author$project$App$viewBossStats = function (stats) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						$author$project$Icon$toImg($author$project$Icon$valvalis),
+						A2(
+						$elm$html$Html$span,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('icon')
+							]),
+						_List_fromArray(
+							[
+								$author$project$Icon$toImg($author$project$Icon$valvalis)
+							])),
 						$elm$html$Html$text(
-						'MDef: ' + $elm$core$String$fromInt(stats.el))
+						'MDef: ' + $elm$core$String$fromInt(stats.bC))
 					]))
 			]));
 };
 var $author$project$App$viewProperty = F3(
 	function (context, location, _v0) {
-		var index = _v0.I;
-		var status = _v0.dt;
-		var value = _v0.cK;
+		var index = _v0.A;
+		var status = _v0.aW;
+		var value = _v0.at;
 		var key = $author$project$Location$getKey(location);
 		var extraClass = function () {
-			_v8$3:
-			while (true) {
-				switch (value.$) {
-					case 2:
-						if (value.a === 1) {
-							var _v9 = value.a;
-							return 'warp';
-						} else {
-							break _v8$3;
-						}
-					case 3:
-						return 'countable';
-					case 4:
-						return 'countable';
-					default:
-						break _v8$3;
-				}
+			if ((value.$ === 2) && (value.a === 1)) {
+				var _v9 = value.a;
+				return 'warp';
+			} else {
+				return '';
 			}
-			return '';
 		}();
 		var count = function () {
 			var _v7 = _Utils_Tuple2(
@@ -11500,7 +11671,7 @@ var $author$project$App$viewProperty = F3(
 		var clickHandler = function () {
 			var toggleShopMenu = function (content) {
 				return $author$project$App$ToggleShopMenu(
-					{ap: content, I: index, w: key});
+					{S: content, A: index, r: key});
 			};
 			var shopItems = A2(
 				$elm$core$Basics$composeL,
@@ -11552,7 +11723,7 @@ var $author$project$App$viewProperty = F3(
 				_List_fromArray(
 					[
 						$elm$html$Html$Attributes$class('icon'),
-						$elm$html$Html$Attributes$class(icon.a5),
+						$elm$html$Html$Attributes$class(icon.Z),
 						$elm$html$Html$Attributes$class(extraClass),
 						$elm$html$Html$Attributes$class(
 						$author$project$Status$toString(status)),
@@ -11562,7 +11733,7 @@ var $author$project$App$viewProperty = F3(
 								var _v3 = value.a;
 								return 'Sealed Cave key item check';
 							} else {
-								return icon.aj;
+								return icon.O;
 							}
 						}()),
 						clickHandler,
@@ -11571,7 +11742,15 @@ var $author$project$App$viewProperty = F3(
 					]),
 				_List_fromArray(
 					[
-						icon.bk(_List_Nil),
+						icon.aa(
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('value')
+							])),
+						A2(
+						$author$project$App$displayIf,
+						_Utils_eq(status, $author$project$Status$Dismissed),
+						$author$project$Icon$check),
 						A2(
 						$author$project$App$displayIf,
 						count > 0,
@@ -11650,7 +11829,7 @@ var $author$project$App$viewLocation = F3(
 								A2(
 									$elm$core$Basics$composeR,
 									function ($) {
-										return $.w;
+										return $.r;
 									},
 									$elm$core$Basics$eq(
 										$author$project$Location$getKey(location))),
@@ -11686,7 +11865,7 @@ var $author$project$App$viewLocations = F2(
 							]),
 						A2(
 							$elm$core$List$concatMap,
-							A2($author$project$App$viewLocation, model.B, context),
+							A2($author$project$App$viewLocation, model.w, context),
 							locations))
 					]));
 		};
@@ -11702,6 +11881,52 @@ var $author$project$App$viewLocations = F2(
 				$author$project$Location$groupByArea(
 					A3($author$project$Location$filterByContext, locClass, context, model.i))));
 	});
+var $elm$html$Html$datalist = _VirtualDom_node('datalist');
+var $author$project$Objective$gatedQuests = A2(
+	$elm$core$List$filter,
+	function ($) {
+		return $.L;
+	},
+	$author$project$Objective$quests);
+var $elm$core$Elm$JsArray$indexedMap = _JsArray_indexedMap;
+var $elm$core$Array$indexedMap = F2(
+	function (func, _v0) {
+		var len = _v0.a;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var initialBuilder = {
+			j: _List_Nil,
+			d: 0,
+			g: A3(
+				$elm$core$Elm$JsArray$indexedMap,
+				func,
+				$elm$core$Array$tailIndex(len),
+				tail)
+		};
+		var helper = F2(
+			function (node, builder) {
+				if (!node.$) {
+					var subTree = node.a;
+					return A3($elm$core$Elm$JsArray$foldl, helper, builder, subTree);
+				} else {
+					var leaf = node.a;
+					var offset = builder.d * $elm$core$Array$branchFactor;
+					var mappedLeaf = $elm$core$Array$Leaf(
+						A3($elm$core$Elm$JsArray$indexedMap, func, offset, leaf));
+					return {
+						j: A2($elm$core$List$cons, mappedLeaf, builder.j),
+						d: builder.d + 1,
+						g: builder.g
+					};
+				}
+			});
+		return A2(
+			$elm$core$Array$builderToArray,
+			true,
+			A3($elm$core$Elm$JsArray$foldl, helper, initialBuilder, tree));
+	});
+var $author$project$App$objectivesDatalistId = 'objective-options';
+var $elm$html$Html$option = _VirtualDom_node('option');
 var $author$project$Flags$rewardToString = function (reward) {
 	if (!reward) {
 		return 'crystal';
@@ -11714,557 +11939,18 @@ var $author$project$App$SetRandomObjective = F2(
 	function (a, b) {
 		return {$: 1, a: a, b: b};
 	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$DropdownItem = $elm$core$Basics$identity;
-var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem = F2(
-	function (attributes, children) {
-		return A2(
-			$elm$html$Html$button,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$type_('button'),
-						$elm$html$Html$Attributes$class('dropdown-item')
-					]),
-				attributes),
-			children);
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropDir = function (maybeDir) {
-	var toAttrs = function (dir) {
-		return _List_fromArray(
-			[
-				$elm$html$Html$Attributes$class(
-				'drop' + function () {
-					if (!dir) {
-						return 'left';
-					} else {
-						return 'right';
-					}
-				}())
-			]);
-	};
-	return A2(
-		$elm$core$Maybe$withDefault,
-		_List_Nil,
-		A2($elm$core$Maybe$map, toAttrs, maybeDir));
-};
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownAttributes = F2(
-	function (status, config) {
-		return _Utils_ap(
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$classList(
-					_List_fromArray(
-						[
-							_Utils_Tuple2('btn-group', true),
-							_Utils_Tuple2('show', status !== 2),
-							_Utils_Tuple2('dropup', config.av)
-						]))
-				]),
-			_Utils_ap(
-				$rundis$elm_bootstrap$Bootstrap$Dropdown$dropDir(config.aq),
-				config.aY));
-	});
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$menuStyles = F2(
-	function (_v0, config) {
-		var status = _v0.dt;
-		var toggleSize = _v0.b$;
-		var menuSize = _v0.az;
-		var px = function (n) {
-			return $elm$core$String$fromFloat(n) + 'px';
-		};
-		var translate = F3(
-			function (x, y, z) {
-				return 'translate3d(' + (px(x) + (',' + (px(y) + (',' + (px(z) + ')')))));
-			});
-		var _default = _List_fromArray(
-			[
-				A2($elm$html$Html$Attributes$style, 'top', '0'),
-				A2($elm$html$Html$Attributes$style, 'left', '0')
-			]);
-		var _v1 = _Utils_Tuple2(config.av, config.aq);
-		_v1$0:
-		while (true) {
-			if (!_v1.b.$) {
-				if (_v1.b.a === 1) {
-					if (_v1.a) {
-						break _v1$0;
-					} else {
-						var _v2 = _v1.b.a;
-						return _default;
-					}
-				} else {
-					if (_v1.a) {
-						break _v1$0;
-					} else {
-						var _v3 = _v1.b.a;
-						return _Utils_ap(
-							_default,
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$Attributes$style,
-									'transform',
-									A3(translate, (-toggleSize.dC) - menuSize.dC, 0, 0))
-								]));
-					}
-				}
-			} else {
-				if (_v1.a) {
-					break _v1$0;
-				} else {
-					return _Utils_ap(
-						_default,
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$Attributes$style,
-								'transform',
-								A3(translate, -toggleSize.dC, toggleSize.c0, 0))
-							]));
-				}
-			}
-		}
-		return _Utils_ap(
-			_default,
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$Attributes$style,
-					'transform',
-					A3(translate, -toggleSize.dC, -menuSize.c0, 0))
-				]));
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownMenu = F3(
-	function (state, config, items) {
-		var status = state.dt;
-		var menuSize = state.az;
-		var wrapperStyles = (status === 2) ? _List_fromArray(
-			[
-				A2($elm$html$Html$Attributes$style, 'height', '0'),
-				A2($elm$html$Html$Attributes$style, 'overflow', 'hidden'),
-				A2($elm$html$Html$Attributes$style, 'position', 'relative')
-			]) : _List_fromArray(
-			[
-				A2($elm$html$Html$Attributes$style, 'position', 'relative')
-			]);
-		return A2(
-			$elm$html$Html$div,
-			wrapperStyles,
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_Utils_ap(
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$classList(
-								_List_fromArray(
-									[
-										_Utils_Tuple2('dropdown-menu', true),
-										_Utils_Tuple2('dropdown-menu-right', config.bi),
-										_Utils_Tuple2('show', status !== 2)
-									]))
-							]),
-						_Utils_ap(
-							A2($rundis$elm_bootstrap$Bootstrap$Dropdown$menuStyles, state, config),
-							config.bp)),
-					A2(
-						$elm$core$List$map,
-						function (_v0) {
-							var x = _v0;
-							return x;
-						},
-						items))
-				]));
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$applyModifier = F2(
-	function (option, options) {
-		switch (option.$) {
-			case 1:
-				return _Utils_update(
-					options,
-					{bi: true});
-			case 0:
-				return _Utils_update(
-					options,
-					{av: true});
-			case 4:
-				var attrs_ = option.a;
-				return _Utils_update(
-					options,
-					{aY: attrs_});
-			case 2:
-				var dir = option.a;
-				return _Utils_update(
-					options,
-					{
-						aq: $elm$core$Maybe$Just(dir)
-					});
-			default:
-				var attrs_ = option.a;
-				return _Utils_update(
-					options,
-					{bp: attrs_});
-		}
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$defaultOptions = {aY: _List_Nil, aq: $elm$core$Maybe$Nothing, bi: false, av: false, bp: _List_Nil};
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$toConfig = function (options) {
-	return A3($elm$core$List$foldl, $rundis$elm_bootstrap$Bootstrap$Dropdown$applyModifier, $rundis$elm_bootstrap$Bootstrap$Dropdown$defaultOptions, options);
-};
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropdown = F2(
-	function (state, _v0) {
-		var status = state.dt;
-		var toggleMsg = _v0.ej;
-		var toggleButton = _v0.ei;
-		var items = _v0.dV;
-		var options = _v0.d7;
-		var config = $rundis$elm_bootstrap$Bootstrap$Dropdown$toConfig(options);
-		var _v1 = toggleButton;
-		var buttonFn = _v1;
-		return A2(
-			$elm$html$Html$div,
-			A2($rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownAttributes, status, config),
-			_List_fromArray(
-				[
-					A2(buttonFn, toggleMsg, state),
-					A3($rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownMenu, state, config, items)
-				]));
-	});
-var $author$project$Objective$gatedQuests = A2(
-	$elm$core$List$filter,
-	function ($) {
-		return $.ae;
-	},
-	$author$project$Objective$quests);
-var $elm$html$Html$h6 = _VirtualDom_node('h6');
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$header = function (children) {
-	return A2(
-		$elm$html$Html$h6,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('dropdown-header')
-			]),
-		children);
-};
 var $elm$html$Html$li = _VirtualDom_node('li');
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$DropdownToggle = $elm$core$Basics$identity;
-var $rundis$elm_bootstrap$Bootstrap$Internal$Button$applyModifier = F2(
-	function (modifier, options) {
-		switch (modifier.$) {
-			case 0:
-				var size = modifier.a;
-				return _Utils_update(
-					options,
-					{
-						bY: $elm$core$Maybe$Just(size)
-					});
-			case 1:
-				var coloring = modifier.a;
-				return _Utils_update(
-					options,
-					{
-						G: $elm$core$Maybe$Just(coloring)
-					});
-			case 2:
-				return _Utils_update(
-					options,
-					{a$: true});
-			case 3:
-				var val = modifier.a;
-				return _Utils_update(
-					options,
-					{ba: val});
-			default:
-				var attrs = modifier.a;
-				return _Utils_update(
-					options,
-					{
-						aY: _Utils_ap(options.aY, attrs)
-					});
-		}
-	});
-var $rundis$elm_bootstrap$Bootstrap$Internal$Button$defaultOptions = {aY: _List_Nil, a$: false, G: $elm$core$Maybe$Nothing, ba: false, bY: $elm$core$Maybe$Nothing};
-var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
-var $rundis$elm_bootstrap$Bootstrap$Internal$Button$roleClass = function (role) {
-	switch (role) {
-		case 0:
-			return 'primary';
-		case 1:
-			return 'secondary';
-		case 2:
-			return 'success';
-		case 3:
-			return 'info';
-		case 4:
-			return 'warning';
-		case 5:
-			return 'danger';
-		case 6:
-			return 'dark';
-		case 7:
-			return 'light';
-		default:
-			return 'link';
-	}
-};
-var $rundis$elm_bootstrap$Bootstrap$General$Internal$screenSizeOption = function (size) {
-	switch (size) {
-		case 0:
-			return $elm$core$Maybe$Nothing;
-		case 1:
-			return $elm$core$Maybe$Just('sm');
-		case 2:
-			return $elm$core$Maybe$Just('md');
-		case 3:
-			return $elm$core$Maybe$Just('lg');
-		default:
-			return $elm$core$Maybe$Just('xl');
-	}
-};
-var $rundis$elm_bootstrap$Bootstrap$Internal$Button$buttonAttributes = function (modifiers) {
-	var options = A3($elm$core$List$foldl, $rundis$elm_bootstrap$Bootstrap$Internal$Button$applyModifier, $rundis$elm_bootstrap$Bootstrap$Internal$Button$defaultOptions, modifiers);
-	return _Utils_ap(
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$classList(
-				_List_fromArray(
-					[
-						_Utils_Tuple2('btn', true),
-						_Utils_Tuple2('btn-block', options.a$),
-						_Utils_Tuple2('disabled', options.ba)
-					])),
-				$elm$html$Html$Attributes$disabled(options.ba)
-			]),
-		_Utils_ap(
-			function () {
-				var _v0 = A2($elm$core$Maybe$andThen, $rundis$elm_bootstrap$Bootstrap$General$Internal$screenSizeOption, options.bY);
-				if (!_v0.$) {
-					var s = _v0.a;
-					return _List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('btn-' + s)
-						]);
-				} else {
-					return _List_Nil;
-				}
-			}(),
-			_Utils_ap(
-				function () {
-					var _v1 = options.G;
-					if (!_v1.$) {
-						if (!_v1.a.$) {
-							var role = _v1.a.a;
-							return _List_fromArray(
-								[
-									$elm$html$Html$Attributes$class(
-									'btn-' + $rundis$elm_bootstrap$Bootstrap$Internal$Button$roleClass(role))
-								]);
-						} else {
-							var role = _v1.a.a;
-							return _List_fromArray(
-								[
-									$elm$html$Html$Attributes$class(
-									'btn-outline-' + $rundis$elm_bootstrap$Bootstrap$Internal$Button$roleClass(role))
-								]);
-						}
-					} else {
-						return _List_Nil;
-					}
-				}(),
-				options.aY)));
-};
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$Open = 0;
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$nextStatus = function (status) {
-	switch (status) {
-		case 0:
-			return 2;
-		case 1:
-			return 2;
-		default:
-			return 0;
-	}
-};
-var $elm$json$Json$Decode$map3 = _Json_map3;
-var $elm$json$Json$Decode$float = _Json_decodeFloat;
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetHeight = A2($elm$json$Json$Decode$field, 'offsetHeight', $elm$json$Json$Decode$float);
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetWidth = A2($elm$json$Json$Decode$field, 'offsetWidth', $elm$json$Json$Decode$float);
-var $elm$json$Json$Decode$map4 = _Json_map4;
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetLeft = A2($elm$json$Json$Decode$field, 'offsetLeft', $elm$json$Json$Decode$float);
-var $elm$json$Json$Decode$null = _Json_decodeNull;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetParent = F2(
-	function (x, decoder) {
-		return $elm$json$Json$Decode$oneOf(
-			_List_fromArray(
-				[
-					A2(
-					$elm$json$Json$Decode$field,
-					'offsetParent',
-					$elm$json$Json$Decode$null(x)),
-					A2($elm$json$Json$Decode$field, 'offsetParent', decoder)
-				]));
-	});
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetTop = A2($elm$json$Json$Decode$field, 'offsetTop', $elm$json$Json$Decode$float);
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$scrollLeft = A2($elm$json$Json$Decode$field, 'scrollLeft', $elm$json$Json$Decode$float);
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$scrollTop = A2($elm$json$Json$Decode$field, 'scrollTop', $elm$json$Json$Decode$float);
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$position = F2(
-	function (x, y) {
-		return A2(
-			$elm$json$Json$Decode$andThen,
-			function (_v0) {
-				var x_ = _v0.a;
-				var y_ = _v0.b;
-				return A2(
-					$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetParent,
-					_Utils_Tuple2(x_, y_),
-					A2($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$position, x_, y_));
-			},
-			A5(
-				$elm$json$Json$Decode$map4,
-				F4(
-					function (scrollLeft_, scrollTop_, offsetLeft_, offsetTop_) {
-						return _Utils_Tuple2((x + offsetLeft_) - scrollLeft_, (y + offsetTop_) - scrollTop_);
-					}),
-				$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$scrollLeft,
-				$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$scrollTop,
-				$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetLeft,
-				$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetTop));
-	});
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$boundingArea = A4(
-	$elm$json$Json$Decode$map3,
-	F3(
-		function (_v0, width, height) {
-			var x = _v0.a;
-			var y = _v0.b;
-			return {c0: height, Q: x, T: y, dC: width};
-		}),
-	A2($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$position, 0, 0),
-	$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetWidth,
-	$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetHeight);
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$childNode = function (idx) {
-	return $elm$json$Json$Decode$at(
-		_List_fromArray(
-			[
-				'childNodes',
-				$elm$core$String$fromInt(idx)
-			]));
-};
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$nextSibling = function (decoder) {
-	return A2($elm$json$Json$Decode$field, 'nextSibling', decoder);
-};
-var $elm$core$Tuple$pair = F2(
-	function (a, b) {
-		return _Utils_Tuple2(a, b);
-	});
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$className = A2(
-	$elm$json$Json$Decode$at,
-	_List_fromArray(
-		['className']),
-	$elm$json$Json$Decode$string);
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$isToggle = A2(
-	$elm$json$Json$Decode$andThen,
-	function (_class) {
-		return A2($elm$core$String$contains, 'dropdown-toggle', _class) ? $elm$json$Json$Decode$succeed(true) : $elm$json$Json$Decode$succeed(false);
-	},
-	$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$className);
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$toggler = F2(
-	function (path, decoder) {
-		return $elm$json$Json$Decode$oneOf(
-			_List_fromArray(
-				[
-					A2(
-					$elm$json$Json$Decode$andThen,
-					function (res) {
-						return res ? A2($elm$json$Json$Decode$at, path, decoder) : $elm$json$Json$Decode$fail('');
-					},
-					A2($elm$json$Json$Decode$at, path, $rundis$elm_bootstrap$Bootstrap$Dropdown$isToggle)),
-					A2(
-					$elm$json$Json$Decode$andThen,
-					function (_v0) {
-						return A2(
-							$rundis$elm_bootstrap$Bootstrap$Dropdown$toggler,
-							_Utils_ap(
-								path,
-								_List_fromArray(
-									['parentElement'])),
-							decoder);
-					},
-					A2(
-						$elm$json$Json$Decode$at,
-						_Utils_ap(
-							path,
-							_List_fromArray(
-								['parentElement'])),
-						$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$className)),
-					$elm$json$Json$Decode$fail('No toggler found')
-				]));
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$sizeDecoder = A3(
-	$elm$json$Json$Decode$map2,
-	$elm$core$Tuple$pair,
-	A2(
-		$rundis$elm_bootstrap$Bootstrap$Dropdown$toggler,
-		_List_fromArray(
-			['target']),
-		$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$boundingArea),
-	A2(
-		$rundis$elm_bootstrap$Bootstrap$Dropdown$toggler,
-		_List_fromArray(
-			['target']),
-		$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$nextSibling(
-			A2($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$childNode, 0, $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$boundingArea))));
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$clickHandler = F2(
-	function (toMsg, state) {
-		var status = state.dt;
-		return A2(
-			$elm$json$Json$Decode$andThen,
-			function (_v0) {
-				var b = _v0.a;
-				var m = _v0.b;
-				return $elm$json$Json$Decode$succeed(
-					toMsg(
-						{
-							az: m,
-							dt: $rundis$elm_bootstrap$Bootstrap$Dropdown$nextStatus(status),
-							b$: b
-						}));
-			},
-			$rundis$elm_bootstrap$Bootstrap$Dropdown$sizeDecoder);
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$togglePrivate = F4(
-	function (buttonOptions, children, toggleMsg, state) {
-		return A2(
-			$elm$html$Html$button,
-			_Utils_ap(
-				$rundis$elm_bootstrap$Bootstrap$Internal$Button$buttonAttributes(buttonOptions),
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('dropdown-toggle'),
-						$elm$html$Html$Attributes$type_('button'),
-						A2(
-						$elm$html$Html$Events$on,
-						'click',
-						A2($rundis$elm_bootstrap$Bootstrap$Dropdown$clickHandler, toggleMsg, state))
-					])),
-			children);
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$toggle = F2(
-	function (buttonOptions, children) {
-		return A2($rundis$elm_bootstrap$Bootstrap$Dropdown$togglePrivate, buttonOptions, children);
-	});
+var $elm$html$Html$Attributes$list = _VirtualDom_attribute('list');
 var $author$project$App$ToggleObjective = function (a) {
 	return {$: 0, a: a};
 };
 var $author$project$App$UnsetRandomObjective = function (a) {
 	return {$: 2, a: a};
+};
+var $author$project$Icon$trash = {
+	Z: 'trash',
+	aa: $author$project$Icon$img('img/sprites/TrashCan.gif'),
+	O: 'Delete objective'
 };
 var $author$project$App$viewObjective = F3(
 	function (objective, completed, randomIndex) {
@@ -12279,16 +11965,19 @@ var $author$project$App$viewObjective = F3(
 							_Utils_Tuple2('completed', completed)
 						])),
 					$elm$html$Html$Events$onClick(
-					$author$project$App$ToggleObjective(objective.w))
+					$author$project$App$ToggleObjective(objective.r))
 				]),
 			_List_fromArray(
 				[
-					$author$project$Icon$objective.bk(
+					A2(
+					$elm$html$Html$span,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class('icon state'),
-							$elm$html$Html$Attributes$class($author$project$Icon$objective.a5),
-							$elm$html$Html$Attributes$title($author$project$Icon$objective.aj)
+							$elm$html$Html$Attributes$class('icon')
+						]),
+					_List_fromArray(
+						[
+							$author$project$Icon$toImg($author$project$Icon$objective)
 						])),
 					A2(
 					$elm$html$Html$span,
@@ -12298,62 +11987,37 @@ var $author$project$App$viewObjective = F3(
 						]),
 					_List_fromArray(
 						[
-							$elm$html$Html$text(objective.cW)
+							$elm$html$Html$text(objective.aA)
 						])),
 					function () {
-					var _v0 = _Utils_Tuple2(completed, randomIndex);
+					var _v0 = _Utils_Tuple3(completed, randomIndex, $author$project$Icon$trash);
 					if ((!_v0.a) && (!_v0.b.$)) {
 						var index = _v0.b.a;
-						return A2(
-							$elm$html$Html$span,
+						var icon = _v0.c;
+						return icon.aa(
 							_List_fromArray(
 								[
-									$elm$html$Html$Attributes$class('icon delete'),
+									$elm$html$Html$Attributes$class(icon.Z),
+									$elm$html$Html$Attributes$title(icon.O),
 									$author$project$App$onClickNoBubble(
 									$author$project$App$UnsetRandomObjective(index))
-								]),
-							_List_Nil);
+								]));
 					} else {
 						return $elm$html$Html$text('');
 					}
 				}()
 				]));
 	});
-var $author$project$App$viewEditableObjective = F4(
-	function (index, randomObjective, completedObjectives, objectiveTypes) {
-		var item = function (objective) {
-			return A2(
-				$rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem,
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onClick(
-						A2($author$project$App$SetRandomObjective, index, objective))
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(objective.cW)
-					]));
-		};
-		var section = F3(
-			function (objectiveType, header, objectives) {
-				return A2($Gizra$elm_all_set$EverySet$member, objectiveType, objectiveTypes) ? A2(
-					$elm$core$List$cons,
-					$rundis$elm_bootstrap$Bootstrap$Dropdown$header(
-						_List_fromArray(
-							[
-								$elm$html$Html$text(header)
-							])),
-					A2($elm$core$List$map, item, objectives)) : _List_Nil;
-			});
+var $author$project$App$viewEditableObjective = F3(
+	function (index, randomObjective, completedObjectives) {
 		if (!randomObjective.$) {
 			var objective = randomObjective.a;
 			return A3(
 				$author$project$App$viewObjective,
 				objective,
-				A2($Gizra$elm_all_set$EverySet$member, objective.w, completedObjectives),
+				A2($Gizra$elm_all_set$EverySet$member, objective.r, completedObjectives),
 				$elm$core$Maybe$Just(index));
 		} else {
-			var dropdown = randomObjective.a;
 			return A2(
 				$elm$html$Html$li,
 				_List_fromArray(
@@ -12363,26 +12027,14 @@ var $author$project$App$viewEditableObjective = F4(
 				_List_fromArray(
 					[
 						A2(
-						$rundis$elm_bootstrap$Bootstrap$Dropdown$dropdown,
-						dropdown,
-						{
-							dV: _Utils_ap(
-								A3(section, 0, 'Character Hunts', $author$project$Objective$characters),
-								_Utils_ap(
-									A3(section, 1, 'Boss Hunts', $author$project$Objective$bosses),
-									_Utils_ap(
-										A3(section, 2, 'Quests', $author$project$Objective$quests),
-										A3(section, 3, 'Gated Quests', $author$project$Objective$gatedQuests)))),
-							d7: _List_Nil,
-							ei: A2(
-								$rundis$elm_bootstrap$Bootstrap$Dropdown$toggle,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text('(Choose random objective)')
-									])),
-							ej: $author$project$App$DropdownMsg(index)
-						})
+						$elm$html$Html$input,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$list($author$project$App$objectivesDatalistId),
+								$elm$html$Html$Events$onInput(
+								$author$project$App$SetRandomObjective(index))
+							]),
+						_List_Nil)
 					]));
 		}
 	});
@@ -12395,16 +12047,31 @@ var $author$project$App$viewObjectives = function (model) {
 	};
 	var random = F2(
 		function (i, o) {
-			return A4($author$project$App$viewEditableObjective, i, o, model.h, model.m.eb);
+			return A3($author$project$App$viewEditableObjective, i, o, model.h);
 		});
-	var numRequired = model.m.cD;
+	var numRequired = model.l.aq;
 	var numCompleted = $Gizra$elm_all_set$EverySet$size(model.h);
+	var listFor = F2(
+		function (objectiveType, objectives) {
+			return A2($Gizra$elm_all_set$EverySet$member, objectiveType, model.l.bu) ? A2(
+				$elm$core$List$map,
+				function (o) {
+					return A2(
+						$elm$html$Html$option,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text(o.aA)
+							]));
+				},
+				objectives) : _List_Nil;
+		});
 	var fixed = F2(
 		function (_v0, o) {
 			return A3(
 				$author$project$App$viewObjective,
 				o,
-				A2($Gizra$elm_all_set$EverySet$member, o.w, model.h),
+				A2($Gizra$elm_all_set$EverySet$member, o.r, model.h),
 				$elm$core$Maybe$Nothing);
 		});
 	return A2(
@@ -12413,7 +12080,7 @@ var $author$project$App$viewObjectives = function (model) {
 			[
 				$elm$html$Html$Attributes$id('objectives')
 			]),
-		(model.m.cD > 0) ? _List_fromArray(
+		(model.l.aq > 0) ? _List_fromArray(
 			[
 				A2(
 				$elm$html$Html$h2,
@@ -12437,9 +12104,22 @@ var $author$project$App$viewObjectives = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$text(
-								'(' + ($elm$core$String$fromInt(numCompleted) + ('/' + ($elm$core$String$fromInt(numRequired) + (' to ' + ($author$project$Flags$rewardToString(model.m.ct) + ')'))))))
+								'(' + ($elm$core$String$fromInt(numCompleted) + ('/' + ($elm$core$String$fromInt(numRequired) + (' to ' + ($author$project$Flags$rewardToString(model.l.am) + ')'))))))
 							]))
 					])),
+				A2(
+				$elm$html$Html$datalist,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$id($author$project$App$objectivesDatalistId)
+					]),
+				_Utils_ap(
+					A2(listFor, 0, $author$project$Objective$characters),
+					_Utils_ap(
+						A2(listFor, 1, $author$project$Objective$bosses),
+						_Utils_ap(
+							A2(listFor, 2, $author$project$Objective$quests),
+							A2(listFor, 3, $author$project$Objective$gatedQuests))))),
 				A2(
 				$elm$html$Html$ul,
 				_List_fromArray(
@@ -12447,13 +12127,13 @@ var $author$project$App$viewObjectives = function (model) {
 						$elm$html$Html$Attributes$class('objectives')
 					]),
 				_Utils_ap(
-					A2(viewArray, fixed, model.m.dd),
-					A2(viewArray, random, model.l)))
+					A2(viewArray, fixed, model.l.aK),
+					A2(viewArray, random, model.s)))
 			]) : _List_Nil);
 };
 var $author$project$App$view = function (model) {
 	return {
-		dH: _List_fromArray(
+		a4: _List_fromArray(
 			[
 				A2(
 				$elm$html$Html$div,
@@ -12482,7 +12162,7 @@ var $author$project$App$view = function (model) {
 									]),
 								_List_fromArray(
 									[
-										$elm$html$Html$text(model.bb)
+										$elm$html$Html$text(model._)
 									]))
 							])),
 						$author$project$App$viewObjectives(model),
@@ -12501,7 +12181,7 @@ var $author$project$App$view = function (model) {
 									[
 										$elm$html$Html$text('Key Items')
 									])),
-								A2($author$project$App$viewKeyItems, model.m, model.p)
+								A2($author$project$App$viewKeyItems, model.l, model.n)
 							])),
 						A2(
 						$elm$html$Html$div,
@@ -12528,9 +12208,9 @@ var $author$project$App$view = function (model) {
 						$author$project$App$displayIf,
 						!(A2(
 							$elm$core$List$member,
-							model.m.ed,
+							model.l.bw,
 							_List_fromArray(
-								[5, 6])) || model.m.d9),
+								[5, 6])) || model.l.bs),
 						A2(
 							$elm$html$Html$div,
 							_List_fromArray(
@@ -12561,24 +12241,102 @@ var $author$project$App$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						$elm$html$Html$text('Documentation, credits, and contact info can be found in '),
 						A2(
-						$elm$html$Html$a,
+						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$href('https://github.com/EiriasValar/FF4FE-Tracker/tree/release#readme'),
-								$elm$html$Html$Attributes$target('_blank')
+								$elm$html$Html$Attributes$id('colour-pickers')
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('the GitHub repo')
+								A2(
+								$elm$html$Html$span,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('colour-picker')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Background: '),
+										A2(
+										$elm$html$Html$input,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$type_('color'),
+												$elm$html$Html$Attributes$value(model.I.a3),
+												$elm$html$Html$Events$onInput(
+												$author$project$App$SetColour(0))
+											]),
+										_List_Nil)
+									])),
+								A2(
+								$elm$html$Html$span,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('colour-picker')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Text: '),
+										A2(
+										$elm$html$Html$input,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$type_('color'),
+												$elm$html$Html$Attributes$value(model.I.bA),
+												$elm$html$Html$Events$onInput(
+												$author$project$App$SetColour(1))
+											]),
+										_List_Nil)
+									]))
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Please see the '),
+								A2(
+								$elm$html$Html$a,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$href('https://github.com/EiriasValar/FF4FE-Tracker/tree/release#readme'),
+										$elm$html$Html$Attributes$target('_blank')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('GitHub repo')
+									])),
+								$elm$html$Html$text(' for documentation, credits, and contact info')
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_Nil,
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$a,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$href('https://github.com/EiriasValar/FF4FE-Tracker/blob/release/CHANGELOG.md'),
+										$elm$html$Html$Attributes$target('_blank')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Changelog')
+									]))
 							]))
 					]))
 			]),
-		aj: 'FFIV Free Enterprise Tracker'
+		O: 'FFIV Free Enterprise Tracker'
 	};
 };
 var $author$project$Main$main = $elm$browser$Browser$document(
-	{dU: $author$project$App$init, eh: $author$project$App$subscriptions, ek: $author$project$App$update, em: $author$project$App$view});
+	{be: $author$project$App$init, bz: $author$project$App$subscriptions, bB: $author$project$App$update, bD: $author$project$App$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(0))(0)}});}(this));
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				$elm$json$Json$Decode$null($elm$core$Maybe$Nothing),
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, $elm$json$Json$Decode$value)
+			])))(0)}});}(this));
