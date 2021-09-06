@@ -102,8 +102,8 @@ shopMenuID =
     "shop-menu-input"
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
+init : Maybe Colours -> ( Model, Cmd Msg )
+init savedColours =
     let
         flagString =
             "Kmain/summon/moon Sstandard Gwarp Nkey O1:char_kain/2:quest_antlionnest/random:3/req:4"
@@ -113,6 +113,13 @@ init _ =
 
         randomObjectives =
             updateRandomObjectives flags Array.empty
+
+        colours =
+            savedColours
+                |> Maybe.withDefault
+                    { background = "#ffffff"
+                    , text = "#000000"
+                    }
     in
     { flagString = flagString
     , flags = flags
@@ -129,12 +136,9 @@ init _ =
     , shopFilterOverrides = Dict.empty
     , warpGlitchUsed = False
     , shopMenu = Nothing
-    , colours =
-        { background = "#ffffff"
-        , text = "#000000"
-        }
+    , colours = colours
     }
-        |> with Cmd.none
+        |> with (Ports.setColours <| Colour.encode colours)
 
 
 subscriptions : Model -> Sub Msg

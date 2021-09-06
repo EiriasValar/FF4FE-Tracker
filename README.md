@@ -103,6 +103,16 @@ There are a lot of items in Free Enterprise, and even the most obscure might hap
 
 The set of items potentially available in a given shop can also be limited by your flags; see the Wiki's [Shop randomization](https://wiki.ff4fe.com/doku.php?id=shop_randomization) page for details.
 
+## Colours
+
+At the bottom of the page there are inputs allowing you to set the background and text colours used by the tracker (excluding the Key Items, Shop icons, flag string, and unset random objectives inputs).
+
+Most modern browsers should show you a fancy (browser- or platform-specific) colour picker input for these. If your browser doesn't provide this, the inputs should appear as plain text boxes, which will accept colours in `#rrggbb` format.
+
+When the background colour is changed, the text colour will automatically reset to black or white, attempting to provide maximum contrast. If you don't like the result, just set the text colour explicitly after setting the background colour.
+
+Your colour settings are stored in your browser's `localStorage`, so will persist when you reload the tracker. The defaults are simply black text on a white background, so there's no "reset" feature provided.
+
 # Contact
 
 Feel free to drop me (`@EiriasValar`) a line on the **Free Enterprise Workshop** Discord, and/or to [create an Issue](https://github.com/EiriasValar/FF4FE-Tracker/issues) on GitHub to report a bug or request a feature.
@@ -118,7 +128,7 @@ no navigation infrastructure is implemented (anymore).
 - Expand the shop weapon and armour items into short submenus?
 - Make the location area groupings collapsible
 - Allow saving/restoring the entire tracker state
-- Preserve custom colours between sessions
+- Apply custom colours to the flags and random objectives inputs
 - Make the shop tracking less ugly and fiddly-feeling
 - Under Kvanilla, show specific key item icons at locations rather than generic
   key item values

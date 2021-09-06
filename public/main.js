@@ -3,7 +3,9 @@
 var flags = null
 
 // Start our Elm application
-var app = Elm.Main.init({ flags: flags })
+var app = Elm.Main.init({
+    flags: JSON.parse(localStorage.getItem("colours"))
+})
 
 // Ports go here
 // https://guide.elm-lang.org/interop/ports.html
@@ -12,6 +14,7 @@ app.ports.setColours.subscribe(function(colours) {
     // properties: https://discourse.elm-lang.org/t/css-custom-properties/5554
     // (and I don't have access to the body element in Elm anyway)
     style = document.body.style
-    style.setProperty("--background-colour", colours.background);
-    style.setProperty("--text-colour", colours.text);
-});
+    style.setProperty("--background-colour", colours.background)
+    style.setProperty("--text-colour", colours.text)
+    localStorage.setItem("colours", JSON.stringify(colours))
+})

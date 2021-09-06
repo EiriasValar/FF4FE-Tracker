@@ -2,10 +2,11 @@ module Main exposing (main)
 
 import App
 import Browser
+import Colour exposing (Colours)
 
 
 type alias Flags =
-    ()
+    Maybe Colours
 
 
 main : Program Flags App.Model App.Msg
