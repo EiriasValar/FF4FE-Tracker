@@ -1,12 +1,14 @@
 module Colour exposing
     ( Colours
     , For(..)
+    , decode
     , encode
     , set
     )
 
 import Hex
-import Json.Encode as Json
+import Json.Decode as Decode
+import Json.Encode as Encode
 import String.Extra
 
 
@@ -71,9 +73,30 @@ setContrastText colours =
     { colours | text = text }
 
 
-encode : Colours -> Json.Value
+encode : Colours -> Encode.Value
 encode colours =
-    Json.object
-        [ ( "background", Json.string colours.background )
-        , ( "text", Json.string colours.text )
+    Encode.object
+        [ ( "background", Encode.string colours.background )
+        , ( "text", Encode.string colours.text )
         ]
+
+
+decode : Maybe Encode.Value -> Colours
+decode =
+    Maybe.map (Decode.decodeValue decoder)
+        >> Maybe.andThen Result.toMaybe
+        >> Maybe.withDefault defaults
+
+
+decoder : Decode.Decoder Colours
+decoder =
+    Decode.map2 Colours
+        (Decode.field "background" Decode.string)
+        (Decode.field "text" Decode.string)
+
+
+defaults : Colours
+defaults =
+    { background = "#ffffff"
+    , text = "#000000"
+    }

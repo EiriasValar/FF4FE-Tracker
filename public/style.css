@@ -58,6 +58,10 @@ input {
     font-size: smaller;
 }
 
+#colour-pickers {
+    margin-bottom: 1em;
+}
+
 .colour-picker+.colour-picker {
     margin-left: 1em;
 }

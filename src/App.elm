@@ -21,6 +21,7 @@ import Html.Attributes exposing (autocomplete, class, classList, cols, href, id,
 import Html.Events exposing (onClick, onInput)
 import Icon
 import Json.Decode
+import Json.Encode
 import Location exposing (IndexedProperty, Location, Locations)
 import Maybe.Extra
 import Objective exposing (Objective)
@@ -102,7 +103,7 @@ shopMenuID =
     "shop-menu-input"
 
 
-init : Maybe Colours -> ( Model, Cmd Msg )
+init : Maybe Json.Encode.Value -> ( Model, Cmd Msg )
 init savedColours =
     let
         flagString =
@@ -115,11 +116,7 @@ init savedColours =
             updateRandomObjectives flags Array.empty
 
         colours =
-            savedColours
-                |> Maybe.withDefault
-                    { background = "#ffffff"
-                    , text = "#000000"
-                    }
+            Colour.decode savedColours
     in
     { flagString = flagString
     , flags = flags
@@ -538,7 +535,7 @@ view model =
                     ]
             ]
         , div [ id "footer" ]
-            [ div []
+            [ div [ id "colour-pickers" ]
                 [ span [ class "colour-picker" ]
                     [ text "Background: "
                     , input
@@ -559,9 +556,10 @@ view model =
                     ]
                 ]
             , div []
-                [ text "Documentation, credits, and contact info can be found in "
+                [ text "Please see the "
                 , a [ href "https://github.com/EiriasValar/FF4FE-Tracker/tree/release#readme", target "_blank" ]
-                    [ text "the GitHub repo" ]
+                    [ text "GitHub repo" ]
+                , text " for documentation, credits, and contact info"
                 ]
             , div []
                 [ a [ href "https://github.com/EiriasValar/FF4FE-Tracker/blob/release/CHANGELOG.md", target "_blank" ]
