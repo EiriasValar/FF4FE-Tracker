@@ -1,4 +1,6 @@
-port module Ports exposing (setCustomProperty)
+port module Ports exposing (setColours)
+
+import Json.Encode exposing (Value)
 
 
-port setCustomProperty : ( String, String ) -> Cmd msg
+port setColours : Value -> Cmd msg

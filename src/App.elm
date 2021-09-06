@@ -12,6 +12,7 @@ import AssocList as Dict exposing (Dict)
 import Browser
 import Browser.Dom
 import Browser.Events
+import Colour exposing (Colours)
 import ConsumableItems exposing (ConsumableItem, ConsumableItems)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
@@ -57,12 +58,6 @@ type alias Model =
     }
 
 
-type alias Colours =
-    { background : String
-    , text : String
-    }
-
-
 type RandomObjective
     = Set Objective
     | Unset
@@ -95,13 +90,8 @@ type Msg
     | ToggleShopItem ShopMenu Int
     | UpdateShopText ShopMenu String
     | UpdateFlags String
-    | SetColour ColourFor String
+    | SetColour Colour.For String
     | DoNothing
-
-
-type ColourFor
-    = Background
-    | Foreground
 
 
 {-| The ID of any shop menu text input, of which only one will ever
@@ -199,20 +189,10 @@ update msg model =
         SetColour for colour ->
             let
                 colours =
-                    model.colours
-
-                ( newColours, prop ) =
-                    case for of
-                        Background ->
-                            { colours | background = colour }
-                                |> with "background-colour"
-
-                        Foreground ->
-                            { colours | text = colour }
-                                |> with "text-colour"
+                    Colour.set for colour model.colours
             in
-            { model | colours = newColours }
-                |> with (Ports.setCustomProperty ( prop, colour ))
+            { model | colours = colours }
+                |> with (Ports.setColours <| Colour.encode colours)
 
         _ ->
             innerUpdate msg model
@@ -560,7 +540,7 @@ view model =
                     , input
                         [ type_ "color"
                         , value model.colours.background
-                        , onInput <| SetColour Background
+                        , onInput <| SetColour Colour.Background
                         ]
                         []
                     ]
@@ -569,7 +549,7 @@ view model =
                     , input
                         [ type_ "color"
                         , value model.colours.text
-                        , onInput <| SetColour Foreground
+                        , onInput <| SetColour Colour.Text
                         ]
                         []
                     ]
