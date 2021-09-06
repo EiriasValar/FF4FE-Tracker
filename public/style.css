@@ -9,6 +9,12 @@ body {
     color: var(--text-colour);
 }
 
+textarea,
+input {
+    background-color: transparent;
+    color: var(--text-colour);
+}
+
 .page {
     margin-top: 20px;
 }

@@ -105,7 +105,7 @@ The set of items potentially available in a given shop can also be limited by yo
 
 ## Colours
 
-At the bottom of the page there are inputs allowing you to set the background and text colours used by the tracker (excluding the Key Items, Shop icons, flag string, and unset random objectives inputs).
+At the bottom of the page there are inputs allowing you to set the background and text colours used by the tracker (excluding the Key Items and Shop icon areas).
 
 Most modern browsers should show you a fancy (browser- or platform-specific) colour picker input for these. If your browser doesn't provide this, the inputs should appear as plain text boxes, which will accept colours in `#rrggbb` format.
 
@@ -128,7 +128,6 @@ no navigation infrastructure is implemented (anymore).
 - Expand the shop weapon and armour items into short submenus?
 - Make the location area groupings collapsible
 - Allow saving/restoring the entire tracker state
-- Apply custom colours to the flags and random objectives inputs
 - Make the shop tracking less ugly and fiddly-feeling
 - Under Kvanilla, show specific key item icons at locations rather than generic
   key item values
@@ -145,11 +144,12 @@ no navigation infrastructure is implemented (anymore).
 - Connect defeating D.Mist with the D.Mist boss hunt objective.
 - Fix long objective names wrapping erratically (e.g. Baron Basement as a random
   objective).
-- Remove redundant declaration of default colours in both Elm and CSS.
 
 # TOMAYBEDOs
 - Keyboard navigation?
 - Switch to compiled CSS
+  - Use SASS colour math to give the text inputs slightly offset background
+    colours.
 - Resizing a shop's textarea input doesn't persist, neither between different
   shops, nor when closing and reopening the same shop. Suppressing the ability
   to resize feels unfriendly to the user, but is it useful without persistence?
