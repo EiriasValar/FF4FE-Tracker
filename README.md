@@ -10,12 +10,12 @@ The Key Item icons (except for the Mist Dragon) are the property of [SchalaKitty
 
 Other icons are all sprites from the game, taken from [videogamesprites.net](http://www.videogamesprites.net/).
 
-
 # Usage
 
 Most of the tracker's functionality should be intuitive, particularly with a bit of experimentation and/or familiarity with other trackers. But if you're curious about the details, or encounter behaviour you don't understand, read on!
 
 ## Flags
+
 Pasting the flag string used to generate your seed into the provided text area will allow the tracker to only show things relevant to your seed, e.g. hiding free character locations when `Nchars` is on, showing a potential second key item in Dwarf Castle when `Gwarp` is on, etc.
 
 Any flags that aren't relevant to the tracker are ignored. This means any mistyped or invalid content in the flag string is also ignored; no error will be shown. As long as you copy the flag string from Free Enterprise rather than typing it out, this shouldn't be an issue.
@@ -70,10 +70,13 @@ Checking off value icons is generally just for your reference, and has no impact
 
 Hovering over a boss icon shows some stats for that boss spot. The stats that actually apply will depend on the boss who appears there; see the Free Enterprise Wiki's page on [the boss scaling algorithm](https://wiki.ff4fe.com/doku.php?id=boss_randomization#boss_scaling_algorithm) for more details. As such, these numbers should be taken as general indicators of a spot's power relative to other spots, not absolute truth.
 
+The Atk stat is given as `[ATK]x[ATK multiplier], [Hit rate]%`.
+
 The bottom half of the stats popup shows some calculations for specific bosses of interest if they appear in that spot:
 - The damage range on Kainazzo's `Wave` attack (which is based on his current HP), calculated from his starting HP total in the given spot.
 - The damage range on Dark Knight Cecil's Darkwave attack, calculated from the physical attack stats in the given spot.
-- The magic defence that Valvalis will have in the given spot (while in her Tornado form): if it's 255 (as it is in many places), all spells will miss her.
+- The physical evasion that Valvalis will have (while in her Tornado form), given as `[Evade rate]% x[Defence multiplier]`. The higher the multiplier, the more of a given attack's hits she can dodge.
+- The magic defence that Valvalis will have (while in her Tornado form): if it's 255 (as it is in many places), all spells will miss her.
 
 ### Filters
 
@@ -131,7 +134,6 @@ no navigation infrastructure is implemented (anymore).
 - Make the shop tracking less ugly and fiddly-feeling
 - Under Kvanilla, show specific key item icons at locations rather than generic
   key item values
-- Show Valvalis physical evade as well as mdef
 
 # TODO housekeeping
 - Don't require right-clicks for anything

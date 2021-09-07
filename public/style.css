@@ -14,6 +14,10 @@ input {
     color: var(--text-colour);
 }
 
+a {
+    color: inherit;
+}
+
 .page {
     margin-top: 20px;
 }
@@ -321,6 +325,12 @@ img.requirement.disabled {
 
 .boss-stats img {
     margin-right: 0.5em;
+}
+
+.boss-specifics {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
 }
 
 #shops .locations .icons {

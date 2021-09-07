@@ -1,3 +1,6 @@
+## Upcoming
+- Show Valvalis' physical evasion in the boss stats.
+
 ## 2021-09-06
 - Fix bug where gated value icons didn't respect Hide filters.
 - Change random objective selection UI to support type-to-filter (at the cost
