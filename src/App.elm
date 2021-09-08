@@ -22,6 +22,7 @@ import Html.Events exposing (onClick, onInput)
 import Icon
 import Json.Decode
 import Json.Encode
+import List.Extra
 import Location exposing (IndexedProperty, Location, Locations)
 import Maybe.Extra
 import Objective exposing (Objective)
@@ -525,7 +526,7 @@ view model =
                     ]
                 , viewLocations model Location.Checks
                 ]
-            , displayIf (not <| List.member model.flags.shopRandomization [ Flags.Cabins, Flags.Empty ] || model.flags.passInShop) <|
+            , displayIf (List.Extra.notMember model.flags.shopRandomization [ Flags.Cabins, Flags.Empty ] || model.flags.passInShop) <|
                 div [ id "shops" ]
                     [ h2 [ class "shops-header" ]
                         [ text "Shops"
