@@ -54,7 +54,15 @@ type alias BossStats =
     , minSpeed : Int
     , maxSpeed : Int
     , mag : Int
+    , valvalisDef : DefStats
     , valvalisMDef : Int
+    }
+
+
+type alias DefStats =
+    { def : Int
+    , evadePercent : Int
+    , evadeRolls : Int
     }
 
 

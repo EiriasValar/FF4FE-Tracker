@@ -1026,6 +1026,11 @@ surface =
                 , minSpeed = 5
                 , maxSpeed = 5
                 , mag = 10
+                , valvalisDef =
+                    { def = 20
+                    , evadePercent = 80
+                    , evadeRolls = 1
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.DMist
@@ -1063,6 +1068,11 @@ surface =
                 , minSpeed = 2
                 , maxSpeed = 4
                 , mag = 11
+                , valvalisDef =
+                    { def = 5
+                    , evadePercent = 80
+                    , evadeRolls = 4
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.Officer
@@ -1117,6 +1127,11 @@ surface =
                 , minSpeed = 31
                 , maxSpeed = 31
                 , mag = 10
+                , valvalisDef =
+                    { def = 0
+                    , evadePercent = 0
+                    , evadeRolls = 0
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.Octomamm
@@ -1146,6 +1161,11 @@ surface =
                 , minSpeed = 5
                 , maxSpeed = 5
                 , mag = 1
+                , valvalisDef =
+                    { def = 5
+                    , evadePercent = 0
+                    , evadeRolls = 0
+                    }
                 , valvalisMDef = 170
                 }
             , Objective <| DefeatBoss Objective.Antlion
@@ -1169,6 +1189,11 @@ surface =
                 , minSpeed = 7
                 , maxSpeed = 7
                 , mag = 5
+                , valvalisDef =
+                    { def = 0
+                    , evadePercent = 0
+                    , evadeRolls = 0
+                    }
                 , valvalisMDef = 174
                 }
             , Objective <| DefeatBoss Objective.MomBomb
@@ -1200,6 +1225,11 @@ surface =
                 , minSpeed = 6
                 , maxSpeed = 9
                 , mag = 15
+                , valvalisDef =
+                    { def = 6
+                    , evadePercent = 70
+                    , evadeRolls = 5
+                    }
                 , valvalisMDef = 254
                 }
             , Objective <| DefeatBoss Objective.Gauntlet
@@ -1252,6 +1282,11 @@ surface =
                 , minSpeed = 8
                 , maxSpeed = 8
                 , mag = 14
+                , valvalisDef =
+                    { def = 5
+                    , evadePercent = 80
+                    , evadeRolls = 4
+                    }
                 , valvalisMDef = 0
                 }
             , Objective <| DefeatBoss Objective.Milon
@@ -1265,6 +1300,11 @@ surface =
                 , minSpeed = 9
                 , maxSpeed = 9
                 , mag = 31
+                , valvalisDef =
+                    { def = 4
+                    , evadePercent = 90
+                    , evadeRolls = 4
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.MilonZ
@@ -1280,6 +1320,11 @@ surface =
                 , minSpeed = 5
                 , maxSpeed = 5
                 , mag = 17
+                , valvalisDef =
+                    { def = 0
+                    , evadePercent = 0
+                    , evadeRolls = 0
+                    }
                 , valvalisMDef = 254
                 }
             , Objective <| DefeatBoss Objective.DarkKnight
@@ -1301,6 +1346,11 @@ surface =
                 , minSpeed = 11
                 , maxSpeed = 14
                 , mag = 26
+                , valvalisDef =
+                    { def = 4
+                    , evadePercent = 90
+                    , evadeRolls = 4
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.Guards
@@ -1314,6 +1364,11 @@ surface =
                 , minSpeed = 4
                 , maxSpeed = 7
                 , mag = 31
+                , valvalisDef =
+                    { def = 0
+                    , evadePercent = 0
+                    , evadeRolls = 0
+                    }
                 , valvalisMDef = 0
                 }
             , Objective <| DefeatBoss Objective.Karate
@@ -1355,6 +1410,11 @@ surface =
                 , minSpeed = 8
                 , maxSpeed = 8
                 , mag = 9
+                , valvalisDef =
+                    { def = 0
+                    , evadePercent = 0
+                    , evadeRolls = 0
+                    }
                 , valvalisMDef = 254
                 }
             , Objective <| DefeatBoss Objective.Baigan
@@ -1368,6 +1428,11 @@ surface =
                 , minSpeed = 15
                 , maxSpeed = 15
                 , mag = 29
+                , valvalisDef =
+                    { def = 6
+                    , evadePercent = 70
+                    , evadeRolls = 5
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.Kainazzo
@@ -1392,6 +1457,11 @@ surface =
                 , minSpeed = 43
                 , maxSpeed = 46
                 , mag = 95
+                , valvalisDef =
+                    { def = 11
+                    , evadePercent = 85
+                    , evadeRolls = 2
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.Odin
@@ -1447,6 +1517,11 @@ surface =
                     , minSpeed = 11
                     , maxSpeed = 11
                     , mag = 15
+                    , valvalisDef =
+                        { def = 5
+                        , evadePercent = 0
+                        , evadeRolls = 0
+                        }
                     , valvalisMDef = 255
                     }
             , GatedValue TwinHarp <| Objective <| DefeatBoss Objective.DarkElf
@@ -1471,6 +1546,11 @@ surface =
                 , minSpeed = 7
                 , maxSpeed = 7
                 , mag = 11
+                , valvalisDef =
+                    { def = 5
+                    , evadePercent = 80
+                    , evadeRolls = 4
+                    }
                 , valvalisMDef = 254
                 }
             , Objective <| DefeatBoss Objective.MagusSisters
@@ -1487,6 +1567,11 @@ surface =
                     , minSpeed = 18
                     , maxSpeed = 18
                     , mag = 63
+                    , valvalisDef =
+                        { def = 0
+                        , evadePercent = 0
+                        , evadeRolls = 0
+                        }
                     , valvalisMDef = 255
                     }
             , GatedValue EarthCrystal <| Objective <| DefeatBoss Objective.Valvalis
@@ -1580,6 +1665,11 @@ surface =
                 , minSpeed = 53
                 , maxSpeed = 53
                 , mag = 15
+                , valvalisDef =
+                    { def = 0
+                    , evadePercent = 0
+                    , evadeRolls = 0
+                    }
                 , valvalisMDef = 0
                 }
             , Objective <| DefeatBoss Objective.KQEblan
@@ -1593,6 +1683,11 @@ surface =
                 , minSpeed = 38
                 , maxSpeed = 38
                 , mag = 16
+                , valvalisDef =
+                    { def = 4
+                    , evadePercent = 90
+                    , evadeRolls = 4
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.Rubicant
@@ -1616,6 +1711,11 @@ surface =
                 , minSpeed = 89
                 , maxSpeed = 89
                 , mag = 15
+                , valvalisDef =
+                    { def = 11
+                    , evadePercent = 85
+                    , evadeRolls = 2
+                    }
                 , valvalisMDef = 86
                 }
             , Objective <| DefeatBoss Objective.Elements
@@ -1629,6 +1729,11 @@ surface =
                 , minSpeed = 38
                 , maxSpeed = 38
                 , mag = 127
+                , valvalisDef =
+                    { def = 16
+                    , evadePercent = 90
+                    , evadeRolls = 2
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.CPU
@@ -1658,6 +1763,11 @@ underground =
                 , minSpeed = 11
                 , maxSpeed = 11
                 , mag = 41
+                , valvalisDef =
+                    { def = 5
+                    , evadePercent = 80
+                    , evadeRolls = 4
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.Calbrena
@@ -1672,6 +1782,11 @@ underground =
                 , minSpeed = 27
                 , maxSpeed = 27
                 , mag = 1
+                , valvalisDef =
+                    { def = 0
+                    , evadePercent = 0
+                    , evadeRolls = 0
+                    }
                 , valvalisMDef = 0
                 }
             , Objective <| DefeatBoss Objective.Golbez
@@ -1705,6 +1820,11 @@ underground =
                 , minSpeed = 27
                 , maxSpeed = 27
                 , mag = 7
+                , valvalisDef =
+                    { def = 4
+                    , evadePercent = 90
+                    , evadeRolls = 4
+                    }
                 , valvalisMDef = 0
                 }
             , Objective <| DefeatBoss Objective.DrLugae
@@ -1729,6 +1849,11 @@ underground =
                 , minSpeed = 18
                 , maxSpeed = 21
                 , mag = 16
+                , valvalisDef =
+                    { def = 0
+                    , evadePercent = 0
+                    , evadeRolls = 0
+                    }
                 , valvalisMDef = 0
                 }
             , Objective <| DefeatBoss Objective.DarkImps
@@ -1782,6 +1907,11 @@ underground =
                 , minSpeed = 53
                 , maxSpeed = 53
                 , mag = 34
+                , valvalisDef =
+                    { def = 20
+                    , evadePercent = 80
+                    , evadeRolls = 1
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.Leviatan
@@ -1803,6 +1933,11 @@ underground =
                 , minSpeed = 66
                 , maxSpeed = 66
                 , mag = 69
+                , valvalisDef =
+                    { def = 0
+                    , evadePercent = 0
+                    , evadeRolls = 0
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.Asura
@@ -1842,6 +1977,11 @@ underground =
                 , minSpeed = 66
                 , maxSpeed = 66
                 , mag = 79
+                , valvalisDef =
+                    { def = 5
+                    , evadePercent = 80
+                    , evadeRolls = 4
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.EvilWall
@@ -1894,6 +2034,11 @@ moon =
                 , minSpeed = 27
                 , maxSpeed = 27
                 , mag = 17
+                , valvalisDef =
+                    { def = 4
+                    , evadePercent = 0
+                    , evadeRolls = 0
+                    }
                 , valvalisMDef = 170
                 }
             , Objective <| DefeatBoss Objective.Bahamut
@@ -1933,6 +2078,11 @@ moon =
                 , minSpeed = 40
                 , maxSpeed = 43
                 , mag = 31
+                , valvalisDef =
+                    { def = 20
+                    , evadePercent = 99
+                    , evadeRolls = 2
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.PaleDim
@@ -1954,6 +2104,11 @@ moon =
                 , minSpeed = 43
                 , maxSpeed = 46
                 , mag = 8
+                , valvalisDef =
+                    { def = 20
+                    , evadePercent = 99
+                    , evadeRolls = 2
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.Wyvern
@@ -1975,6 +2130,11 @@ moon =
                 , minSpeed = 29
                 , maxSpeed = 32
                 , mag = 96
+                , valvalisDef =
+                    { def = 20
+                    , evadePercent = 99
+                    , evadeRolls = 2
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.Plague
@@ -1996,6 +2156,11 @@ moon =
                 , minSpeed = 30
                 , maxSpeed = 30
                 , mag = 36
+                , valvalisDef =
+                    { def = 16
+                    , evadePercent = 90
+                    , evadeRolls = 2
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.DLunars
@@ -2017,6 +2182,11 @@ moon =
                 , minSpeed = 38
                 , maxSpeed = 38
                 , mag = 127
+                , valvalisDef =
+                    { def = 16
+                    , evadePercent = 90
+                    , evadeRolls = 2
+                    }
                 , valvalisMDef = 255
                 }
             , Objective <| DefeatBoss Objective.Ogopogo

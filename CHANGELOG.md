@@ -1,3 +1,7 @@
+## 2021-09-08
+- Show Valvalis' physical evasion in the boss stats.
+- Fix logic bug where `Pshop` caused all shops to be hidden.
+
 ## 2021-09-06
 - Fix bug where gated value icons didn't respect Hide filters.
 - Change random objective selection UI to support type-to-filter (at the cost
