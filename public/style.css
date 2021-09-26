@@ -91,10 +91,6 @@ h4 {
     margin-left: 0.5em;
 }
 
-#objectives .progress.complete {
-    color: green;
-}
-
 .objectives {
     list-style: none;
     padding: 0;
@@ -237,7 +233,7 @@ img.requirement.disabled {
 }
 
 .area-locations>.name.seen {
-    color: green;
+    text-decoration: underline double;
 }
 
 .area-locations>.name.dismissed {

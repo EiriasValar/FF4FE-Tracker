@@ -145,7 +145,6 @@ no navigation infrastructure is implemented (anymore).
   quest objectives. This may require a refactor.
 - Fix long objective names wrapping erratically (e.g. Baron Basement as a random
   objective).
-- Fix hard-coded text colours ("seen" locations, objectives counter).
 - A location with a completed objective should always "exist", even if it has no
   value.
 

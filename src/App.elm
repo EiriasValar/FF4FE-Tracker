@@ -646,10 +646,7 @@ viewObjectives model =
         if model.flags.requiredObjectives > 0 then
             [ h2 []
                 [ text "Objectives"
-                , span
-                    [ class "progress"
-                    , classList [ ( "complete", numCompleted >= numRequired ) ]
-                    ]
+                , span [ class "progress" ]
                     [ text <|
                         "("
                             ++ String.fromInt numCompleted

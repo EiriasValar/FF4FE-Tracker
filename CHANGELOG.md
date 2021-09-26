@@ -3,6 +3,9 @@
   or obtaining one gives you the other.
 - Fix bug where marking Sylph Cave as complete would always un-complete Sheila,
   even if you'd already checked off both Yang values.
+- Remove hardcoded green text colour where it can clash with the background,
+  namely the objectives counter (on completing the required number) and
+  right-clicked location names.
 
 ## 2021-09-08
 - Show Valvalis' physical evasion in the boss stats.
