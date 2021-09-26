@@ -1,3 +1,9 @@
+## Upcoming
+- Link the Defeat D. Mist objective with the D. Mist "key item", so completing
+  or obtaining one gives you the other.
+- Fix bug where marking Sylph Cave as complete would always un-complete Sheila,
+  even if you'd already checked off both Yang values.
+
 ## 2021-09-08
 - Show Valvalis' physical evasion in the boss stats.
 - Fix logic bug where `Pshop` caused all shops to be hidden.

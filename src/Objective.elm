@@ -4,9 +4,11 @@ module Objective exposing
     , Key(..)
     , Objective
     , Quest(..)
+    , RandomObjective(..)
     , Type(..)
     , bosses
     , characters
+    , dmist
     , fromDescription
     , fromFlag
     , gatedQuests
@@ -14,6 +16,7 @@ module Objective exposing
     , keys
     , member
     , quests
+    , randomKeys
     )
 
 import Array exposing (Array)
@@ -38,6 +41,11 @@ type alias Objective =
     , description : String
     , isGated : Bool
     }
+
+
+type RandomObjective
+    = Set Objective
+    | Unset
 
 
 fromFlag : String -> Maybe Objective
@@ -76,6 +84,22 @@ keys : Array Objective -> Set Key
 keys =
     Array.toList
         >> List.map .key
+        >> Set.fromList
+
+
+randomKeys : Array RandomObjective -> Set Key
+randomKeys =
+    let
+        toMaybeKey o =
+            case o of
+                Set objective ->
+                    Just objective.key
+
+                Unset ->
+                    Nothing
+    in
+    Array.toList
+        >> List.filterMap toMaybeKey
         >> Set.fromList
 
 
@@ -182,6 +206,11 @@ type Quest
     | PanReturn
     | PinkTail
     | Pass
+
+
+dmist : Key
+dmist =
+    DefeatBoss DMist
 
 
 characters : List Objective

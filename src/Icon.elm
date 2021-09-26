@@ -265,7 +265,7 @@ dkc =
 valvalis : Icon msg
 valvalis =
     { class = ""
-    , title = "Valvalis MDef"
+    , title = "Valvalis physical evasion and magical defence"
     , img = img "img/sprites/Barbariccia.gif"
     }
 

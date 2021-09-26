@@ -25,7 +25,7 @@ import Json.Encode
 import List.Extra
 import Location exposing (IndexedProperty, Location, Locations)
 import Maybe.Extra
-import Objective exposing (Objective)
+import Objective exposing (Objective, RandomObjective(..))
 import Ports
 import Requirement exposing (PseudoRequirement(..), Requirement(..))
 import Status exposing (Status(..))
@@ -58,11 +58,6 @@ type alias Model =
     , shopMenu : Maybe ShopMenu
     , colours : Colours
     }
-
-
-type RandomObjective
-    = Set Objective
-    | Unset
 
 
 type alias ShopMenu =
@@ -108,7 +103,7 @@ init : Maybe Json.Encode.Value -> ( Model, Cmd Msg )
 init savedColours =
     let
         flagString =
-            "Kmain/summon/moon Sstandard Gwarp Nkey O1:char_kain/2:quest_antlionnest/random:3/req:4"
+            "Kmain/summon/moon Sstandard Gwarp Nkey O1:char_kain/2:quest_antlionnest/random:3/req:4/win:crystal"
 
         flags =
             Flags.parse flagString
@@ -209,9 +204,8 @@ innerUpdate msg model =
                 locations =
                     Location.update key (Maybe.map <| Location.toggleProperty index hard) newModel.locations
 
-                -- if the property is a Requirement, update our
-                -- attainedRequirements accordingly
-                updateRequirements =
+                -- if the property is a Requirement or Objective, update the model accordingly
+                propagateUp =
                     case Location.getProperty key index locations of
                         Just ( Unseen, Requirement requirement ) ->
                             removeRequirement requirement
@@ -219,30 +213,18 @@ innerUpdate msg model =
                         Just ( Dismissed, Requirement requirement ) ->
                             attainRequirement requirement
 
-                        _ ->
-                            identity
-
-                -- ditto for Objectives
-                updateObjectives =
-                    case Location.getProperty key index locations of
                         Just ( Unseen, Value.Objective objective ) ->
-                            Set.remove objective
+                            removeObjective objective
 
                         Just ( Dismissed, Value.Objective objective ) ->
-                            Set.insert objective
+                            attainObjective objective
 
                         _ ->
                             identity
             in
-            { newModel
-                | locations = locations
-                , completedObjectives = updateObjectives newModel.completedObjectives
-            }
-                |> updateRequirements
-                |> updateCrystal
+            { newModel | locations = locations }
+                |> propagateUp
 
-        -- when we attain a new requirement, add it to the set and un-dismiss
-        -- any locations for which it gates value
         attainRequirement requirement newModel =
             let
                 attainedRequirements =
@@ -253,28 +235,82 @@ innerUpdate msg model =
 
                 locations =
                     Location.undismissByGatingRequirement context requirement newModel.locations
+
+                updateObjectives =
+                    if requirement == Pseudo MistDragon then
+                        attainObjective Objective.dmist
+
+                    else
+                        identity
             in
-            { newModel
-                | attainedRequirements = attainedRequirements
-                , locations = locations
-            }
+            if not <| Set.member requirement newModel.attainedRequirements then
+                { newModel
+                    | attainedRequirements = attainedRequirements
+                    , locations = locations
+                }
+                    |> updateObjectives
+
+            else
+                newModel
 
         removeRequirement requirement newModel =
-            { newModel | attainedRequirements = Set.remove requirement model.attainedRequirements }
+            let
+                updateObjectives =
+                    if requirement == Pseudo MistDragon then
+                        removeObjective Objective.dmist
+
+                    else
+                        identity
+            in
+            if Set.member requirement newModel.attainedRequirements then
+                { newModel | attainedRequirements = Set.remove requirement newModel.attainedRequirements }
+                    |> updateObjectives
+
+            else
+                newModel
 
         attainObjective objective newModel =
-            { newModel
-                | completedObjectives = Set.insert objective newModel.completedObjectives
-                , locations = Location.objectiveToggled objective True newModel.locations
-            }
-                |> updateCrystal
+            let
+                updateRequirements =
+                    if objective == Objective.dmist then
+                        attainRequirement <| Pseudo MistDragon
+
+                    else
+                        identity
+            in
+            if
+                (not <| Set.member objective newModel.completedObjectives)
+                    && Set.member objective (combinedObjectives newModel)
+            then
+                { newModel
+                    | completedObjectives = Set.insert objective newModel.completedObjectives
+                    , locations = Location.objectiveToggled objective True newModel.locations
+                }
+                    |> updateCrystal
+                    |> updateRequirements
+
+            else
+                newModel
 
         removeObjective objective newModel =
-            { newModel
-                | completedObjectives = Set.remove objective newModel.completedObjectives
-                , locations = Location.objectiveToggled objective False newModel.locations
-            }
-                |> updateCrystal
+            let
+                updateRequirements =
+                    if objective == Objective.dmist then
+                        removeRequirement <| Pseudo MistDragon
+
+                    else
+                        identity
+            in
+            if Set.member objective newModel.completedObjectives then
+                { newModel
+                    | completedObjectives = Set.remove objective newModel.completedObjectives
+                    , locations = Location.objectiveToggled objective False newModel.locations
+                }
+                    |> updateCrystal
+                    |> updateRequirements
+
+            else
+                newModel
 
         -- if the Crystal is rewarded from completing objectives rather than being found, keep
         -- it in sync with our objectives
@@ -453,8 +489,8 @@ innerUpdate msg model =
 
                 -- uncomplete any objectives that no longer exist
                 completedObjectives =
-                    randomObjectiveKeys randomObjectives
-                        |> Set.union (Objective.keys flags.objectives)
+                    { flags = flags, randomObjectives = randomObjectives }
+                        |> combinedObjectives
                         |> Set.intersect model.completedObjectives
 
                 -- filter out chests when they're all empty, unless they've
@@ -1086,20 +1122,13 @@ updateRandomObjectives flags objectives =
         objectives
 
 
-randomObjectiveKeys : Array RandomObjective -> Set Objective.Key
-randomObjectiveKeys =
-    let
-        toMaybeKey o =
-            case o of
-                Set objective ->
-                    Just objective.key
-
-                Unset ->
-                    Nothing
-    in
-    Array.toList
-        >> List.filterMap toMaybeKey
-        >> Set.fromList
+{-| Combines the fixed and random objectives into a single set
+-}
+combinedObjectives : { a | flags : Flags, randomObjectives : Array RandomObjective } -> Set Objective.Key
+combinedObjectives model =
+    Set.union
+        (Objective.keys model.flags.objectives)
+        (Objective.randomKeys model.randomObjectives)
 
 
 getContext : Model -> Location.Context
@@ -1113,7 +1142,7 @@ getContext =
 getContextFor : Location.Class -> Model -> Location.Context
 getContextFor locClass model =
     { flags = model.flags
-    , randomObjectives = randomObjectiveKeys model.randomObjectives
+    , randomObjectives = Objective.randomKeys model.randomObjectives
     , completedObjectives = model.completedObjectives
     , attainedRequirements = model.attainedRequirements
     , warpGlitchUsed = model.warpGlitchUsed
