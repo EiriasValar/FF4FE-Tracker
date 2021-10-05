@@ -8,6 +8,8 @@ module Location exposing
     , Locations
     , all
     , areaToString
+    , decode
+    , encode
     , filterByContext
     , filterItems
     , get
@@ -36,6 +38,8 @@ import AssocList as Dict exposing (Dict)
 import ConsumableItems exposing (ConsumableItem, ConsumableItems)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags, KeyItemClass(..))
+import Json.Decode as Decode
+import Json.Encode as Encode
 import List.Extra
 import Objective exposing (Key(..))
 import Requirement exposing (PseudoRequirement(..), Requirement(..))
@@ -943,6 +947,16 @@ requirementsMet : Set Requirement -> Location -> Bool
 requirementsMet attained (Location location) =
     Set.diff location.requirements attained
         |> Set.isEmpty
+
+
+decode : Decode.Decoder Locations
+decode =
+    Debug.todo ""
+
+
+encode : Locations -> Encode.Value
+encode locations =
+    Debug.todo ""
 
 
 all : Locations

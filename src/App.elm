@@ -20,8 +20,9 @@ import Html exposing (Html, a, datalist, div, h2, h4, hr, input, li, option, spa
 import Html.Attributes exposing (autocomplete, class, classList, cols, href, id, rows, spellcheck, target, title, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Icon
-import Json.Decode
-import Json.Encode
+import Json.Decode as Decode
+import Json.Decode.Pipeline as Pipeline
+import Json.Encode as Encode
 import List.Extra
 import Location exposing (IndexedProperty, Location, Locations)
 import Maybe.Extra
@@ -99,7 +100,16 @@ shopMenuID =
     "shop-menu-input"
 
 
-init : Maybe Json.Encode.Value -> ( Model, Cmd Msg )
+defaultFilters : Dict Filter FilterType
+defaultFilters =
+    Dict.fromList
+        [ ( Characters, Show )
+        , ( KeyItems, Show )
+        , ( Chests, Hide )
+        ]
+
+
+init : Maybe Encode.Value -> ( Model, Cmd Msg )
 init savedColours =
     let
         flagString =
@@ -112,7 +122,10 @@ init savedColours =
             updateRandomObjectives flags Array.empty
 
         colours =
-            Colour.decode savedColours
+            savedColours
+                |> Maybe.map (Decode.decodeValue Colour.decode)
+                |> Maybe.andThen Result.toMaybe
+                |> Maybe.withDefault Colour.defaults
     in
     { flagString = flagString
     , flags = flags
@@ -120,12 +133,7 @@ init savedColours =
     , completedObjectives = Set.empty
     , attainedRequirements = Set.empty
     , locations = Location.all
-    , locationFilterOverrides =
-        Dict.fromList
-            [ ( Characters, Show )
-            , ( KeyItems, Show )
-            , ( Chests, Hide )
-            ]
+    , locationFilterOverrides = defaultFilters
     , shopFilterOverrides = Dict.empty
     , warpGlitchUsed = False
     , shopMenu = Nothing
@@ -146,19 +154,19 @@ subscriptions model =
             -- and b) those elements using onClickNoBubble: as a result,
             -- any clicks inside the menu won't reach this handler, and
             -- so won't cause the menu to close
-            Browser.Events.onClick <| Json.Decode.succeed CloseShopMenu
+            Browser.Events.onClick <| Decode.succeed CloseShopMenu
 
         -- close the shop menu on pressing the Escape key
         shopMenuEscape =
-            Json.Decode.field "key" Json.Decode.string
-                |> Json.Decode.andThen
+            Decode.field "key" Decode.string
+                |> Decode.andThen
                     (\key ->
                         case key of
                             "Escape" ->
-                                Json.Decode.succeed CloseShopMenu
+                                Decode.succeed CloseShopMenu
 
                             _ ->
-                                Json.Decode.fail ""
+                                Decode.fail ""
                     )
                 -- onKeyPress doesn't work with the macbook touchbar
                 |> Browser.Events.onKeyUp
@@ -1153,6 +1161,60 @@ getContextFor locClass model =
     }
 
 
+decode : Decode.Decoder Model
+decode =
+    let
+        finish flagString randomObjectives completedObjectives attainedRequirements locations locationFilterOverrides shopFilterOverrides warpGlitchUsed colours =
+            { flagString = flagString
+            , flags = Flags.parse flagString
+            , randomObjectives = randomObjectives
+            , completedObjectives = completedObjectives
+            , attainedRequirements = attainedRequirements
+            , locations = locations
+            , locationFilterOverrides = locationFilterOverrides
+            , shopFilterOverrides = shopFilterOverrides
+            , warpGlitchUsed = warpGlitchUsed
+            , shopMenu = Nothing
+            , colours = colours
+            }
+    in
+    Decode.succeed finish
+        |> Pipeline.optional "flagString" Decode.string ""
+        |> Pipeline.optional "randomObjectives" (Decode.array Objective.randomDecode) Array.empty
+        |> Pipeline.optional "completedObjectives" (Decode.list Objective.decode |> Decode.map Set.fromList) Set.empty
+        |> Pipeline.optional "attainedRequirements" (Decode.list Requirement.decode |> Decode.map Set.fromList) Set.empty
+        |> Pipeline.optional "locations" Location.decode Location.all
+        |> Pipeline.optional "locationFilterOverrides" decodeFilterOverrides defaultFilters
+        |> Pipeline.optional "shopFilterOverrides" decodeFilterOverrides Dict.empty
+        |> Pipeline.optional "warpGlitchUsed" Decode.bool False
+        |> Pipeline.optional "colours" Colour.decode Colour.defaults
+
+
+decodeFilterOverrides : Decode.Decoder (Dict Filter FilterType)
+decodeFilterOverrides =
+    Debug.todo ""
+
+
+encode : Model -> Encode.Value
+encode model =
+    Encode.object
+        [ ( "flagString", Encode.string model.flagString )
+        , ( "randomObjectives", Encode.array Objective.randomEncode model.randomObjectives )
+        , ( "completedObjectives", Encode.list Objective.encodeKey <| Set.toList model.completedObjectives )
+        , ( "attainedRequirements", Encode.list Requirement.encode <| Set.toList model.attainedRequirements )
+        , ( "locations", Location.encode model.locations )
+        , ( "locationFilterOverrides", encodeFilterOverrides model.locationFilterOverrides )
+        , ( "shopFilterOverrides", encodeFilterOverrides model.shopFilterOverrides )
+        , ( "warpGlitchUsed", Encode.bool model.warpGlitchUsed )
+        , ( "colours", Colour.encode model.colours )
+        ]
+
+
+encodeFilterOverrides : Dict Filter FilterType -> Encode.Value
+encodeFilterOverrides overrides =
+    Debug.todo ""
+
+
 displayIf : Bool -> Html msg -> Html msg
 displayIf predicate html =
     if predicate then
@@ -1183,7 +1245,7 @@ modelFoldl fn list model =
 
 onRightClick : msg -> Html.Attribute msg
 onRightClick msg =
-    Html.Events.preventDefaultOn "contextmenu" <| Json.Decode.succeed ( msg, True )
+    Html.Events.preventDefaultOn "contextmenu" <| Decode.succeed ( msg, True )
 
 
 {-| A click event that doesn't propagate
@@ -1191,7 +1253,7 @@ onRightClick msg =
 onClickNoBubble : msg -> Html.Attribute msg
 onClickNoBubble msg =
     Html.Events.custom "click" <|
-        Json.Decode.succeed
+        Decode.succeed
             { message = msg
             , stopPropagation = True
             , preventDefault = True

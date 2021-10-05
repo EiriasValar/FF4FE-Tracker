@@ -1,8 +1,13 @@
 module Requirement exposing
     ( PseudoRequirement(..)
     , Requirement(..)
+    , decode
+    , encode
     , isPseudo
     )
+
+import Json.Decode as Decode
+import Json.Encode as Encode
 
 
 type Requirement
@@ -44,3 +49,13 @@ isPseudo requirement =
 
         _ ->
             False
+
+
+decode : Decode.Decoder Requirement
+decode =
+    Debug.todo ""
+
+
+encode : Requirement -> Encode.Value
+encode requirement =
+    Debug.todo ""

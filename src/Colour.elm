@@ -2,6 +2,7 @@ module Colour exposing
     ( Colours
     , For(..)
     , decode
+    , defaults
     , encode
     , set
     )
@@ -100,15 +101,8 @@ encode colours =
         ]
 
 
-decode : Maybe Encode.Value -> Colours
+decode : Decode.Decoder Colours
 decode =
-    Maybe.map (Decode.decodeValue decoder)
-        >> Maybe.andThen Result.toMaybe
-        >> Maybe.withDefault defaults
-
-
-decoder : Decode.Decoder Colours
-decoder =
     Decode.map3 Colours
         (Decode.field "background" Decode.string)
         (Decode.field "hoverBackground" Decode.string)
