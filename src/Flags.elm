@@ -336,6 +336,9 @@ parseK switch flags =
         "trap" ->
             { flags | keyItems = Set.insert Trapped flags.keyItems }
 
+        "nofree" ->
+            { flags | keyItems = Set.remove Free flags.keyItems }
+
         _ ->
             flags
 
@@ -361,6 +364,9 @@ parseC opts flags =
     case String.split ":" opts of
         [ "party", "1" ] ->
             { flags | noCharacters = True }
+
+        [ "nofree" ] ->
+            { flags | noFreeChars = True }
 
         _ ->
             flags
@@ -438,6 +444,7 @@ parseB switch flags =
 
 parseN : String -> Flags -> Flags
 parseN switch flags =
+    -- N flags are gone in FE 4.5.0, but no harm in continuing to support them
     case switch of
         "chars" ->
             { flags | noFreeChars = True }
