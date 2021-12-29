@@ -3,7 +3,7 @@ module Location exposing
     , Class(..)
     , Context
     , IndexedProperty
-    , Key(..)
+    , Key
     , Location
     , Locations
     , all
@@ -41,6 +41,7 @@ import Flags exposing (Flags, KeyItemClass(..))
 import Json.Decode as Decode
 import Json.Encode as Encode
 import List.Extra
+import LocationKey exposing (Key(..))
 import Objective exposing (Key(..))
 import Requirement exposing (PseudoRequirement(..), Requirement(..))
 import Status exposing (Status(..))
@@ -84,69 +85,8 @@ type alias IndexedProperty =
     }
 
 
-type Key
-    = MistCave
-    | MistVillage
-    | MistVillageShops
-    | MistVillagePackage
-    | MistVillageMom
-    | Kaipo
-    | KaipoShops
-    | WateryPass
-    | Waterfall
-    | Damcyan
-    | AntlionCave
-    | MtHobs
-    | FabulShops
-    | FabulDefence
-    | Sheila
-    | Mysidia
-    | MysidiaShops
-    | MtOrdeals
-    | Baron
-    | BaronShop
-    | BaronSewer
-    | BaronCastle
-    | BaronBasement
-    | Toroia
-    | ToroiaShops
-    | ToroiaCastle
-    | ToroiaTreasury
-    | CaveMagnes
-    | Zot
-    | Agart
-    | AgartShops
-    | Silvera
-    | SilveraShops
-    | AdamantGrotto
-    | CastleEblan
-    | CaveEblan
-    | CaveEblanShops
-    | UpperBabil
-    | Giant
-    | DwarfCastle
-    | DwarfCastleShops
-    | LowerBabil
-    | LowerBabilCannon
-    | SylphCave
-    | Feymarch
-    | FeymarchShops
-    | FeymarchKing
-    | FeymarchQueen
-    | Tomra
-    | TomraShops
-    | SealedCave
-    | Kokkol
-    | KokkolShop
-    | Hummingway
-    | CaveBahamut
-    | LunarPath
-    | LunarSubterrane
-    | MurasameAltar
-    | WyvernAltar
-    | WhiteSpearAltar
-    | RibbonRoom
-    | MasamuneAltar
+type alias Key =
+    LocationKey.Key
 
 
 type Class
@@ -955,8 +895,25 @@ decode =
 
 
 encode : Locations -> Encode.Value
-encode locations =
-    Debug.todo ""
+encode (Locations locations) =
+    let
+        encodeOne : Location -> Encode.Value
+        encodeOne (Location l) =
+            Encode.object
+                [ ( "key", LocationKey.encode l.key )
+                , ( "status", encodeStatus l.status )
+                , ( "properties", encodeProperties l.properties )
+                ]
+
+        encodeStatus =
+            Debug.todo ""
+
+        encodeProperties =
+            Debug.todo ""
+    in
+    locations
+        |> Dict.values
+        |> Encode.list encodeOne
 
 
 all : Locations
