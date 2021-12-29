@@ -3,11 +3,13 @@ module Location exposing
     , Class(..)
     , Context
     , IndexedProperty
-    , Key(..)
+    , Key
     , Location
     , Locations
     , all
     , areaToString
+    , decode
+    , encode
     , filterByContext
     , filterItems
     , get
@@ -35,8 +37,11 @@ import Array.Extra
 import AssocList as Dict exposing (Dict)
 import ConsumableItems exposing (ConsumableItem, ConsumableItems)
 import EverySet as Set exposing (EverySet)
-import Flags exposing (Flags, KeyItemClass(..))
+import Flags exposing (Flags)
+import Json.Decode as Decode
+import Json.Encode as Encode
 import List.Extra
+import LocationKey exposing (Key(..))
 import Objective exposing (Key(..))
 import Requirement exposing (PseudoRequirement(..), Requirement(..))
 import Status exposing (Status(..))
@@ -45,6 +50,7 @@ import Value
         ( CharacterType(..)
         , Filter(..)
         , FilterType(..)
+        , KeyItemClass(..)
         , ShopValue(..)
         , Value(..)
         )
@@ -80,69 +86,8 @@ type alias IndexedProperty =
     }
 
 
-type Key
-    = MistCave
-    | MistVillage
-    | MistVillageShops
-    | MistVillagePackage
-    | MistVillageMom
-    | Kaipo
-    | KaipoShops
-    | WateryPass
-    | Waterfall
-    | Damcyan
-    | AntlionCave
-    | MtHobs
-    | FabulShops
-    | FabulDefence
-    | Sheila
-    | Mysidia
-    | MysidiaShops
-    | MtOrdeals
-    | Baron
-    | BaronShop
-    | BaronSewer
-    | BaronCastle
-    | BaronBasement
-    | Toroia
-    | ToroiaShops
-    | ToroiaCastle
-    | ToroiaTreasury
-    | CaveMagnes
-    | Zot
-    | Agart
-    | AgartShops
-    | Silvera
-    | SilveraShops
-    | AdamantGrotto
-    | CastleEblan
-    | CaveEblan
-    | CaveEblanShops
-    | UpperBabil
-    | Giant
-    | DwarfCastle
-    | DwarfCastleShops
-    | LowerBabil
-    | LowerBabilCannon
-    | SylphCave
-    | Feymarch
-    | FeymarchShops
-    | FeymarchKing
-    | FeymarchQueen
-    | Tomra
-    | TomraShops
-    | SealedCave
-    | Kokkol
-    | KokkolShop
-    | Hummingway
-    | CaveBahamut
-    | LunarPath
-    | LunarSubterrane
-    | MurasameAltar
-    | WyvernAltar
-    | WhiteSpearAltar
-    | RibbonRoom
-    | MasamuneAltar
+type alias Key =
+    LocationKey.Key
 
 
 type Class
@@ -216,10 +161,11 @@ getProperties_ c unwrapGatedValues (Location location) =
         exists value =
             case value of
                 Character Ungated ->
-                    not context.flags.noFreeChars
+                    Set.member Ungated context.flags.characters
 
                 Character Gated ->
-                    not <| Set.member Objective.ClassicGiant objectives && location.key == Giant
+                    Set.member Gated context.flags.characters
+                        && not (Set.member Objective.ClassicGiant objectives && location.key == Giant)
 
                 KeyItem itemClass ->
                     not (context.warpGlitchUsed && location.key == SealedCave)
@@ -921,7 +867,7 @@ outstandingObjectives context =
 huntingDMist : Context -> Bool
 huntingDMist context =
     not <|
-        (Set.member Flags.Free context.flags.keyItems
+        (Set.member Free context.flags.keyItems
             || Set.member (Pseudo MistDragon) context.attainedRequirements
         )
 
@@ -943,6 +889,36 @@ requirementsMet : Set Requirement -> Location -> Bool
 requirementsMet attained (Location location) =
     Set.diff location.requirements attained
         |> Set.isEmpty
+
+
+decode : Decode.Decoder Locations
+decode =
+    -- TODO
+    Decode.succeed all
+
+
+encode : Locations -> Encode.Value
+encode (Locations locations) =
+    let
+        encodeOne : Location -> Encode.Value
+        encodeOne (Location l) =
+            Encode.object
+                [ ( "key", LocationKey.encode l.key )
+                , ( "status", encodeStatus l.status )
+                , ( "properties", encodeProperties l.properties )
+                ]
+
+        encodeStatus status =
+            -- TODO
+            Encode.object []
+
+        encodeProperties properties =
+            -- TODO
+            Encode.object []
+    in
+    locations
+        |> Dict.values
+        |> Encode.list encodeOne
 
 
 all : Locations

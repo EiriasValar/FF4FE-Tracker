@@ -135,6 +135,10 @@ no navigation infrastructure is implemented (anymore).
 - Under Kvanilla, show specific key item icons at locations rather than generic
   key item values
 
+# TODO once 4.5.0 is live
+- Don't show trapped chests on the moon as valuable by default
+  under Ktrap unless any of Kmoon/unsafe/unsafer.
+
 # TODO housekeeping
 - Don't require right-clicks for anything
 - Close the Shop Other textarea onBlur (without breaking the toggle)
@@ -143,12 +147,15 @@ no navigation infrastructure is implemented (anymore).
   unpack and update, and writing methods for it would be weird.
 - Connect special value icons (the Falcon and YangBonk) to their associated
   quest objectives. This may require a refactor.
-- Connect defeating D.Mist with the D.Mist boss hunt objective.
 - Fix long objective names wrapping erratically (e.g. Baron Basement as a random
   objective).
-- Fix hard-coded "seen" (right-click) location name colour.
+- A location with a completed objective should always "exist", even if it has no
+  value.
 
 # TOMAYBEDOs
+- Undo feature to unwind changes? Sometimes you reset back to a save and lose
+  some progress, and don't remember exactly what you've lost.
+  - Implies Redo as well?
 - Keyboard navigation?
 - Switch to compiled CSS
   - Use SASS colour math to give the text inputs slightly offset background

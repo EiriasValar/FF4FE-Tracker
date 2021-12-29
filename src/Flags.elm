@@ -1,6 +1,5 @@
 module Flags exposing
     ( Flags
-    , KeyItemClass(..)
     , Reward(..)
     , ShopRandomization(..)
     , parse
@@ -10,6 +9,7 @@ module Flags exposing
 import Array exposing (Array)
 import EverySet as Set exposing (EverySet)
 import Objective exposing (Boss(..), Key(..), Objective)
+import Value exposing (KeyItemClass(..))
 
 
 type alias Set a =
@@ -23,33 +23,22 @@ type alias Flags =
     , requiredObjectives : Int
     , objectiveReward : Reward
     , keyItems : Set KeyItemClass
+    , characters : Set Value.CharacterType
     , passExists : Bool
     , passIsKeyItem : Bool
     , passInShop : Bool
-    , noCharacters : Bool
     , noTreasures : Bool
     , vanillaBosses : Bool
     , shopRandomization : ShopRandomization
     , noJItems : Bool
     , noSirens : Bool
     , noLifePots : Bool
-    , noFreeChars : Bool
     , warpGlitch : Bool
     , keyExpBonus : Bool
     , pushBToJump : Bool
     , nightMode : Bool
     , kleptomania : Bool
     }
-
-
-type KeyItemClass
-    = Main
-    | Warp
-    | Summon
-    | MoonBoss
-    | Trapped
-    | Free
-    | Vanilla
 
 
 type Reward
@@ -90,17 +79,16 @@ parse flagString =
             , requiredObjectives = 0
             , objectiveReward = Win
             , keyItems = Set.singleton Free
+            , characters = Set.fromList [ Value.Gated, Value.Ungated ]
             , passExists = False
             , passIsKeyItem = False
             , passInShop = False
-            , noCharacters = False
             , noTreasures = False
             , vanillaBosses = False
             , shopRandomization = None
             , noJItems = False
             , noSirens = False
             , noLifePots = False
-            , noFreeChars = False
             , warpGlitch = False
             , keyExpBonus = True
             , pushBToJump = False
@@ -336,6 +324,9 @@ parseK switch flags =
         "trap" ->
             { flags | keyItems = Set.insert Trapped flags.keyItems }
 
+        "nofree" ->
+            { flags | keyItems = Set.remove Free flags.keyItems }
+
         _ ->
             flags
 
@@ -360,7 +351,13 @@ parseC : String -> Flags -> Flags
 parseC opts flags =
     case String.split ":" opts of
         [ "party", "1" ] ->
-            { flags | noCharacters = True }
+            { flags | characters = Set.empty }
+
+        [ "nofree" ] ->
+            { flags | characters = Set.remove Value.Ungated flags.characters }
+
+        [ "noearned" ] ->
+            { flags | characters = Set.remove Value.Gated flags.characters }
 
         _ ->
             flags
@@ -438,9 +435,10 @@ parseB switch flags =
 
 parseN : String -> Flags -> Flags
 parseN switch flags =
+    -- N flags are gone in FE 4.5.0, but no harm in continuing to support them
     case switch of
         "chars" ->
-            { flags | noFreeChars = True }
+            { flags | characters = Set.remove Value.Ungated flags.characters }
 
         "key" ->
             { flags | keyItems = Set.remove Free flags.keyItems }

@@ -15,17 +15,18 @@ import Browser.Events
 import Colour exposing (Colours)
 import ConsumableItems exposing (ConsumableItem, ConsumableItems)
 import EverySet as Set exposing (EverySet)
-import Flags exposing (Flags, KeyItemClass(..))
+import Flags exposing (Flags)
 import Html exposing (Html, a, datalist, div, h2, h4, hr, input, li, option, span, text, textarea, ul)
 import Html.Attributes exposing (autocomplete, class, classList, cols, href, id, rows, spellcheck, target, title, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Icon
-import Json.Decode
-import Json.Encode
+import Json.Decode as Decode
+import Json.Decode.Pipeline as Pipeline
+import Json.Encode as Encode
 import List.Extra
 import Location exposing (IndexedProperty, Location, Locations)
 import Maybe.Extra
-import Objective exposing (Objective)
+import Objective exposing (Objective, RandomObjective(..))
 import Ports
 import Requirement exposing (PseudoRequirement(..), Requirement(..))
 import Status exposing (Status(..))
@@ -36,6 +37,7 @@ import Value
         ( BossStats
         , Filter(..)
         , FilterType(..)
+        , KeyItemClass(..)
         , ShopValue(..)
         , Value(..)
         )
@@ -58,11 +60,6 @@ type alias Model =
     , shopMenu : Maybe ShopMenu
     , colours : Colours
     }
-
-
-type RandomObjective
-    = Set Objective
-    | Unset
 
 
 type alias ShopMenu =
@@ -104,11 +101,20 @@ shopMenuID =
     "shop-menu-input"
 
 
-init : Maybe Json.Encode.Value -> ( Model, Cmd Msg )
+defaultFilters : Dict Filter FilterType
+defaultFilters =
+    Dict.fromList
+        [ ( Characters, Show )
+        , ( KeyItems, Show )
+        , ( Chests, Hide )
+        ]
+
+
+init : Maybe Encode.Value -> ( Model, Cmd Msg )
 init savedColours =
     let
         flagString =
-            "Kmain/summon/moon Sstandard Gwarp Nkey O1:char_kain/2:quest_antlionnest/random:3/req:4"
+            "Kmain/summon/moon Sstandard Gwarp Nkey O1:char_kain/2:quest_antlionnest/random:3/req:4/win:crystal"
 
         flags =
             Flags.parse flagString
@@ -117,7 +123,10 @@ init savedColours =
             updateRandomObjectives flags Array.empty
 
         colours =
-            Colour.decode savedColours
+            savedColours
+                |> Maybe.map (Decode.decodeValue Colour.decode)
+                |> Maybe.andThen Result.toMaybe
+                |> Maybe.withDefault Colour.defaults
     in
     { flagString = flagString
     , flags = flags
@@ -125,12 +134,7 @@ init savedColours =
     , completedObjectives = Set.empty
     , attainedRequirements = Set.empty
     , locations = Location.all
-    , locationFilterOverrides =
-        Dict.fromList
-            [ ( Characters, Show )
-            , ( KeyItems, Show )
-            , ( Chests, Hide )
-            ]
+    , locationFilterOverrides = defaultFilters
     , shopFilterOverrides = Dict.empty
     , warpGlitchUsed = False
     , shopMenu = Nothing
@@ -151,19 +155,19 @@ subscriptions model =
             -- and b) those elements using onClickNoBubble: as a result,
             -- any clicks inside the menu won't reach this handler, and
             -- so won't cause the menu to close
-            Browser.Events.onClick <| Json.Decode.succeed CloseShopMenu
+            Browser.Events.onClick <| Decode.succeed CloseShopMenu
 
         -- close the shop menu on pressing the Escape key
         shopMenuEscape =
-            Json.Decode.field "key" Json.Decode.string
-                |> Json.Decode.andThen
+            Decode.field "key" Decode.string
+                |> Decode.andThen
                     (\key ->
                         case key of
                             "Escape" ->
-                                Json.Decode.succeed CloseShopMenu
+                                Decode.succeed CloseShopMenu
 
                             _ ->
-                                Json.Decode.fail ""
+                                Decode.fail ""
                     )
                 -- onKeyPress doesn't work with the macbook touchbar
                 |> Browser.Events.onKeyUp
@@ -209,9 +213,8 @@ innerUpdate msg model =
                 locations =
                     Location.update key (Maybe.map <| Location.toggleProperty index hard) newModel.locations
 
-                -- if the property is a Requirement, update our
-                -- attainedRequirements accordingly
-                updateRequirements =
+                -- if the property is a Requirement or Objective, update the model accordingly
+                propagateUp =
                     case Location.getProperty key index locations of
                         Just ( Unseen, Requirement requirement ) ->
                             removeRequirement requirement
@@ -219,30 +222,18 @@ innerUpdate msg model =
                         Just ( Dismissed, Requirement requirement ) ->
                             attainRequirement requirement
 
-                        _ ->
-                            identity
-
-                -- ditto for Objectives
-                updateObjectives =
-                    case Location.getProperty key index locations of
                         Just ( Unseen, Value.Objective objective ) ->
-                            Set.remove objective
+                            removeObjective objective
 
                         Just ( Dismissed, Value.Objective objective ) ->
-                            Set.insert objective
+                            attainObjective objective
 
                         _ ->
                             identity
             in
-            { newModel
-                | locations = locations
-                , completedObjectives = updateObjectives newModel.completedObjectives
-            }
-                |> updateRequirements
-                |> updateCrystal
+            { newModel | locations = locations }
+                |> propagateUp
 
-        -- when we attain a new requirement, add it to the set and un-dismiss
-        -- any locations for which it gates value
         attainRequirement requirement newModel =
             let
                 attainedRequirements =
@@ -253,28 +244,82 @@ innerUpdate msg model =
 
                 locations =
                     Location.undismissByGatingRequirement context requirement newModel.locations
+
+                updateObjectives =
+                    if requirement == Pseudo MistDragon then
+                        attainObjective Objective.dmist
+
+                    else
+                        identity
             in
-            { newModel
-                | attainedRequirements = attainedRequirements
-                , locations = locations
-            }
+            if not <| Set.member requirement newModel.attainedRequirements then
+                { newModel
+                    | attainedRequirements = attainedRequirements
+                    , locations = locations
+                }
+                    |> updateObjectives
+
+            else
+                newModel
 
         removeRequirement requirement newModel =
-            { newModel | attainedRequirements = Set.remove requirement model.attainedRequirements }
+            let
+                updateObjectives =
+                    if requirement == Pseudo MistDragon then
+                        removeObjective Objective.dmist
+
+                    else
+                        identity
+            in
+            if Set.member requirement newModel.attainedRequirements then
+                { newModel | attainedRequirements = Set.remove requirement newModel.attainedRequirements }
+                    |> updateObjectives
+
+            else
+                newModel
 
         attainObjective objective newModel =
-            { newModel
-                | completedObjectives = Set.insert objective newModel.completedObjectives
-                , locations = Location.objectiveToggled objective True newModel.locations
-            }
-                |> updateCrystal
+            let
+                updateRequirements =
+                    if objective == Objective.dmist then
+                        attainRequirement <| Pseudo MistDragon
+
+                    else
+                        identity
+            in
+            if
+                (not <| Set.member objective newModel.completedObjectives)
+                    && Set.member objective (combinedObjectives newModel)
+            then
+                { newModel
+                    | completedObjectives = Set.insert objective newModel.completedObjectives
+                    , locations = Location.objectiveToggled objective True newModel.locations
+                }
+                    |> updateCrystal
+                    |> updateRequirements
+
+            else
+                newModel
 
         removeObjective objective newModel =
-            { newModel
-                | completedObjectives = Set.remove objective newModel.completedObjectives
-                , locations = Location.objectiveToggled objective False newModel.locations
-            }
-                |> updateCrystal
+            let
+                updateRequirements =
+                    if objective == Objective.dmist then
+                        removeRequirement <| Pseudo MistDragon
+
+                    else
+                        identity
+            in
+            if Set.member objective newModel.completedObjectives then
+                { newModel
+                    | completedObjectives = Set.remove objective newModel.completedObjectives
+                    , locations = Location.objectiveToggled objective False newModel.locations
+                }
+                    |> updateCrystal
+                    |> updateRequirements
+
+            else
+                newModel
 
         -- if the Crystal is rewarded from completing objectives rather than being found, keep
         -- it in sync with our objectives
@@ -453,8 +498,8 @@ innerUpdate msg model =
 
                 -- uncomplete any objectives that no longer exist
                 completedObjectives =
-                    randomObjectiveKeys randomObjectives
-                        |> Set.union (Objective.keys flags.objectives)
+                    { flags = flags, randomObjectives = randomObjectives }
+                        |> combinedObjectives
                         |> Set.intersect model.completedObjectives
 
                 -- filter out chests when they're all empty, unless they've
@@ -469,7 +514,7 @@ innerUpdate msg model =
                 -- filter out characters if there aren't any to recruit
                 -- yes this is ridiculously niche
                 filterCharacters =
-                    if flags.noCharacters then
+                    if Set.isEmpty flags.characters then
                         Dict.insert Characters Hide
 
                     else
@@ -610,10 +655,7 @@ viewObjectives model =
         if model.flags.requiredObjectives > 0 then
             [ h2 []
                 [ text "Objectives"
-                , span
-                    [ class "progress"
-                    , classList [ ( "complete", numCompleted >= numRequired ) ]
-                    ]
+                , span [ class "progress" ]
                     [ text <|
                         "("
                             ++ String.fromInt numCompleted
@@ -742,7 +784,7 @@ viewKeyItems flags attained =
         , req LegendSword
         , req Pan
         , req Spoon
-        , displayCellIf (not <| Set.member Flags.Free flags.keyItems) <|
+        , displayCellIf (not <| Set.member Free flags.keyItems) <|
             req (Pseudo MistDragon)
         , req RatTail
         , displayCellIf (not <| Set.member Vanilla flags.keyItems) <|
@@ -1086,20 +1128,13 @@ updateRandomObjectives flags objectives =
         objectives
 
 
-randomObjectiveKeys : Array RandomObjective -> Set Objective.Key
-randomObjectiveKeys =
-    let
-        toMaybeKey o =
-            case o of
-                Set objective ->
-                    Just objective.key
-
-                Unset ->
-                    Nothing
-    in
-    Array.toList
-        >> List.filterMap toMaybeKey
-        >> Set.fromList
+{-| Combines the fixed and random objectives into a single set
+-}
+combinedObjectives : { a | flags : Flags, randomObjectives : Array RandomObjective } -> Set Objective.Key
+combinedObjectives model =
+    Set.union
+        (Objective.keys model.flags.objectives)
+        (Objective.randomKeys model.randomObjectives)
 
 
 getContext : Model -> Location.Context
@@ -1113,7 +1148,7 @@ getContext =
 getContextFor : Location.Class -> Model -> Location.Context
 getContextFor locClass model =
     { flags = model.flags
-    , randomObjectives = randomObjectiveKeys model.randomObjectives
+    , randomObjectives = Objective.randomKeys model.randomObjectives
     , completedObjectives = model.completedObjectives
     , attainedRequirements = model.attainedRequirements
     , warpGlitchUsed = model.warpGlitchUsed
@@ -1125,6 +1160,62 @@ getContextFor locClass model =
             Location.Shops ->
                 model.shopFilterOverrides
     }
+
+
+decode : Decode.Decoder Model
+decode =
+    let
+        finish flagString randomObjectives completedObjectives attainedRequirements locations locationFilterOverrides shopFilterOverrides warpGlitchUsed colours =
+            { flagString = flagString
+            , flags = Flags.parse flagString
+            , randomObjectives = randomObjectives
+            , completedObjectives = completedObjectives
+            , attainedRequirements = attainedRequirements
+            , locations = locations
+            , locationFilterOverrides = locationFilterOverrides
+            , shopFilterOverrides = shopFilterOverrides
+            , warpGlitchUsed = warpGlitchUsed
+            , shopMenu = Nothing
+            , colours = colours
+            }
+    in
+    Decode.succeed finish
+        |> Pipeline.optional "flagString" Decode.string ""
+        |> Pipeline.optional "randomObjectives" (Decode.array Objective.randomDecode) Array.empty
+        |> Pipeline.optional "completedObjectives" (Decode.list Objective.decode |> Decode.map Set.fromList) Set.empty
+        |> Pipeline.optional "attainedRequirements" (Decode.list Requirement.decode |> Decode.map Set.fromList) Set.empty
+        |> Pipeline.optional "locations" Location.decode Location.all
+        |> Pipeline.optional "locationFilterOverrides" decodeFilterOverrides defaultFilters
+        |> Pipeline.optional "shopFilterOverrides" decodeFilterOverrides Dict.empty
+        |> Pipeline.optional "warpGlitchUsed" Decode.bool False
+        |> Pipeline.optional "colours" Colour.decode Colour.defaults
+
+
+decodeFilterOverrides : Decode.Decoder (Dict Filter FilterType)
+decodeFilterOverrides =
+    -- TODO
+    Decode.succeed Dict.empty
+
+
+encode : Model -> Encode.Value
+encode model =
+    Encode.object
+        [ ( "flagString", Encode.string model.flagString )
+        , ( "randomObjectives", Encode.array Objective.randomEncode model.randomObjectives )
+        , ( "completedObjectives", Encode.list Objective.encodeKey <| Set.toList model.completedObjectives )
+        , ( "attainedRequirements", Encode.list Requirement.encode <| Set.toList model.attainedRequirements )
+        , ( "locations", Location.encode model.locations )
+        , ( "locationFilterOverrides", encodeFilterOverrides model.locationFilterOverrides )
+        , ( "shopFilterOverrides", encodeFilterOverrides model.shopFilterOverrides )
+        , ( "warpGlitchUsed", Encode.bool model.warpGlitchUsed )
+        , ( "colours", Colour.encode model.colours )
+        ]
+
+
+encodeFilterOverrides : Dict Filter FilterType -> Encode.Value
+encodeFilterOverrides overrides =
+    -- TODO
+    Encode.object []
 
 
 displayIf : Bool -> Html msg -> Html msg
@@ -1157,7 +1248,7 @@ modelFoldl fn list model =
 
 onRightClick : msg -> Html.Attribute msg
 onRightClick msg =
-    Html.Events.preventDefaultOn "contextmenu" <| Json.Decode.succeed ( msg, True )
+    Html.Events.preventDefaultOn "contextmenu" <| Decode.succeed ( msg, True )
 
 
 {-| A click event that doesn't propagate
@@ -1165,7 +1256,7 @@ onRightClick msg =
 onClickNoBubble : msg -> Html.Attribute msg
 onClickNoBubble msg =
     Html.Events.custom "click" <|
-        Json.Decode.succeed
+        Decode.succeed
             { message = msg
             , stopPropagation = True
             , preventDefault = True
