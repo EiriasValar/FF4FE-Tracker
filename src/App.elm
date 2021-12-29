@@ -1192,7 +1192,8 @@ decode =
 
 decodeFilterOverrides : Decode.Decoder (Dict Filter FilterType)
 decodeFilterOverrides =
-    Debug.todo ""
+    -- TODO
+    Decode.succeed Dict.empty
 
 
 encode : Model -> Encode.Value
@@ -1212,7 +1213,8 @@ encode model =
 
 encodeFilterOverrides : Dict Filter FilterType -> Encode.Value
 encodeFilterOverrides overrides =
-    Debug.todo ""
+    -- TODO
+    Encode.object []
 
 
 displayIf : Bool -> Html msg -> Html msg

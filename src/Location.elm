@@ -891,7 +891,8 @@ requirementsMet attained (Location location) =
 
 decode : Decode.Decoder Locations
 decode =
-    Debug.todo ""
+    -- TODO
+    Decode.succeed all
 
 
 encode : Locations -> Encode.Value
@@ -905,11 +906,13 @@ encode (Locations locations) =
                 , ( "properties", encodeProperties l.properties )
                 ]
 
-        encodeStatus =
-            Debug.todo ""
+        encodeStatus status =
+            -- TODO
+            Encode.object []
 
-        encodeProperties =
-            Debug.todo ""
+        encodeProperties properties =
+            -- TODO
+            Encode.object []
     in
     locations
         |> Dict.values
