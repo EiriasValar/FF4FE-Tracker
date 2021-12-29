@@ -37,7 +37,7 @@ import Array.Extra
 import AssocList as Dict exposing (Dict)
 import ConsumableItems exposing (ConsumableItem, ConsumableItems)
 import EverySet as Set exposing (EverySet)
-import Flags exposing (Flags, KeyItemClass(..))
+import Flags exposing (Flags)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import List.Extra
@@ -50,6 +50,7 @@ import Value
         ( CharacterType(..)
         , Filter(..)
         , FilterType(..)
+        , KeyItemClass(..)
         , ShopValue(..)
         , Value(..)
         )
@@ -160,10 +161,11 @@ getProperties_ c unwrapGatedValues (Location location) =
         exists value =
             case value of
                 Character Ungated ->
-                    not context.flags.noFreeChars
+                    Set.member Ungated context.flags.characters
 
                 Character Gated ->
-                    not <| Set.member Objective.ClassicGiant objectives && location.key == Giant
+                    Set.member Gated context.flags.characters
+                        && not (Set.member Objective.ClassicGiant objectives && location.key == Giant)
 
                 KeyItem itemClass ->
                     not (context.warpGlitchUsed && location.key == SealedCave)
@@ -865,7 +867,7 @@ outstandingObjectives context =
 huntingDMist : Context -> Bool
 huntingDMist context =
     not <|
-        (Set.member Flags.Free context.flags.keyItems
+        (Set.member Free context.flags.keyItems
             || Set.member (Pseudo MistDragon) context.attainedRequirements
         )
 

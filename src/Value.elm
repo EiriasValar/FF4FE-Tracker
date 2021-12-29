@@ -3,6 +3,7 @@ module Value exposing
     , CharacterType(..)
     , Filter(..)
     , FilterType(..)
+    , KeyItemClass(..)
     , ShopValue(..)
     , Value(..)
     , countable
@@ -12,7 +13,6 @@ module Value exposing
     )
 
 import ConsumableItems exposing (ConsumableItems)
-import Flags exposing (KeyItemClass)
 import Objective
 import Requirement exposing (Requirement)
 
@@ -32,6 +32,16 @@ type Value
 type CharacterType
     = Ungated
     | Gated
+
+
+type KeyItemClass
+    = Main
+    | Warp
+    | Summon
+    | MoonBoss
+    | Trapped
+    | Free
+    | Vanilla
 
 
 {-| Most stats are sourced from the FF4FE Boss Scaling Stats doc:

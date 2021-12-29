@@ -15,7 +15,7 @@ import Browser.Events
 import Colour exposing (Colours)
 import ConsumableItems exposing (ConsumableItem, ConsumableItems)
 import EverySet as Set exposing (EverySet)
-import Flags exposing (Flags, KeyItemClass(..))
+import Flags exposing (Flags)
 import Html exposing (Html, a, datalist, div, h2, h4, hr, input, li, option, span, text, textarea, ul)
 import Html.Attributes exposing (autocomplete, class, classList, cols, href, id, rows, spellcheck, target, title, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -37,6 +37,7 @@ import Value
         ( BossStats
         , Filter(..)
         , FilterType(..)
+        , KeyItemClass(..)
         , ShopValue(..)
         , Value(..)
         )
@@ -513,7 +514,7 @@ innerUpdate msg model =
                 -- filter out characters if there aren't any to recruit
                 -- yes this is ridiculously niche
                 filterCharacters =
-                    if flags.noCharacters then
+                    if Set.isEmpty flags.characters then
                         Dict.insert Characters Hide
 
                     else
@@ -783,7 +784,7 @@ viewKeyItems flags attained =
         , req LegendSword
         , req Pan
         , req Spoon
-        , displayCellIf (not <| Set.member Flags.Free flags.keyItems) <|
+        , displayCellIf (not <| Set.member Free flags.keyItems) <|
             req (Pseudo MistDragon)
         , req RatTail
         , displayCellIf (not <| Set.member Vanilla flags.keyItems) <|

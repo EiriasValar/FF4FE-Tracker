@@ -1,4 +1,4 @@
-## Upcoming
+## 2021-12-29
 - Link the Defeat D. Mist objective with the D. Mist "key item", so completing
   or obtaining one gives you the other.
 - Fix bug where marking Sylph Cave as complete would always un-complete Sheila,
@@ -7,6 +7,7 @@
   namely the objectives counter (on completing the required number) and
   right-clicked location names.
 - [4.5.0 beta] Support Knofree and Cnofree flags (formerly Nkey and Nchars)
+- [4.5.0 beta] Support Cnoearned flag
 
 ## 2021-09-08
 - Show Valvalis' physical evasion in the boss stats.

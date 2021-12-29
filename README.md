@@ -135,6 +135,10 @@ no navigation infrastructure is implemented (anymore).
 - Under Kvanilla, show specific key item icons at locations rather than generic
   key item values
 
+# TODO once 4.5.0 is live
+- Don't show trapped chests on the moon as valuable by default
+  under Ktrap unless any of Kmoon/unsafe/unsafer.
+
 # TODO housekeeping
 - Don't require right-clicks for anything
 - Close the Shop Other textarea onBlur (without breaking the toggle)
