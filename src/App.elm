@@ -936,6 +936,13 @@ viewProperty context location { index, status, value } =
                 KeyItem Warp ->
                     "warp"
 
+                TrappedChest _ ->
+                    if Location.lstTrappedChestExemptionApplies context location then
+                        "keyless"
+
+                    else
+                        ""
+
                 _ ->
                     ""
 

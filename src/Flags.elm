@@ -24,6 +24,7 @@ type alias Flags =
     , objectiveReward : Reward
     , keyItems : Set KeyItemClass
     , characters : Set Value.CharacterType
+    , unsafeKeyItems : Bool
     , passExists : Bool
     , passIsKeyItem : Bool
     , passInShop : Bool
@@ -80,6 +81,7 @@ parse flagString =
             , objectiveReward = Win
             , keyItems = Set.singleton Free
             , characters = Set.fromList [ Value.Gated, Value.Ungated ]
+            , unsafeKeyItems = False
             , passExists = False
             , passIsKeyItem = False
             , passInShop = False
@@ -326,6 +328,9 @@ parseK switch flags =
 
         "nofree" ->
             { flags | keyItems = Set.remove Free flags.keyItems }
+
+        "unsafe" ->
+            { flags | unsafeKeyItems = True }
 
         _ ->
             flags

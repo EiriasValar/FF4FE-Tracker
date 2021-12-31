@@ -22,6 +22,7 @@ module Location exposing
     , getStatus
     , groupByArea
     , insert
+    , lstTrappedChestExemptionApplies
     , objectiveToggled
     , setText
     , toggleItem
@@ -110,6 +111,17 @@ type alias Context =
     , warpGlitchUsed : Bool
     , filterOverrides : Dict Filter FilterType
     }
+
+
+{-| If Ktrap is on but none of Kmoon/unsafe are, the trapped chests in
+the LunarSubTerrane cannot contain key items; this returns True when that
+situation applies.
+-}
+lstTrappedChestExemptionApplies : Context -> Location -> Bool
+lstTrappedChestExemptionApplies context (Location l) =
+    (l.key == LunarSubterrane)
+        && Set.member Trapped context.flags.keyItems
+        && not (context.flags.unsafeKeyItems || Set.member MoonBoss context.flags.keyItems)
 
 
 getKey : Location -> Key
@@ -742,7 +754,8 @@ filterByContext class c (Locations locations) =
         outstanding =
             outstandingObjectives context
 
-        propertyHasValue { status, value } =
+        propertyHasValue : Location -> IndexedProperty -> Bool
+        propertyHasValue location { status, value } =
             case ( value, Value.toFilter value ) of
                 ( Requirement (Pseudo Falcon), _ ) ->
                     -- the Falcon only has value if we don't have a
@@ -766,8 +779,17 @@ filterByContext class c (Locations locations) =
 
                 ( _, Just filter ) ->
                     -- anything else is valuable if it's in the set of
-                    -- positive filters
+                    -- positive filters...
+                    let
+                        keylessTrappedLST =
+                            -- ...but don't treat LST trapped chests as valuable
+                            -- by default when they can't contain key items
+                            (filter == TrappedChests)
+                                && (Dict.get TrappedChests context.filterOverrides == Nothing)
+                                && lstTrappedChestExemptionApplies context location
+                    in
                     Set.member filter filters
+                        && not keylessTrappedLST
 
                 _ ->
                     -- anything else is likely invisible metadata
@@ -787,7 +809,7 @@ filterByContext class c (Locations locations) =
                 True
 
             else
-                List.any propertyHasValue (getProperties context location)
+                List.any (propertyHasValue location) (getProperties context location)
                     && areaAccessible attainedRequirements location
                     && (context.flags.pushBToJump && Set.member l.key jumpable || requirementsMet attainedRequirements location)
     in
@@ -2075,7 +2097,7 @@ moon =
             ]
       }
     , { key = LunarSubterrane
-      , name = "Lunar Palace"
+      , name = "Lunar Subterrane"
       , requirements = []
       , value =
             [ Character Gated

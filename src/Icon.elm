@@ -168,7 +168,7 @@ chest =
 
 trappedChest : Icon msg
 trappedChest =
-    { class = ""
+    { class = "trapped-chest"
     , title = "Trapped chests"
     , img = img "img/sprites/RedChest2.gif"
     }

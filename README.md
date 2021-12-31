@@ -89,9 +89,14 @@ Click on a filter to toggle it between On (lit up), Off (crossed out), or Defaul
 - **Off** means "this is never valuable": that kind of value won't be shown at all, and having this kind of value won't cause a location to be shown. This is the initial setting for Untrapped Chests, as almost every location has such chests, so seeing them all adds a lot of clutter.
 - **Default** means "leave it up to the tracker to decide whether or not this is valuable": the value icon will always be shown for locations where it exists, but its existence may or may not be sufficient to cause a location to be shown.
 
-  This is most often noticable with Bosses, which are treated as valuable as long as there's an incomplete boss hunt objective or an `Nkey` D.Mist boss that hasn't been found yet – but boss icons continue to be shown (on locations that appear due to having some other value) even when they're no longer valuable themselves. It also comes up with `Odkmatter` or `Ktrap`, which make Untrapped and Trapped chests valuable.
+  This is most often noticable with Bosses, which are treated as valuable as long as there's an incomplete boss hunt objective or an `Nkey` D.Mist boss that hasn't been found yet – but boss icons continue to be shown (on locations that appear due to having some other value) even when they're no longer valuable themselves. It also comes up with `Odkmatter` or `Ktrap`, which make Untrapped and Trapped chests valuable (but see the note about **Trapped chests in the Lunar Subterrane** below).
 
 The final Eye filter can be used to show locations that you've already dismissed.
+
+### Trapped chests in the Lunar Subterrane
+
+As of Free Enterprise 4.5.0, there's an exception to `Ktrap` in the Lunar Subterrane, wherein the LST's trapped chests _won't_ contain key items unless one of `Kmoon/unsafe` is also enabled. When this situation applies, the tracker will fade out the LST's trapped chest icon, as a reminder that there are no key items to be found. It will also not treat the LST trapped chests as valuable by default for the purposes of deciding whether or not to dispay the LST location.
+
 
 ## Shops
 
@@ -136,8 +141,7 @@ no navigation infrastructure is implemented (anymore).
   key item values
 
 # TODO once 4.5.0 is live
-- Don't show trapped chests on the moon as valuable by default
-  under Ktrap unless any of Kmoon/unsafe/unsafer.
+- Replace all documentation references to Nchars/Nkey with Cnofree/Knofree.
 
 # TODO housekeeping
 - Don't require right-clicks for anything
