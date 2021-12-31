@@ -841,7 +841,7 @@ defaultFiltersFrom context =
 
         {- True if, based on the given Context, bosses may be intrisically
            valuable. Namely, if there are Boss Hunt objectives to fullfil, or a
-           D.Mist to find when the Nkey flag is on. If Bvanilla is on, _bosses_
+           D.Mist to find when the Knofree flag is on. If Bvanilla is on, _bosses_
            don't have value: the specific boss hunt objectives in the locations
            do.
         -}

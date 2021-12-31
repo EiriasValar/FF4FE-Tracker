@@ -115,7 +115,7 @@ init : Maybe Encode.Value -> ( Model, Cmd Msg )
 init savedColours =
     let
         flagString =
-            "Kmain/summon/moon Sstandard Gwarp Nkey O1:char_kain/2:quest_antlionnest/random:3/req:4/win:crystal"
+            "Kmain/summon/moon/nofree Sstandard Gwarp O1:char_kain/2:quest_antlionnest/random:3/req:4/win:crystal"
 
         flags =
             Flags.parse flagString
