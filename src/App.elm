@@ -671,7 +671,7 @@ viewObjectives model =
                 listFor Objective.Character Objective.characters
                     ++ listFor Objective.Boss Objective.bosses
                     ++ listFor Objective.Quest Objective.quests
-                    ++ listFor Objective.GatedQuest Objective.gatedQuests
+                    ++ listFor Objective.ToughQuest Objective.toughQuests
             , ul [ class "objectives" ] <|
                 viewArray fixed model.flags.objectives
                     ++ viewArray random model.randomObjectives
