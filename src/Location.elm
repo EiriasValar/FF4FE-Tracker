@@ -39,6 +39,7 @@ import ConsumableItems exposing (ConsumableItem, ConsumableItems)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags)
 import Json.Decode as Decode
+import Json.Decode.Pipeline as Pipeline
 import Json.Encode as Encode
 import List.Extra
 import LocationKey exposing (Key(..))
@@ -891,10 +892,46 @@ requirementsMet attained (Location location) =
         |> Set.isEmpty
 
 
+type alias CodecLocation =
+    { key : Key
+    , status : Status
+    , properties : Array Status
+    }
+
+
 decode : Decode.Decoder Locations
 decode =
-    -- TODO
-    Decode.succeed all
+    let
+        updateStatus status (Property _ value) =
+            Property status value
+
+        updateLocations : CodecLocation -> Locations -> Locations
+        updateLocations item =
+            let
+                -- turn the array of property statuses into an array of update functions
+                -- to apply those statuses to Properties
+                propertiesUpdates : Array (Property -> Property)
+                propertiesUpdates =
+                    Array.map updateStatus item.properties
+
+                updateOne (Location l) =
+                    Location
+                        { l
+                          -- updating fields directly rather than using methods because
+                          -- we don't want any of their logic: we're recreating the whole
+                          -- state at once ourselves
+                            | status = item.status
+                            , properties = Array.Extra.apply propertiesUpdates l.properties
+                        }
+            in
+            update item.key (Maybe.map updateOne)
+    in
+    Decode.succeed CodecLocation
+        |> Pipeline.required "key" LocationKey.decode
+        |> Pipeline.required "status" Status.decode
+        |> Pipeline.required "properties" (Decode.array Status.decode)
+        |> Decode.list
+        |> Decode.map (List.foldl updateLocations all)
 
 
 encode : Locations -> Encode.Value
@@ -904,17 +941,12 @@ encode (Locations locations) =
         encodeOne (Location l) =
             Encode.object
                 [ ( "key", LocationKey.encode l.key )
-                , ( "status", encodeStatus l.status )
-                , ( "properties", encodeProperties l.properties )
+                , ( "status", Status.encode l.status )
+                , ( "properties", Encode.list encodePropertyStatus <| Array.toList l.properties )
                 ]
 
-        encodeStatus status =
-            -- TODO
-            Encode.object []
-
-        encodeProperties properties =
-            -- TODO
-            Encode.object []
+        encodePropertyStatus (Property status _) =
+            Status.encode status
     in
     locations
         |> Dict.values
