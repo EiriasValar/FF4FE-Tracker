@@ -7,14 +7,21 @@ module Value exposing
     , ShopValue(..)
     , Value(..)
     , countable
+    , decodeFilter
+    , decodeFilterType
+    , encodeFilter
+    , encodeFilterType
     , objective
     , requirement
     , toFilter
     )
 
 import ConsumableItems exposing (ConsumableItems)
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Objective
 import Requirement exposing (Requirement)
+import Serialize as S
 
 
 type Value
@@ -161,3 +168,79 @@ objective value =
 
         _ ->
             Nothing
+
+
+decodeFilter : String -> Maybe Filter
+decodeFilter =
+    S.decodeFromString filterCodec
+        >> Result.toMaybe
+
+
+encodeFilter : Filter -> String
+encodeFilter =
+    S.encodeToString filterCodec
+
+
+decodeFilterType : Decode.Decoder FilterType
+decodeFilterType =
+    let
+        parse =
+            S.decodeFromJson filterTypeCodec
+                >> Result.map Decode.succeed
+                >> Result.withDefault (Decode.fail "Decoder error")
+    in
+    Decode.value
+        |> Decode.andThen parse
+
+
+encodeFilterType : FilterType -> Encode.Value
+encodeFilterType =
+    S.encodeToJson filterTypeCodec
+
+
+filterCodec : S.Codec e Filter
+filterCodec =
+    S.customType
+        (\characters bosses keyitems chests trappedchests checked value ->
+            case value of
+                Characters ->
+                    characters
+
+                Bosses ->
+                    bosses
+
+                KeyItems ->
+                    keyitems
+
+                Chests ->
+                    chests
+
+                TrappedChests ->
+                    trappedchests
+
+                Checked ->
+                    checked
+        )
+        |> S.variant0 Characters
+        |> S.variant0 Bosses
+        |> S.variant0 KeyItems
+        |> S.variant0 Chests
+        |> S.variant0 TrappedChests
+        |> S.variant0 Checked
+        |> S.finishCustomType
+
+
+filterTypeCodec : S.Codec e FilterType
+filterTypeCodec =
+    S.customType
+        (\show hide value ->
+            case value of
+                Show ->
+                    show
+
+                Hide ->
+                    hide
+        )
+        |> S.variant0 Show
+        |> S.variant0 Hide
+        |> S.finishCustomType

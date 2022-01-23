@@ -14,6 +14,7 @@ import Browser.Dom
 import Browser.Events
 import Colour exposing (Colours)
 import ConsumableItems exposing (ConsumableItem, ConsumableItems)
+import Dict as ElmDict
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags)
 import Html exposing (Html, a, datalist, div, h2, h4, hr, input, li, option, span, text, textarea, ul)
@@ -1193,8 +1194,18 @@ decode =
 
 decodeFilterOverrides : Decode.Decoder (Dict Filter FilterType)
 decodeFilterOverrides =
-    -- TODO
-    Decode.succeed Dict.empty
+    Decode.dict Value.decodeFilterType
+        |> Decode.map
+            (ElmDict.toList
+                -- ignoring unknown Filter strings rather than producing a Decoder error; laziness!
+                >> List.filterMap
+                    (\( filterString, filterType ) ->
+                        filterString
+                            |> Value.decodeFilter
+                            |> Maybe.map (with filterType)
+                    )
+                >> Dict.fromList
+            )
 
 
 encode : Model -> Encode.Value
@@ -1213,9 +1224,11 @@ encode model =
 
 
 encodeFilterOverrides : Dict Filter FilterType -> Encode.Value
-encodeFilterOverrides overrides =
-    -- TODO
-    Encode.object []
+encodeFilterOverrides =
+    Dict.toList
+        >> List.map (Tuple.mapFirst Value.encodeFilter)
+        >> ElmDict.fromList
+        >> Encode.dict identity Value.encodeFilterType
 
 
 displayIf : Bool -> Html msg -> Html msg
