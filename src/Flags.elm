@@ -24,6 +24,7 @@ type alias Flags =
     , objectiveReward : Reward
     , keyItems : Set KeyItemClass
     , characters : Set Value.CharacterType
+    , unsafeKeyItems : Bool
     , passExists : Bool
     , passIsKeyItem : Bool
     , passInShop : Bool
@@ -80,6 +81,7 @@ parse flagString =
             , objectiveReward = Win
             , keyItems = Set.singleton Free
             , characters = Set.fromList [ Value.Gated, Value.Ungated ]
+            , unsafeKeyItems = False
             , passExists = False
             , passIsKeyItem = False
             , passInShop = False
@@ -100,14 +102,14 @@ parse flagString =
         -- are enabled; if some are given, only they are enabled. So we default
         -- to the empty set, pushing enabled types into it - then if it's still
         -- empty when we're done, fill it with every type. Also, Quest is a
-        -- superset of GatedQuest, so ignore the latter if the former is
+        -- superset of ToughQuest, so ignore the latter if the former is
         -- present (valid flags should only have one or the other).
         fixupObjectiveTypes flags =
             if Set.isEmpty flags.randomObjectiveTypes then
                 { flags | randomObjectiveTypes = Set.fromList [ Objective.Character, Objective.Boss, Objective.Quest ] }
 
             else if Set.member Objective.Quest flags.randomObjectiveTypes then
-                { flags | randomObjectiveTypes = Set.remove Objective.GatedQuest flags.randomObjectiveTypes }
+                { flags | randomObjectiveTypes = Set.remove Objective.ToughQuest flags.randomObjectiveTypes }
 
             else
                 flags
@@ -250,8 +252,8 @@ parseO opts incomingFlags =
                 "quest" ->
                     { flags | randomObjectiveTypes = Set.insert Objective.Quest flags.randomObjectiveTypes }
 
-                "gated_quest" ->
-                    { flags | randomObjectiveTypes = Set.insert Objective.GatedQuest flags.randomObjectiveTypes }
+                "tough_quest" ->
+                    { flags | randomObjectiveTypes = Set.insert Objective.ToughQuest flags.randomObjectiveTypes }
 
                 num ->
                     case String.toInt num of
@@ -326,6 +328,9 @@ parseK switch flags =
 
         "nofree" ->
             { flags | keyItems = Set.remove Free flags.keyItems }
+
+        "unsafe" ->
+            { flags | unsafeKeyItems = True }
 
         _ ->
             flags

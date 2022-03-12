@@ -2,6 +2,8 @@ module ConsumableItems exposing
     ( ConsumableItem
     , ConsumableItems
     , anyDismissed
+    , decodeStatuses
+    , encodeStatuses
     , filter
     , healingItems
     , jItems
@@ -10,6 +12,8 @@ module ConsumableItems exposing
 
 import Array exposing (Array)
 import Array.Extra
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Status exposing (Status(..))
 
 
@@ -123,3 +127,25 @@ jItems =
             )
         |> Array.fromList
         |> ConsumableItems
+
+
+encodeStatuses : ConsumableItems -> Encode.Value
+encodeStatuses (ConsumableItems items) =
+    Encode.array (.status >> Status.encode) items
+
+
+{-| Pass in healingItems or jItems to decode the statuses into
+-}
+decodeStatuses : ConsumableItems -> Decode.Decoder ConsumableItems
+decodeStatuses (ConsumableItems base) =
+    let
+        updateStatus : Status -> ConsumableItem -> ConsumableItem
+        updateStatus status item =
+            { item | status = status }
+
+        updateItems : Array Status -> Array ConsumableItem
+        updateItems statuses =
+            Array.Extra.apply (statuses |> Array.map updateStatus) base
+    in
+    Decode.array Status.decode
+        |> Decode.map (updateItems >> ConsumableItems)

@@ -16,7 +16,7 @@ Most of the tracker's functionality should be intuitive, particularly with a bit
 
 ## Flags
 
-Pasting the flag string used to generate your seed into the provided text area will allow the tracker to only show things relevant to your seed, e.g. hiding free character locations when `Nchars` is on, showing a potential second key item in Dwarf Castle when `Gwarp` is on, etc.
+Pasting the flag string used to generate your seed into the provided text area will allow the tracker to only show things relevant to your seed, e.g. hiding free character locations when `Cnofree` is on, showing a potential second key item in Dwarf Castle when `Gwarp` is on, etc.
 
 Any flags that aren't relevant to the tracker are ignored. This means any mistyped or invalid content in the flag string is also ignored; no error will be shown. As long as you copy the flag string from Free Enterprise rather than typing it out, this shouldn't be an issue.
 
@@ -28,7 +28,7 @@ Click on the icons for key items as you obtain them; the list of available locat
 
 If `Owin:crystal` is on, the `Crystal` item can't be found normally, and is instead automatically acquired on completing the required number of objectives. As a result, under that flag the `Crystal` key item icon can't be manually toggled; it will automatically light up when sufficient objectives are marked as complete.
 
-The `D.Mist` icon is shown when `Nkey` is in effect: when you find and defeat the Mist Dragon/D.Mist boss, you can mark it to a) remember that you've done it, b) cause a Mist Village location to appear to remind you to collect your potential key item, and c) keep the tracker apprised of whether you're still hunting for any bosses.
+The `D.Mist` icon is shown when `Knofree` is in effect: when you find and defeat the Mist Dragon/D.Mist boss, you can mark it to a) remember that you've done it, b) cause a Mist Village location to appear to remind you to collect your potential key item, and c) keep the tracker apprised of whether you're still hunting for any bosses.
 
 The total number of key items collected is shown in the lower-right (unless `-exp:nokeybonus` is on) to make it easier to tell at a glance how close you are to receiving double experience for reaching 10 key items. (As a reminder, the `Pass` does not count towards this total, even when `Pkey` is on.)
 
@@ -89,9 +89,14 @@ Click on a filter to toggle it between On (lit up), Off (crossed out), or Defaul
 - **Off** means "this is never valuable": that kind of value won't be shown at all, and having this kind of value won't cause a location to be shown. This is the initial setting for Untrapped Chests, as almost every location has such chests, so seeing them all adds a lot of clutter.
 - **Default** means "leave it up to the tracker to decide whether or not this is valuable": the value icon will always be shown for locations where it exists, but its existence may or may not be sufficient to cause a location to be shown.
 
-  This is most often noticable with Bosses, which are treated as valuable as long as there's an incomplete boss hunt objective or an `Nkey` D.Mist boss that hasn't been found yet – but boss icons continue to be shown (on locations that appear due to having some other value) even when they're no longer valuable themselves. It also comes up with `Odkmatter` or `Ktrap`, which make Untrapped and Trapped chests valuable.
+  This is most often noticable with Bosses, which are treated as valuable as long as there's an incomplete boss hunt objective or an `Knofree` D.Mist boss that hasn't been found yet – but boss icons continue to be shown (on locations that appear due to having some other value) even when they're no longer valuable themselves. It also comes up with `Odkmatter` or `Ktrap`, which make Untrapped and Trapped chests valuable (but see the note about **Trapped chests in the Lunar Subterrane** below).
 
 The final Eye filter can be used to show locations that you've already dismissed.
+
+### Trapped chests in the Lunar Subterrane
+
+As of Free Enterprise 4.5.0, there's an exception to `Ktrap` in the Lunar Subterrane, wherein the LST's trapped chests _won't_ contain key items unless one of `Kmoon/unsafe` is also enabled. When this situation applies, the tracker will fade out the LST's trapped chest icon, as a reminder that there are no key items to be found. It will also not treat the LST trapped chests as valuable by default for the purposes of deciding whether or not to dispay the LST location.
+
 
 ## Shops
 
@@ -134,10 +139,7 @@ no navigation infrastructure is implemented (anymore).
 - Make the shop tracking less ugly and fiddly-feeling
 - Under Kvanilla, show specific key item icons at locations rather than generic
   key item values
-
-# TODO once 4.5.0 is live
-- Don't show trapped chests on the moon as valuable by default
-  under Ktrap unless any of Kmoon/unsafe/unsafer.
+- Support Orandom:tough_quest once I know what it includes
 
 # TODO housekeeping
 - Don't require right-clicks for anything

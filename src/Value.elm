@@ -7,14 +7,23 @@ module Value exposing
     , ShopValue(..)
     , Value(..)
     , countable
+    , decodeFilter
+    , decodeFilterType
+    , decodeMutable
+    , encodeFilter
+    , encodeFilterType
+    , encodeMutable
     , objective
     , requirement
     , toFilter
     )
 
 import ConsumableItems exposing (ConsumableItems)
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Objective
 import Requirement exposing (Requirement)
+import Serialize as S
 
 
 type Value
@@ -161,3 +170,109 @@ objective value =
 
         _ ->
             Nothing
+
+
+decodeMutable : Decode.Decoder (Maybe Value)
+decodeMutable =
+    -- TODO ugh
+    Decode.oneOf
+        [ Decode.field "shop-healing" (ConsumableItems.decodeStatuses ConsumableItems.healingItems) |> Decode.map (Just << Shop << Healing)
+        , Decode.field "shop-jitem" (ConsumableItems.decodeStatuses ConsumableItems.jItems) |> Decode.map (Just << Shop << JItem)
+        , Decode.field "shop-other" Decode.string |> Decode.map (Just << Shop << Other)
+        ]
+
+
+encodeMutable : Value -> Encode.Value
+encodeMutable value =
+    let
+        encodeItems name items =
+            Encode.object [ ( name, ConsumableItems.encodeStatuses items ) ]
+    in
+    case value of
+        Shop (Healing items) ->
+            encodeItems "shop-healing" items
+
+        Shop (JItem items) ->
+            encodeItems "shop-jitem" items
+
+        Shop (Other string) ->
+            Encode.object [ ( "shop-other", Encode.string string ) ]
+
+        _ ->
+            Encode.null
+
+
+decodeFilter : String -> Maybe Filter
+decodeFilter =
+    S.decodeFromString filterCodec
+        >> Result.toMaybe
+
+
+encodeFilter : Filter -> String
+encodeFilter =
+    S.encodeToString filterCodec
+
+
+decodeFilterType : Decode.Decoder FilterType
+decodeFilterType =
+    let
+        parse =
+            S.decodeFromJson filterTypeCodec
+                >> Result.map Decode.succeed
+                >> Result.withDefault (Decode.fail "Decoder error")
+    in
+    Decode.value
+        |> Decode.andThen parse
+
+
+encodeFilterType : FilterType -> Encode.Value
+encodeFilterType =
+    S.encodeToJson filterTypeCodec
+
+
+filterCodec : S.Codec e Filter
+filterCodec =
+    S.customType
+        (\characters bosses keyitems chests trappedchests checked value ->
+            case value of
+                Characters ->
+                    characters
+
+                Bosses ->
+                    bosses
+
+                KeyItems ->
+                    keyitems
+
+                Chests ->
+                    chests
+
+                TrappedChests ->
+                    trappedchests
+
+                Checked ->
+                    checked
+        )
+        |> S.variant0 Characters
+        |> S.variant0 Bosses
+        |> S.variant0 KeyItems
+        |> S.variant0 Chests
+        |> S.variant0 TrappedChests
+        |> S.variant0 Checked
+        |> S.finishCustomType
+
+
+filterTypeCodec : S.Codec e FilterType
+filterTypeCodec =
+    S.customType
+        (\show hide value ->
+            case value of
+                Show ->
+                    show
+
+                Hide ->
+                    hide
+        )
+        |> S.variant0 Show
+        |> S.variant0 Hide
+        |> S.finishCustomType

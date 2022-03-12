@@ -22,6 +22,7 @@ module Location exposing
     , getStatus
     , groupByArea
     , insert
+    , lstTrappedChestExemptionApplies
     , objectiveToggled
     , setText
     , toggleItem
@@ -39,6 +40,7 @@ import ConsumableItems exposing (ConsumableItem, ConsumableItems)
 import EverySet as Set exposing (EverySet)
 import Flags exposing (Flags)
 import Json.Decode as Decode
+import Json.Decode.Pipeline as Pipeline
 import Json.Encode as Encode
 import List.Extra
 import LocationKey exposing (Key(..))
@@ -109,6 +111,17 @@ type alias Context =
     , warpGlitchUsed : Bool
     , filterOverrides : Dict Filter FilterType
     }
+
+
+{-| If Ktrap is on but none of Kmoon/unsafe are, the trapped chests in
+the LunarSubTerrane cannot contain key items; this returns True when that
+situation applies.
+-}
+lstTrappedChestExemptionApplies : Context -> Location -> Bool
+lstTrappedChestExemptionApplies context (Location l) =
+    (l.key == LunarSubterrane)
+        && Set.member Trapped context.flags.keyItems
+        && not (context.flags.unsafeKeyItems || Set.member MoonBoss context.flags.keyItems)
 
 
 getKey : Location -> Key
@@ -741,7 +754,8 @@ filterByContext class c (Locations locations) =
         outstanding =
             outstandingObjectives context
 
-        propertyHasValue { status, value } =
+        propertyHasValue : Location -> IndexedProperty -> Bool
+        propertyHasValue location { status, value } =
             case ( value, Value.toFilter value ) of
                 ( Requirement (Pseudo Falcon), _ ) ->
                     -- the Falcon only has value if we don't have a
@@ -765,8 +779,17 @@ filterByContext class c (Locations locations) =
 
                 ( _, Just filter ) ->
                     -- anything else is valuable if it's in the set of
-                    -- positive filters
+                    -- positive filters...
+                    let
+                        keylessTrappedLST =
+                            -- ...but don't treat LST trapped chests as valuable
+                            -- by default when they can't contain key items
+                            (filter == TrappedChests)
+                                && (Dict.get TrappedChests context.filterOverrides == Nothing)
+                                && lstTrappedChestExemptionApplies context location
+                    in
                     Set.member filter filters
+                        && not keylessTrappedLST
 
                 _ ->
                     -- anything else is likely invisible metadata
@@ -786,7 +809,7 @@ filterByContext class c (Locations locations) =
                 True
 
             else
-                List.any propertyHasValue (getProperties context location)
+                List.any (propertyHasValue location) (getProperties context location)
                     && areaAccessible attainedRequirements location
                     && (context.flags.pushBToJump && Set.member l.key jumpable || requirementsMet attainedRequirements location)
     in
@@ -818,7 +841,7 @@ defaultFiltersFrom context =
 
         {- True if, based on the given Context, bosses may be intrisically
            valuable. Namely, if there are Boss Hunt objectives to fullfil, or a
-           D.Mist to find when the Nkey flag is on. If Bvanilla is on, _bosses_
+           D.Mist to find when the Knofree flag is on. If Bvanilla is on, _bosses_
            don't have value: the specific boss hunt objectives in the locations
            do.
         -}
@@ -891,10 +914,54 @@ requirementsMet attained (Location location) =
         |> Set.isEmpty
 
 
+type alias CodecLocation =
+    { key : Key
+    , status : Status
+    , properties : Array ( Status, Maybe Value )
+    }
+
+
 decode : Decode.Decoder Locations
 decode =
-    -- TODO
-    Decode.succeed all
+    let
+        updateProperty : ( Status, Maybe Value ) -> Property -> Property
+        updateProperty ( status, newValue ) (Property _ value) =
+            Property status (newValue |> Maybe.withDefault value)
+
+        updateLocations : CodecLocation -> Locations -> Locations
+        updateLocations item =
+            let
+                -- turn the array of partial properties into an array of update
+                -- functions to apply those statuses and maybe values to an
+                -- existing Properties array
+                propertiesUpdates : Array (Property -> Property)
+                propertiesUpdates =
+                    Array.map updateProperty item.properties
+
+                updateOne (Location l) =
+                    Location
+                        { l
+                          -- updating fields directly rather than using methods because
+                          -- we don't want any of their logic: we're recreating the whole
+                          -- state at once ourselves
+                            | status = item.status
+                            , properties = Array.Extra.apply propertiesUpdates l.properties
+                        }
+            in
+            update item.key (Maybe.map updateOne)
+
+        decodeProperty : Decode.Decoder ( Status, Maybe Value )
+        decodeProperty =
+            Decode.succeed Tuple.pair
+                |> Pipeline.required "status" Status.decode
+                |> Pipeline.optional "value" Value.decodeMutable Nothing
+    in
+    Decode.succeed CodecLocation
+        |> Pipeline.required "key" LocationKey.decode
+        |> Pipeline.required "status" Status.decode
+        |> Pipeline.required "properties" (Decode.array decodeProperty)
+        |> Decode.list
+        |> Decode.map (List.foldl updateLocations all)
 
 
 encode : Locations -> Encode.Value
@@ -904,17 +971,15 @@ encode (Locations locations) =
         encodeOne (Location l) =
             Encode.object
                 [ ( "key", LocationKey.encode l.key )
-                , ( "status", encodeStatus l.status )
-                , ( "properties", encodeProperties l.properties )
+                , ( "status", Status.encode l.status )
+                , ( "properties", Encode.list encodeProperty <| Array.toList l.properties )
                 ]
 
-        encodeStatus status =
-            -- TODO
-            Encode.object []
-
-        encodeProperties properties =
-            -- TODO
-            Encode.object []
+        encodeProperty (Property status value) =
+            Encode.object
+                [ ( "status", Status.encode status )
+                , ( "value", Value.encodeMutable value )
+                ]
     in
     locations
         |> Dict.values
@@ -2032,7 +2097,7 @@ moon =
             ]
       }
     , { key = LunarSubterrane
-      , name = "Lunar Palace"
+      , name = "Lunar Subterrane"
       , requirements = []
       , value =
             [ Character Gated

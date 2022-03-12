@@ -13,7 +13,6 @@ module Objective exposing
     , encodeKey
     , fromDescription
     , fromFlag
-    , gatedQuests
     , isBoss
     , keys
     , member
@@ -21,6 +20,7 @@ module Objective exposing
     , randomDecode
     , randomEncode
     , randomKeys
+    , toughQuests
     )
 
 import Array exposing (Array)
@@ -39,14 +39,14 @@ type Type
     = Character
     | Boss
     | Quest
-    | GatedQuest
+    | ToughQuest
 
 
 type alias Objective =
     { key : Key
     , flag : String
     , description : String
-    , isGated : Bool
+    , isToughQuest : Bool
     }
 
 
@@ -377,9 +377,9 @@ quests =
         |> List.map fromQuest
 
 
-gatedQuests : List Objective
-gatedQuests =
-    List.filter .isGated quests
+toughQuests : List Objective
+toughQuests =
+    List.filter .isToughQuest quests
 
 
 classic : List Objective
@@ -399,7 +399,7 @@ fromKey key =
             { key = key
             , flag = flag
             , description = description
-            , isGated = False
+            , isToughQuest = False
             }
     in
     case key of
@@ -469,7 +469,7 @@ fromCharacter character =
     { key = GetCharacter character
     , flag = "char_" ++ String.toLower name
     , description = "Get " ++ name
-    , isGated = List.member character [ Edge, FuSoYa ]
+    , isToughQuest = False
     }
 
 
@@ -586,7 +586,7 @@ fromBoss boss =
     { key = DefeatBoss boss
     , flag = "boss_" ++ flag
     , description = "Defeat " ++ name
-    , isGated = False
+    , isToughQuest = False
     }
 
 
@@ -712,22 +712,16 @@ fromQuest quest =
                 Pass ->
                     ( "pass", "Unlock the Pass door in Toroia" )
 
-        gated =
-            List.Extra.notMember quest
-                [ MistCave
-                , Waterfall
-                , AntlionCave
-                , MtHobs
-                , Fabul
-                , MtOrdeals
-                , BaronInn
-                , Pass
-                ]
+        tough =
+            -- List.Extra.notMember quest [ ... ]
+            -- until I know which quests tough_quest includes, act like it includes
+            -- everything, so we don't exclude anything we shouldn't
+            True
     in
     { key = DoQuest quest
     , flag = "quest_" ++ flag
     , description = description
-    , isGated = gated
+    , isToughQuest = tough
     }
 
 

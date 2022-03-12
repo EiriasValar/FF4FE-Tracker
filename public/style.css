@@ -281,7 +281,9 @@ img.requirement.disabled {
     filter: opacity(25%);
 }
 
-#checks .locations .icon.key-item.warp.unseen {
+#checks .locations .icon.key-item.warp.unseen,
+#checks .locations .icon.trapped-chest.keyless.unseen,
+#checks .locations .icon.trapped-chest.keyless.seen-some {
     filter: opacity(40%);
 }
 
@@ -293,6 +295,7 @@ img.requirement.disabled {
     text-align: center;
     color: white;
     text-shadow: 1px 1px 0px black;
+    user-select: none;
 }
 
 #checks .locations .icon.boss:hover {

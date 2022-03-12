@@ -1,8 +1,14 @@
 module Status exposing
     ( Status(..)
+    , decode
+    , encode
     , toString
     , toggle
     )
+
+import Json.Decode as Decode
+import Json.Encode as Encode
+import Serialize as S
 
 
 type Status
@@ -49,3 +55,44 @@ toggle on existing =
 
     else
         on
+
+
+decode : Decode.Decoder Status
+decode =
+    let
+        parse =
+            S.decodeFromJson codec
+                >> Result.map Decode.succeed
+                >> Result.withDefault (Decode.fail "Decoder error")
+    in
+    Decode.value
+        |> Decode.andThen parse
+
+
+encode : Status -> Encode.Value
+encode =
+    S.encodeToJson codec
+
+
+codec : S.Codec e Status
+codec =
+    S.customType
+        (\unseen seen seensome dismissed value ->
+            case value of
+                Unseen ->
+                    unseen
+
+                Seen ->
+                    seen
+
+                SeenSome count ->
+                    seensome count
+
+                Dismissed ->
+                    dismissed
+        )
+        |> S.variant0 Unseen
+        |> S.variant0 Seen
+        |> S.variant1 SeenSome S.int
+        |> S.variant0 Dismissed
+        |> S.finishCustomType
