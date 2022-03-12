@@ -9,8 +9,10 @@ module Value exposing
     , countable
     , decodeFilter
     , decodeFilterType
+    , decodeMutable
     , encodeFilter
     , encodeFilterType
+    , encodeMutable
     , objective
     , requirement
     , toFilter
@@ -168,6 +170,36 @@ objective value =
 
         _ ->
             Nothing
+
+
+decodeMutable : Decode.Decoder (Maybe Value)
+decodeMutable =
+    -- TODO ugh
+    Decode.oneOf
+        [ Decode.field "shop-healing" (ConsumableItems.decodeStatuses ConsumableItems.healingItems) |> Decode.map (Just << Shop << Healing)
+        , Decode.field "shop-jitem" (ConsumableItems.decodeStatuses ConsumableItems.jItems) |> Decode.map (Just << Shop << JItem)
+        , Decode.field "shop-other" Decode.string |> Decode.map (Just << Shop << Other)
+        ]
+
+
+encodeMutable : Value -> Encode.Value
+encodeMutable value =
+    let
+        encodeItems name items =
+            Encode.object [ ( name, ConsumableItems.encodeStatuses items ) ]
+    in
+    case value of
+        Shop (Healing items) ->
+            encodeItems "shop-healing" items
+
+        Shop (JItem items) ->
+            encodeItems "shop-jitem" items
+
+        Shop (Other string) ->
+            Encode.object [ ( "shop-other", Encode.string string ) ]
+
+        _ ->
+            Encode.null
 
 
 decodeFilter : String -> Maybe Filter

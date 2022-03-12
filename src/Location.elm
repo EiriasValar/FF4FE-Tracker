@@ -895,24 +895,26 @@ requirementsMet attained (Location location) =
 type alias CodecLocation =
     { key : Key
     , status : Status
-    , properties : Array Status
+    , properties : Array ( Status, Maybe Value )
     }
 
 
 decode : Decode.Decoder Locations
 decode =
     let
-        updateStatus status (Property _ value) =
-            Property status value
+        updateProperty : ( Status, Maybe Value ) -> Property -> Property
+        updateProperty ( status, newValue ) (Property _ value) =
+            Property status (newValue |> Maybe.withDefault value)
 
         updateLocations : CodecLocation -> Locations -> Locations
         updateLocations item =
             let
-                -- turn the array of property statuses into an array of update functions
-                -- to apply those statuses to Properties
+                -- turn the array of partial properties into an array of update
+                -- functions to apply those statuses and maybe values to an
+                -- existing Properties array
                 propertiesUpdates : Array (Property -> Property)
                 propertiesUpdates =
-                    Array.map updateStatus item.properties
+                    Array.map updateProperty item.properties
 
                 updateOne (Location l) =
                     Location
@@ -925,11 +927,17 @@ decode =
                         }
             in
             update item.key (Maybe.map updateOne)
+
+        decodeProperty : Decode.Decoder ( Status, Maybe Value )
+        decodeProperty =
+            Decode.succeed Tuple.pair
+                |> Pipeline.required "status" Status.decode
+                |> Pipeline.optional "value" Value.decodeMutable Nothing
     in
     Decode.succeed CodecLocation
         |> Pipeline.required "key" LocationKey.decode
         |> Pipeline.required "status" Status.decode
-        |> Pipeline.required "properties" (Decode.array Status.decode)
+        |> Pipeline.required "properties" (Decode.array decodeProperty)
         |> Decode.list
         |> Decode.map (List.foldl updateLocations all)
 
@@ -942,11 +950,14 @@ encode (Locations locations) =
             Encode.object
                 [ ( "key", LocationKey.encode l.key )
                 , ( "status", Status.encode l.status )
-                , ( "properties", Encode.list encodePropertyStatus <| Array.toList l.properties )
+                , ( "properties", Encode.list encodeProperty <| Array.toList l.properties )
                 ]
 
-        encodePropertyStatus (Property status _) =
-            Status.encode status
+        encodeProperty (Property status value) =
+            Encode.object
+                [ ( "status", Status.encode status )
+                , ( "value", Value.encodeMutable value )
+                ]
     in
     locations
         |> Dict.values
