@@ -713,22 +713,10 @@ fromQuest quest =
                     ( "pass", "Unlock the Pass door in Toroia" )
 
         tough =
-            List.Extra.notMember quest
-                [ MistCave
-                , Waterfall
-                , AntlionCave
-                , MtHobs
-                , Fabul
-                , MtOrdeals
-                , BaronInn
-                , Package
-                , SandRuby
-                , UnlockSewer
-                , Treasury
-                , MagmaKey
-                , BigWhale
-                , Pass
-                ]
+            -- List.Extra.notMember quest [ ... ]
+            -- until I know which quests tough_quest includes, act like it includes
+            -- everything, so we don't exclude anything we shouldn't
+            True
     in
     { key = DoQuest quest
     , flag = "quest_" ++ flag

@@ -139,6 +139,7 @@ no navigation infrastructure is implemented (anymore).
 - Make the shop tracking less ugly and fiddly-feeling
 - Under Kvanilla, show specific key item icons at locations rather than generic
   key item values
+- Support Orandom:tough_quest once I know what it includes
 
 # TODO housekeeping
 - Don't require right-clicks for anything

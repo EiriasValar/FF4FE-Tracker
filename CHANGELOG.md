@@ -1,7 +1,8 @@
 ## Upcoming
 - Treat Lunar Subterrane trapped chests differently under Ktrap when none of
   Kmoon/unsafe are on (as they can't contain key items in that case).
-- Replace `Orandom:gated_quest` handling with `Orandom:tough_quest`.
+- Remove support for `Orandom:gated_quest`. `Orandom:tough_quest` will be handled
+  once there's an official answer about what it includes/excludes.
 
 ## 2021-12-29
 - Link the Defeat D. Mist objective with the D. Mist "key item", so completing
